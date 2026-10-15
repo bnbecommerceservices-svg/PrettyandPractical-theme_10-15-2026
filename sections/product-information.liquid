@@ -294,31 +294,43 @@
     endfor
   endif
 
-  if product.description contains '</li>'
-    assign li_chunks = product.description | split: '</li>'
+  # Bullet points from the description's lists (<li> items), used when no
+  # bullet metafield is set. Lists in the Specifications / Package sections
+  # are left out. These bullets are shown as written, without filler bullets.
+  assign feature_from_description = false
+  if feature_source_blob == blank and product.description contains '</li>'
+    assign desc_list_html = product.description
+    if desc_list_html contains 'Specifications'
+      assign desc_list_html = desc_list_html | split: 'Specifications' | first
+    endif
+    if desc_list_html contains 'SPECIFICATIONS'
+      assign desc_list_html = desc_list_html | split: 'SPECIFICATIONS' | first
+    endif
+    if desc_list_html contains 'Package Include'
+      assign desc_list_html = desc_list_html | split: 'Package Include' | first
+    endif
+    if desc_list_html contains 'In the box'
+      assign desc_list_html = desc_list_html | split: 'In the box' | first
+    endif
+    assign li_chunks = desc_list_html | split: '<li'
     for li_chunk in li_chunks
-      assign feature_text = li_chunk | strip_html | replace: '&nbsp;', ' ' | replace: 'Features:', '' | replace: 'Feature:', '' | replace: 'FEATURES:', '' | replace: 'FEATURE:', '' | strip
-      assign feature_head8 = feature_text | downcase | slice: 0, 8
-      assign feature_head7 = feature_text | downcase | slice: 0, 7
-      if feature_head8 == 'features'
-        assign feature_text = feature_text | slice: 8, 400 | strip
-      elsif feature_head7 == 'feature'
-        assign feature_text = feature_text | slice: 7, 400 | strip
-      endif
-      assign feature_lead = feature_text | slice: 0, 1
-      if feature_lead == ':' or feature_lead == '-' or feature_lead == '•' or feature_lead == '·'
-        assign feature_text = feature_text | slice: 1, 400 | strip
-      endif
-      assign feature_check = feature_text | downcase
-      if feature_check == 'feature' or feature_check == 'features'
+      if forloop.first
         continue
       endif
-      if feature_text.size > 8
-        unless feature_check contains 'specification' or feature_check contains 'package include' or feature_check contains 'package size' or feature_check contains 'package weight' or feature_check contains 'please measure' or feature_check contains 'measuring error' or feature_check contains 'color difference' or feature_check contains 'colour difference' or feature_check contains 'note:' or feature_check contains 'upc'
-          assign feature_source_blob = feature_source_blob | append: feature_text | append: '|||'
-        endunless
+      assign feature_text = li_chunk | prepend: '<li' | split: '</li>' | first | strip_html | replace: '&nbsp;', ' ' | strip
+      assign feature_lead = feature_text | slice: 0, 1
+      if feature_lead == '-' or feature_lead == '•' or feature_lead == '·' or feature_lead == '*'
+        assign feature_text = feature_text | slice: 1, feature_text.size | strip
       endif
+      assign feature_check = feature_text | downcase
+      if feature_text.size < 3 or feature_check contains 'upc' or feature_check contains 'please measure' or feature_check contains 'measuring error'
+        continue
+      endif
+      assign feature_source_blob = feature_source_blob | append: feature_text | append: '|||'
     endfor
+    if feature_source_blob != blank
+      assign feature_from_description = true
+    endif
   endif
 
   if feature_source_blob == blank and product.description != blank
@@ -356,6 +368,22 @@
     endif
     assign feature_line = feature_text | strip
     if feature_line == blank
+      continue
+    endif
+    if feature_from_description
+      if feature_line.size > 160
+        assign feature_line = feature_line | truncate: 160
+      endif
+      if feature_items contains feature_line
+        continue
+      endif
+      capture feature_items
+        echo feature_items
+        echo '<li>'
+        echo feature_line | escape_once
+        echo '</li>'
+      endcapture
+      assign feature_count = feature_count | plus: 1
       continue
     endif
     if feature_line contains ' - '
@@ -415,6 +443,9 @@
   endif
   assign feature_pad_blob = feature_pad_blob | append: 'Australia wide shipping|||30 day hassle free returns|||Quality checked before dispatch|||Simple setup|||Secure checkout|||Fast dispatch from Australia'
   assign feature_pad_list = feature_pad_blob | split: '|||'
+  if feature_from_description
+    assign feature_pad_list = ''
+  endif
   for feature_line in feature_pad_list
     if feature_count >= 7
       break
