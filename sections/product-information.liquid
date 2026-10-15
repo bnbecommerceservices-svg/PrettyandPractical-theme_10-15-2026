@@ -127,7 +127,6 @@
   if short_blurb == blank and product.description != blank
     assign short_blurb = product.description | strip_html | truncate: 220
   endif
-  assign care_content = product.metafields.custom.care_guide.value | default: product.metafields.custom.care.value
 
   # FAQs from the custom.faqs metafield (custom.faq as a fallback). Multi-line
   # text or rich text definitions. A question is a line starting with "Q:" or
@@ -1206,20 +1205,6 @@
                 Easy 30 day returns on unused items in original packaging. Contact us if you need help with a return.
               {% endif %}
             </p>
-          </div>
-        </details>
-
-        <details class="pp-accordion">
-          <summary class="pp-accordion__summary">
-            Care Guide
-            {{ pp_accordion_chevron }}
-          </summary>
-          <div class="pp-accordion__body">
-            {% if care_content != blank %}
-              {{ care_content }}
-            {% else %}
-              <p>Wipe with a soft damp cloth and dry thoroughly. Avoid harsh cleaners or abrasive pads. For outdoor use, rinse off dust and debris occasionally and allow to dry fully.</p>
-            {% endif %}
           </div>
         </details>
 
