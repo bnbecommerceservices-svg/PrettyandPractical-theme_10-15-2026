@@ -1,3 +1,7 @@
+html {
+  overflow-x: clip;
+}
+
 .pp-site-header,
 .pp-site-footer {
   --pp-primary: #e8532a;
@@ -980,8 +984,10 @@ body.pp-header-locked .content-for-layout {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 22px;
-  overflow: visible;
+  gap: clamp(12px, 1.6vw, 22px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 
 .pp-category-nav__inner::-webkit-scrollbar {
@@ -2290,12 +2296,12 @@ span.pp-nav-link {
 
 @media (max-width: 1100px) {
   .pp-header__inner {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
   }
 
   .pp-category-nav__inner {
     justify-content: flex-start;
-    overflow: visible;
   }
 
   .pp-footer__top {

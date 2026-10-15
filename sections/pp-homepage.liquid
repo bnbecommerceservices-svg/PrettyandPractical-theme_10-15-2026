@@ -59,6 +59,10 @@
               assign primary_url = primary_hero.settings.link
               assign primary_key = primary_hero.settings.heading | append: ' ' | append: primary_hero.settings.badge | downcase
               assign primary_fallback = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80'
+              assign primary_ratio = 1.5
+              if primary_hero.settings.image != blank and primary_hero.settings.image.aspect_ratio > 0
+                assign primary_ratio = primary_hero.settings.image.aspect_ratio
+              endif
               if primary_key contains 'furniture' or primary_key contains 'living'
                 assign primary_fallback = 'https://images.pexels.com/photos/12289396/pexels-photo-12289396.jpeg?auto=compress&cs=tinysrgb&w=1600'
               elsif primary_key contains 'outdoor' or primary_key contains 'plant' or primary_key contains 'garden'
@@ -70,6 +74,7 @@
             <a
               href="{{ primary_url | default: '#' }}"
               class="pp-hero-card pp-hero-card--feature pp-hero-card--has-media{% if primary_url == blank %} pp-card-is-static{% endif %}"
+              style="--pp-media-ratio: {{ primary_ratio }};"
               {% if primary_url == blank %}aria-disabled="true"{% endif %}
               {{ primary_hero.shopify_attributes }}
             >
@@ -105,6 +110,10 @@
                   assign hero_key = block.settings.heading | append: ' ' | append: block.settings.badge | downcase
                   assign hero_modifier = 'pp-hero-card--outdoor'
                   assign hero_fallback = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80'
+                  assign hero_ratio = 1.5
+                  if block.settings.image != blank and block.settings.image.aspect_ratio > 0
+                    assign hero_ratio = block.settings.image.aspect_ratio
+                  endif
                   if forloop.index == 2
                     assign hero_modifier = 'pp-hero-card--kitchen'
                     assign hero_fallback = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80'
@@ -122,6 +131,7 @@
                 <a
                   href="{{ hero_url | default: '#' }}"
                   class="pp-hero-card {{ hero_modifier }} pp-hero-card--has-media{% if hero_url == blank %} pp-card-is-static{% endif %}"
+                  style="--pp-media-ratio: {{ hero_ratio }};"
                   {% if hero_url == blank %}aria-disabled="true"{% endif %}
                   {{ block.shopify_attributes }}
                 >

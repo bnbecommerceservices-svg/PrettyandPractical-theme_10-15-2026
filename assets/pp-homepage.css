@@ -178,75 +178,20 @@
   margin-top: var(--pp-hero-gap, 10px);
 }
 
-@media (min-width: 1024px) {
-  .pp-homepage-storefront .pp-welcome-screen {
-    --pp-hero-gap: 10px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    height: calc(100dvh - var(--pp-header-group-height, 168px));
-    max-height: calc(100dvh - var(--pp-header-group-height, 168px));
-    overflow: hidden;
-  }
-
-  .pp-homepage-storefront .pp-welcome-screen .pp-hero,
-  .pp-homepage-storefront .pp-welcome-screen .pp-section.pp-hero,
-  .pp-homepage-storefront .pp-welcome-screen .pp-section.pp-hero:first-child {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: auto;
-    max-height: none;
-    margin-top: var(--pp-hero-gap);
-    padding-bottom: 8px;
-    overflow: hidden;
-  }
-
-  .pp-homepage-storefront .pp-welcome-screen .pp-hero > .pp-wrap {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-  }
-
-  .pp-homepage-storefront .pp-welcome-screen .pp-values {
-    flex: 0 0 auto;
-    margin-top: 0;
-    padding: 16px 0 18px;
-  }
-
-  .pp-homepage-storefront .pp-welcome-screen .pp-values .pp-section-head {
-    margin-bottom: 12px;
-  }
-
-  .pp-homepage-storefront .pp-hero-card:hover {
-    transform: none;
-  }
-}
-
 .pp-homepage-storefront .pp-hero__feature-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.95fr);
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: clamp(10px, 1.2vw, 16px);
   margin-top: 0;
-  min-height: 0;
-  align-items: stretch;
-}
-
-@media (min-width: 1024px) {
-  .pp-homepage-storefront .pp-hero__feature-grid {
-    flex: 1 1 auto;
-    height: 100%;
-    min-height: 0;
-  }
+  align-items: start;
 }
 
 .pp-homepage-storefront .pp-hero__side-stack {
   display: grid;
-  grid-row: 1 / -1;
-  grid-template-rows: 1fr 1fr;
-  gap: 14px;
-  min-height: 0;
+  grid-template-rows: auto auto;
+  gap: clamp(10px, 1.2vw, 16px);
+  width: 100%;
+  min-width: 0;
 }
 
 .pp-homepage-storefront .pp-hero-card {
@@ -256,9 +201,12 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  width: 100%;
+  height: auto;
+  aspect-ratio: clamp(0.85, var(--pp-media-ratio, 1.5), 1.9);
   min-height: 0;
-  padding: 26px;
-  border-radius: 20px;
+  padding: clamp(16px, 2vw, 32px);
+  border-radius: clamp(14px, 1.4vw, 20px);
   color: var(--pp-white);
   text-decoration: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -284,9 +232,8 @@
 }
 
 .pp-homepage-storefront .pp-hero-card--feature {
-  grid-row: 1 / -1;
+  grid-row: auto;
   min-height: 0;
-  padding: 32px;
   justify-content: flex-end;
   background: #1a1d23;
 }
@@ -382,7 +329,18 @@
 }
 
 .pp-homepage-storefront .pp-hero-card__media img,
-.pp-homepage-storefront .pp-hero-card__media video,
+.pp-homepage-storefront .pp-hero-card__media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  object-position: center center;
+  display: block;
+  pointer-events: none;
+}
+
 .pp-homepage-storefront .pp-room__media img {
   position: absolute;
   inset: 0;
@@ -463,8 +421,8 @@
 
 .pp-homepage-storefront .pp-promo__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(10px, 1.2vw, 16px);
 }
 
 .pp-homepage-storefront .pp-promo-card {
@@ -472,8 +430,11 @@
   overflow: hidden;
   display: flex;
   align-items: flex-end;
-  min-height: 278px;
-  border-radius: 20px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+  border-radius: clamp(14px, 1.4vw, 20px);
   color: #fff;
   text-decoration: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -566,7 +527,7 @@
 
 .pp-homepage-storefront .pp-values__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   justify-items: center;
 }
 
@@ -625,8 +586,8 @@
 
 .pp-homepage-storefront .pp-mosaic {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: clamp(10px, 1.2vw, 14px);
 }
 
 .pp-homepage-storefront .pp-cat {
@@ -1322,8 +1283,8 @@
 
 .pp-homepage-storefront .pp-rooms__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: clamp(12px, 1.4vw, 16px);
 }
 
 .pp-homepage-storefront .pp-room {
@@ -1625,7 +1586,7 @@
 
 .pp-homepage-storefront .pp-insta {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
   gap: 8px;
 }
 
@@ -1855,14 +1816,12 @@
 
   .pp-homepage-storefront .pp-hero-card--feature {
     grid-row: auto;
-    min-height: 420px;
   }
 
   .pp-homepage-storefront .pp-hero__side-stack {
     grid-row: auto;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: none;
-    min-height: 240px;
   }
 
   .pp-homepage-storefront .pp-values__grid {
@@ -1951,8 +1910,8 @@
 
   .pp-homepage-storefront .pp-hero-card,
   .pp-homepage-storefront .pp-hero-card--feature {
-    min-height: 260px;
-    padding: 24px;
+    min-height: 0;
+    padding: 20px;
   }
 
   .pp-homepage-storefront .pp-hero-card--feature .pp-hero-card__title {
@@ -1968,7 +1927,8 @@
   }
 
   .pp-homepage-storefront .pp-promo-card {
-    min-height: 220px;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
   }
 
   .pp-homepage-storefront .pp-values__grid,
