@@ -1,0 +1,707 @@
+{{ 'pp-cart-page.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'component-cart-items.js' | asset_url }}" type="module" fetchpriority="low"></script>
+<script src="{{ 'component-cart-quantity-selector.js' | asset_url }}" type="module" fetchpriority="low"></script>
+<script src="{{ 'pp-cart-page.js' | asset_url }}" defer></script>
+
+{% liquid
+  assign show_currency_in_items = settings.currency_code_enabled_cart_items
+  assign show_currency_in_totals = settings.currency_code_enabled_cart_total
+  assign free_shipping_threshold = settings.cart_discount_threshold | plus: 0
+  assign free_shipping_threshold_enabled = false
+  if free_shipping_threshold > 0
+    assign free_shipping_threshold_enabled = true
+  endif
+  assign free_shipping_threshold_cents = free_shipping_threshold | times: 100
+  assign free_shipping_unlocked = false
+  if free_shipping_threshold_enabled and cart.items_subtotal_price >= free_shipping_threshold_cents
+    assign free_shipping_unlocked = true
+  endif
+
+  assign shipping_progress = 0
+  if free_shipping_threshold_cents > 0
+    assign shipping_progress = cart.items_subtotal_price | times: 100.0 | divided_by: free_shipping_threshold_cents
+    if shipping_progress > 100
+      assign shipping_progress = 100
+    endif
+  endif
+
+  if show_currency_in_totals
+    assign threshold_money = free_shipping_threshold_cents | money_with_currency
+    assign subtotal_money = cart.items_subtotal_price | money_with_currency
+    assign total_money = cart.total_price | money_with_currency
+    assign discount_money = cart.total_discount | money_with_currency
+  else
+    assign threshold_money = free_shipping_threshold_cents | money
+    assign subtotal_money = cart.items_subtotal_price | money
+    assign total_money = cart.total_price | money
+    assign discount_money = cart.total_discount | money
+  endif
+
+  assign remaining_to_free_shipping = free_shipping_threshold_cents | minus: cart.items_subtotal_price
+  if remaining_to_free_shipping < 0
+    assign remaining_to_free_shipping = 0
+  endif
+  if show_currency_in_totals
+    assign remaining_to_free_shipping_money = remaining_to_free_shipping | money_with_currency
+  else
+    assign remaining_to_free_shipping_money = remaining_to_free_shipping | money
+  endif
+
+  assign cart_currency_code = cart.currency.iso_code | default: localization.country.currency.iso_code | default: shop.currency
+  capture summary_note
+    if cart.duties_included and cart.taxes_included
+      echo 'content.duties_and_taxes_included_shipping_at_checkout_without_policy_without_discounts' | t
+    elsif cart.taxes_included
+      echo 'content.taxes_included_shipping_at_checkout_without_policy_without_discounts' | t
+    elsif cart.duties_included
+      echo 'content.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy_without_discounts' | t
+    else
+      echo 'content.taxes_at_checkout_shipping_at_checkout_without_policy_without_discounts' | t
+    endif
+  endcapture
+
+  assign first_recommendation_product_id = blank
+  assign recommendation_product_ids = ''
+  assign fallback_recommendations_collection = section.settings.recommendations_collection
+  if fallback_recommendations_collection == blank
+    assign fallback_recommendations_collection = settings.empty_state_collection
+  endif
+  assign recommendation_new_badge_tag = section.settings.recommendation_new_badge_tag | strip
+  for cart_item in cart.items
+    if cart_item.product.id != blank
+      if first_recommendation_product_id == blank
+        assign first_recommendation_product_id = cart_item.product.id
+      endif
+      if recommendation_product_ids != blank
+        assign recommendation_product_ids = recommendation_product_ids | append: ','
+      endif
+      assign recommendation_product_ids = recommendation_product_ids | append: cart_item.product.id
+    endif
+  endfor
+
+  assign discount_codes = cart.cart_level_discount_applications | where: 'type', 'discount_code' | map: 'title'
+  for item in cart.items
+    for allocation in item.line_level_discount_allocations
+      if allocation.discount_application.type == 'discount_code'
+        assign discount_codes = item.line_level_discount_allocations | slice: forloop.index0 | map: 'discount_application' | map: 'title' | concat: discount_codes
+      endif
+    endfor
+  endfor
+  assign discount_codes = discount_codes | uniq
+%}
+
+{% capture cart_page_content %}
+  <template id="empty-cart-template">
+    <main class="pp-main">
+      <section class="pp-page-header pp-wrap">
+        <nav class="pp-breadcrumb" aria-label="Breadcrumb">
+          <a href="{{ routes.root_url }}">Home</a>
+          <span class="pp-breadcrumb__sep" aria-hidden="true">/</span>
+          <span class="pp-breadcrumb__current">Cart</span>
+        </nav>
+        <div class="pp-page-title-row">
+          <h1 class="pp-page-title">Your Cart</h1>
+          <p class="pp-page-sub" id="page-sub"><strong id="item-count">0</strong> items in your cart</p>
+        </div>
+      </section>
+
+      {% if free_shipping_threshold_enabled %}
+        <section class="pp-wrap">
+          <div class="pp-shipbar" id="shipbar">
+            <div class="pp-shipbar__row">
+              <svg class="pp-shipbar__icon" id="shipbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 17h4V5H2v12h3"></path>
+                <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
+                <path d="M14 17h1"></path>
+                <circle cx="7.5" cy="17.5" r="2.5"></circle>
+                <circle cx="17.5" cy="17.5" r="2.5"></circle>
+              </svg>
+              <p class="pp-shipbar__text" id="shipbar-text">
+                You're <strong>{{ threshold_money }}</strong> away from free shipping
+              </p>
+            </div>
+            <div class="pp-shipbar__track" role="progressbar" aria-label="Free shipping progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="pp-shipbar__fill" id="shipbar-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="pp-wrap pp-cart-layout">
+        <div class="pp-items" id="items-container">
+          <div class="pp-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+              <path d="M3 6h18"></path>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't added anything yet.</p>
+            <a href="{{ settings.empty_cart_button_link | default: routes.all_products_collection_url }}" class="pp-btn pp-btn--primary">Continue shopping</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </template>
+
+  <main class="pp-main">
+    <span class="pp-sr-only" ref="cartItemCount" aria-hidden="true">{{ cart.item_count }}</span>
+
+    <section class="pp-page-header pp-wrap">
+      <nav class="pp-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <span class="pp-breadcrumb__sep" aria-hidden="true">/</span>
+        <span class="pp-breadcrumb__current">Cart</span>
+      </nav>
+      <div class="pp-page-title-row">
+        <h1 class="pp-page-title">Your Cart</h1>
+        <p class="pp-page-sub" id="page-sub">
+          <strong id="item-count">{{ cart.item_count }}</strong>
+          {% if cart.item_count == 1 %}
+            item in your cart
+          {% else %}
+            items in your cart
+          {% endif %}
+        </p>
+      </div>
+    </section>
+
+    {% if free_shipping_threshold_enabled %}
+      <section class="pp-wrap">
+        <div class="pp-shipbar{% if free_shipping_unlocked %} is-unlocked{% endif %}" id="shipbar">
+          <div class="pp-shipbar__row">
+            {% if free_shipping_unlocked %}
+              <svg class="pp-shipbar__icon" id="shipbar-icon" viewBox="0 0 24 24" fill="currentColor" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m9 12 2 2 4-4" stroke="#fff" fill="none"></path>
+              </svg>
+            {% else %}
+              <svg class="pp-shipbar__icon" id="shipbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 17h4V5H2v12h3"></path>
+                <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
+                <path d="M14 17h1"></path>
+                <circle cx="7.5" cy="17.5" r="2.5"></circle>
+                <circle cx="17.5" cy="17.5" r="2.5"></circle>
+              </svg>
+            {% endif %}
+            <p class="pp-shipbar__text" id="shipbar-text">
+              {% if free_shipping_unlocked %}
+                You've unlocked <strong>free shipping</strong>
+              {% else %}
+                You're <strong>{{ remaining_to_free_shipping_money }}</strong> away from free shipping
+              {% endif %}
+            </p>
+          </div>
+          <div class="pp-shipbar__track" role="progressbar" aria-label="Free shipping progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ shipping_progress | round }}">
+            <div class="pp-shipbar__fill" id="shipbar-fill" style="width: {{ shipping_progress }}%"></div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="pp-wrap pp-cart-layout">
+      <div class="pp-items" id="items-container">
+        {% if cart.empty? %}
+          <div class="pp-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+              <path d="M3 6h18"></path>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't added anything yet.</p>
+            <a href="{{ settings.empty_cart_button_link | default: routes.all_products_collection_url }}" class="pp-btn pp-btn--primary">Continue shopping</a>
+          </div>
+        {% else %}
+          <div class="pp-items__head" aria-hidden="true">
+            <span>Product</span>
+            <span>Quantity</span>
+            <span>Total</span>
+          </div>
+
+          <form action="{{ routes.cart_url }}" class="pp-cart-form" id="cart-form" method="post">
+            <div id="items-list">
+              {% for item in cart.items %}
+                {% liquid
+                  assign line_index = item.index | plus: 1
+                  assign item_image = item.image | default: item.product.featured_image
+                  assign item_image_alt = item_image.alt | default: item.product.title
+                  assign can_update_quantity = item.instructions.can_update_quantity | default: true, allow_false: true
+                  assign can_remove = item.instructions.can_remove | default: true, allow_false: true
+                  assign has_visible_properties = false
+                  assign variant_text = ''
+
+                  unless item.product.has_only_default_variant
+                    assign variant_text = item.options_with_values | map: 'value' | join: ' / '
+                    if variant_text == 'Default Title'
+                      assign variant_text = ''
+                    endif
+                  endunless
+
+                  if variant_text == blank and item.variant_title != blank and item.variant_title != 'Default Title'
+                    assign variant_text = item.variant_title
+                  endif
+
+                  for property in item.properties
+                    assign property_first_char = property.first | slice: 0
+                    if property.last != blank and property_first_char != '_'
+                      assign has_visible_properties = true
+                    endif
+                  endfor
+
+                  if show_currency_in_items
+                    assign unit_price = item.final_price | money_with_currency
+                    assign line_price = item.final_line_price | money_with_currency
+                    assign unit_compare_price = blank
+                    assign line_compare_price = blank
+                    if item.original_price > item.final_price
+                      assign unit_compare_price = item.original_price | money_with_currency
+                      assign line_compare_price = item.original_line_price | money_with_currency
+                    elsif item.product.tags contains 'sale' or item.product.tags contains 'Sale' or item.product.tags contains 'on-sale'
+                      assign unit_compare_price = item.variant.compare_at_price | money_with_currency
+                      assign line_compare_price = item.variant.compare_at_price | times: item.quantity | money_with_currency
+                    endif
+                  else
+                    assign unit_price = item.final_price | money
+                    assign line_price = item.final_line_price | money
+                    assign unit_compare_price = blank
+                    assign line_compare_price = blank
+                    if item.original_price > item.final_price
+                      assign unit_compare_price = item.original_price | money
+                      assign line_compare_price = item.original_line_price | money
+                    elsif item.product.tags contains 'sale' or item.product.tags contains 'Sale' or item.product.tags contains 'on-sale'
+                      assign unit_compare_price = item.variant.compare_at_price | money
+                      assign line_compare_price = item.variant.compare_at_price | times: item.quantity | money
+                    endif
+                  endif
+
+                  assign savings_amount = item.original_line_price | minus: item.final_line_price
+                  assign savings_money = blank
+                  if savings_amount > 0
+                    if show_currency_in_items
+                      assign savings_money = savings_amount | money_with_currency
+                    else
+                      assign savings_money = savings_amount | money
+                    endif
+                  endif
+                %}
+                <article
+                  class="pp-item"
+                  ref="cartItemRows[]"
+                  data-parent-key="{{ item.parent_relationship.parent.key }}"
+                  data-key="{{ item.key }}"
+                >
+                  <div class="pp-item__product">
+                    <a href="{{ item.url }}" class="pp-item__thumb">
+                      {% if item_image %}
+                        {{
+                          item_image
+                          | image_url: width: 320
+                          | image_tag:
+                            alt: item_image_alt,
+                            loading: 'lazy'
+                        }}
+                      {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                          <circle cx="8.5" cy="10.5" r="1.5"></circle>
+                          <path d="m21 15-5-5L5 21"></path>
+                        </svg>
+                        <span>{{ item.product.title | default: item.title }}</span>
+                      {% endif %}
+                    </a>
+
+                    <div class="pp-item__info">
+                      {% if item.product.vendor != blank %}
+                        <p class="pp-item__brand">{{ item.product.vendor }}</p>
+                      {% endif %}
+
+                      <h3 class="pp-item__title">
+                        <a href="{{ item.url }}">{{ item.product.title | default: item.title }}</a>
+                      </h3>
+
+                      {% if variant_text != blank %}
+                        <p class="pp-item__variant">{{ variant_text }}</p>
+                      {% endif %}
+
+                      {% if has_visible_properties %}
+                        {% for property in item.properties %}
+                          {% assign property_first_char = property.first | slice: 0 %}
+                          {% if property.last != blank and property_first_char != '_' %}
+                            <p class="pp-item__variant">
+                              {{ property.first }}:
+                              {% if property.last contains '/uploads/' %}
+                                <a href="{{ property.last }}">{{ property.last | split: '/' | last }}</a>
+                              {% else %}
+                                {{ property.last }}
+                              {% endif %}
+                            </p>
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+
+                      {% if item.selling_plan_allocation %}
+                        <p class="pp-item__variant">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+                      {% endif %}
+
+                      <div class="pp-item__price-row">
+                        <span class="pp-item__unit">{{ unit_price }}</span>
+                        {% if unit_compare_price != blank %}
+                          <span class="pp-item__unit-was">{{ unit_compare_price }}</span>
+                        {% endif %}
+                      </div>
+
+                      <button
+                        type="button"
+                        class="pp-item__remove"
+                        aria-label="Remove {{ item.title | escape }} from cart"
+                        on:click="/onLineItemRemove/{{ line_index }}"
+                        {% if can_remove == false %}
+                          hidden
+                        {% endif %}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M18 6 6 18"></path>
+                          <path d="m6 6 12 12"></path>
+                        </svg>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="pp-item__qty-row">
+                    {% render 'quantity-selector',
+                      product: item.product,
+                      variant: item.variant,
+                      in_cart_quantity: item.quantity,
+                      line_index: item.index,
+                      class: 'pp-qty',
+                      can_update_quantity: can_update_quantity
+                    %}
+                  </div>
+
+                  <div class="pp-item__total">
+                    <text-component class="pp-item__total-amount" value="{{ line_price | strip_html }}">{{ line_price }}</text-component>
+                    {% if line_compare_price != blank %}
+                      <span class="pp-item__total-was">{{ line_compare_price }}</span>
+                    {% endif %}
+                    {% if savings_money != blank %}
+                      <span class="pp-item__save-pill">Save {{ savings_money }}</span>
+                    {% endif %}
+
+                    {% if item.line_level_discount_allocations.size > 0 %}
+                      <ul class="pp-item__discounts" role="list" aria-label="Discounts applied">
+                        {% for discount in item.line_level_discount_allocations %}
+                          <li>{{ discount.discount_application.title | escape }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                  </div>
+
+                  <div class="pp-item__error hidden" ref="cartItemErrorContainer-{{ line_index }}">
+                    <div class="cart-item__error" role="alert">
+                      <span class="svg-wrapper" aria-hidden="true">
+                        {{ 'icon-error.svg' | inline_asset_content }}
+                      </span>
+                      <small class="cart-item__error-text" ref="cartItemError-{{ line_index }}"></small>
+                    </div>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          </form>
+
+          <div class="pp-items__foot" id="items-foot">
+            <a href="{{ settings.empty_cart_button_link | default: routes.all_products_collection_url }}" class="pp-continue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m12 19-7-7 7-7"></path>
+                <path d="M19 12H5"></path>
+              </svg>
+              Continue shopping
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+      {% unless cart.empty? %}
+        <aside class="pp-summary" aria-label="Order summary">
+          <h2 class="pp-summary__title">Order Summary</h2>
+
+          <div class="pp-summary__rows">
+            <div class="pp-summary__row">
+              <span class="pp-summary__label">Subtotal</span>
+              <span class="pp-summary__value" id="sum-subtotal">{{ subtotal_money }}</span>
+            </div>
+
+            {% if cart.total_discount > 0 %}
+              <div class="pp-summary__row pp-summary__row--discount">
+                <span class="pp-summary__label">
+                  Discount
+                  {% if cart.cart_level_discount_applications.size == 1 %}
+                    ({{ cart.cart_level_discount_applications.first.title | escape }})
+                  {% elsif discount_codes.size == 1 %}
+                    ({{ discount_codes.first | escape }})
+                  {% endif %}
+                </span>
+                <span class="pp-summary__value">-{{ discount_money }}</span>
+              </div>
+            {% endif %}
+
+            <div class="pp-summary__row">
+              <span class="pp-summary__label">Shipping</span>
+              <span class="pp-summary__value{% unless free_shipping_unlocked %} pp-summary__value--muted{% else %} pp-summary__value--free{% endunless %}" id="sum-shipping">
+                {% if free_shipping_unlocked %}
+                  Free
+                {% else %}
+                  Calculated at checkout
+                {% endif %}
+              </span>
+            </div>
+            <div class="pp-summary__row">
+              <span class="pp-summary__label">Estimated tax</span>
+              <span class="pp-summary__value pp-summary__value--muted">Calculated at checkout</span>
+            </div>
+          </div>
+
+          <div class="pp-summary__divider"></div>
+
+          <div class="pp-summary__total">
+            <span class="pp-summary__total-label">Total</span>
+            <span>
+              <text-component class="pp-summary__total-amount" id="sum-total" ref="cartTotal" value="{{ total_money | strip_html }}">{{ total_money }}</text-component>
+              <span class="pp-summary__total-note">{{ cart_currency_code }} &middot; {{ summary_note | strip }}</span>
+            </span>
+          </div>
+
+          <button class="pp-summary__checkout" id="checkout-btn" type="submit" name="checkout" form="cart-form" aria-label="Proceed to checkout">
+            Checkout securely
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </button>
+
+          {% if additional_checkout_buttons and settings.show_accelerated_checkout_buttons %}
+            <div class="pp-summary__express">
+              {{ content_for_additional_checkout_buttons }}
+            </div>
+          {% endif %}
+
+          <div class="pp-summary__trust">
+            <span class="pp-trust-item">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                <path d="m9 12 2 2 4-4" stroke="#fff" fill="none"></path>
+              </svg>
+              Secure checkout
+            </span>
+            <span class="pp-trust-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 17h4V5H2v12h3"></path>
+                <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
+                <path d="M14 17h1"></path>
+                <circle cx="7.5" cy="17.5" r="2.5"></circle>
+                <circle cx="17.5" cy="17.5" r="2.5"></circle>
+              </svg>
+              {% if free_shipping_threshold_enabled %}
+                Free shipping over {{ threshold_money }}
+              {% else %}
+                Shipping calculated at checkout
+              {% endif %}
+            </span>
+            <span class="pp-trust-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+              Delivery calculated at checkout
+            </span>
+          </div>
+        </aside>
+      {% endunless %}
+    </section>
+
+    {% unless cart.empty? %}
+      <section
+        class="pp-recommend pp-wrap"
+        data-pp-cart-recommendations
+        data-product-ids="{{ recommendation_product_ids }}"
+        data-base-url="{{ routes.product_recommendations_url }}"
+        data-new-tag="{{ recommendation_new_badge_tag | escape }}"
+        data-new-days="{{ settings.new_badge_days | default: 14 }}"
+        {% if first_recommendation_product_id == blank %}
+          hidden
+        {% endif %}
+      >
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2>You may also like</h2>
+            <p class="pp-section-head__sub">Pieces that pair well with your cart</p>
+          </div>
+          <a
+            href="{% if fallback_recommendations_collection != blank %}{{ fallback_recommendations_collection.url }}{% else %}#{% endif %}"
+            class="pp-view-all"
+            {% if fallback_recommendations_collection == blank %}
+              aria-disabled="true"
+            {% endif %}
+          >
+            View all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+        {% if fallback_recommendations_collection != blank %}
+          <script type="application/json" data-pp-cart-fallback-products>
+            [
+              {% for product in fallback_recommendations_collection.products limit: 12 %}
+                {% liquid
+                  assign variant = product.selected_or_first_available_variant
+                  assign rating = product.metafields.reviews.rating.value.rating
+                  assign rating_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count
+                  assign product_is_new = false
+                  assign product_has_sale = false
+                  assign available_variant_count = 0
+                  capture pp_promo
+                    render 'pp-product-promo', product: product, price: variant.price, compare_at: variant.compare_at_price
+                  endcapture
+                  assign pp_promo = pp_promo | strip
+                  if pp_promo contains '|new'
+                    assign product_is_new = true
+                  endif
+                  if pp_promo contains '|sale'
+                    assign product_has_sale = true
+                  endif
+                  for product_variant in product.variants
+                    if product_variant.available
+                      assign available_variant_count = available_variant_count | plus: 1
+                    endif
+                  endfor
+                %}
+                {
+                  "title": {{ product.title | json }},
+                  "url": {{ variant.url | default: product.url | json }},
+                  "type": {{ product.type | json }},
+                  "vendor": {{ product.vendor | json }},
+                  "price": {{ variant.price | json }},
+                  "compare_at_price": {{ variant.compare_at_price | json }},
+                  "featured_image": {{ product.featured_image | image_url: width: 900 | json }},
+                  "available": {{ variant.available | json }},
+                  "variant_id": {{ variant.id | json }},
+                  "variant_count": {{ product.variants.size | json }},
+                  "available_variant_count": {{ available_variant_count | json }},
+                  "rating": {{ rating | json }},
+                  "rating_count": {{ rating_count | json }},
+                  "is_new": {{ product_is_new | json }},
+                  "has_sale_tag": {{ product_has_sale | json }},
+                  "published_at": {{ product.published_at | json }}
+                }{% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            ]
+          </script>
+        {% endif %}
+        <div class="pp-recommend__grid" id="recommend-grid"></div>
+      </section>
+    {% endunless %}
+  </main>
+{% endcapture %}
+
+{% render 'cart-items-component', children: cart_page_content, section_id: section.id %}
+
+{% schema %}
+{
+  "name": "t:names.cart",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    {
+      "type": "text"
+    },
+    {
+      "type": "icon"
+    },
+    {
+      "type": "image"
+    },
+    {
+      "type": "button"
+    },
+    {
+      "type": "video"
+    },
+    {
+      "type": "group"
+    },
+    {
+      "type": "spacer"
+    }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "collection",
+      "id": "recommendations_collection",
+      "label": "Recommendation fallback collection"
+    },
+    {
+      "type": "text",
+      "id": "recommendation_new_badge_tag",
+      "label": "New badge tag",
+      "info": "Optional merchant-controlled product tag that shows the New badge when matched."
+    }
+  ]
+}
+{% endschema %}

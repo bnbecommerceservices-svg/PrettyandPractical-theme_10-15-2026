@@ -1,0 +1,37 @@
+{% if shop.policies.size > 0 %}
+  <nav
+    class="pp-footer-policies"
+    aria-label="{{ 'content.terms_and_policies' | t }}"
+    {{ block.shopify_attributes }}
+  >
+    {% for policy in shop.policies %}
+      {% if policy != blank %}
+        {% capture pp_policy_href %}
+          {% render 'pp-policy-href', url: policy.url %}
+        {% endcapture %}
+        <a href="{{ pp_policy_href | strip }}" class="footer-utilities__text">
+          {{ policy.title | escape }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </nav>
+{% endif %}
+
+{% schema %}
+{
+  "name": "t:names.policy_list",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.manage_policies"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.policy_list",
+      "category": "t:categories.footer"
+    }
+  ]
+}
+{% endschema %}

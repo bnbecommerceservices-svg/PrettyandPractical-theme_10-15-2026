@@ -1,0 +1,7 @@
+{% assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard' %}
+
+<div class="pp-status-card">
+  <h2>Ship this order in Nexus</h2>
+  <p>Add the carrier and tracking number in your Nexus seller portal so the customer can follow the parcel.</p>
+  <a class="pp-vendor-btn" href="{{ nexus_seller_href }}">Open seller portal</a>
+</div>

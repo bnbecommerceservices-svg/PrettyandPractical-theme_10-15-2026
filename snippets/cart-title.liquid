@@ -1,0 +1,36 @@
+{%- doc -%}
+  Cart title snippet used by cart title blocks / docs examples.
+
+  @param {boolean} [force_empty] - Force render empty cart state
+  @param {object} [block] - Optional block for settings and shopify_attributes
+{%- enddoc -%}
+
+{% liquid
+  assign block_settings = block.settings
+  assign title_text = block_settings.title | default: 'Cart'
+  assign alignment = block_settings.alignment | default: 'left'
+  assign type_preset = block_settings.type_preset | default: 'h2'
+  assign show_count = block_settings.show_count
+  if show_count == nil
+    assign show_count = true
+  endif
+%}
+
+<div
+  class="cart-title spacing-style text-{{ alignment }}"
+  {% if block_settings != blank %}
+    style="{% render 'spacing-style', settings: block_settings %}"
+  {% endif %}
+  {% if block %}
+    {{ block.shopify_attributes }}
+  {% endif %}
+>
+  <h1 class="{{ type_preset }}">
+    {%- if cart.empty? or force_empty -%}
+      {{ 'content.your_cart_is_empty' | t }}
+    {%- else -%}
+      {{ title_text }}
+      {%- if show_count -%}{% render 'cart-bubble' %}{%- endif -%}
+    {%- endif -%}
+  </h1>
+</div>

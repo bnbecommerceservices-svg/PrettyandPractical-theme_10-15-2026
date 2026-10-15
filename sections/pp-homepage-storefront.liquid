@@ -1,0 +1,542 @@
+{% liquid
+  assign product_collection = section.settings.products_collection
+  if product_collection == blank
+    assign product_collection = collections.all
+  endif
+
+  assign hero_blocks = section.blocks | where: 'type', 'hero_card'
+  assign trust_blocks = section.blocks | where: 'type', 'trust_item'
+  assign promo_blocks = section.blocks | where: 'type', 'promo'
+  assign room_blocks = section.blocks | where: 'type', 'room'
+  assign shop_category_blocks = section.blocks | where: 'type', 'shop_category'
+  assign testimonial_blocks = section.blocks | where: 'type', 'testimonial'
+%}
+
+{{ 'pp-homepage.css' | asset_url | stylesheet_tag }}
+{% render 'buy-buttons-styles' %}
+
+<div class="pp-homepage" data-pp-homepage>
+  {% if hero_blocks.size > 0 %}
+    <section class="pp-hero" aria-labelledby="pp-hero-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-hero__grid">
+          {% for block in hero_blocks limit: 3 %}
+            {% liquid
+              assign hero_card_is_main = false
+              assign hero_card_image_width = 900
+              assign hero_card_class = ''
+              assign hero_card_shade_class = ''
+              assign hero_card_button_class = 'pp-button--light'
+
+              if forloop.first
+                assign hero_card_is_main = true
+                assign hero_card_image_width = 1800
+                assign hero_card_class = ' pp-hero-card--main'
+                assign hero_card_button_class = 'pp-button--primary'
+              elsif forloop.index == 2
+                assign hero_card_class = ' pp-has-placeholder--warm'
+                assign hero_card_shade_class = ' pp-hero-card__shade--warm'
+              elsif forloop.index == 3
+                assign hero_card_class = ' pp-has-placeholder--green'
+                assign hero_card_shade_class = ' pp-hero-card__shade--green'
+              endif
+            %}
+            <article
+              class="pp-hero-card{{ hero_card_class }} {% if block.settings.link != blank %}is-linked{% else %}is-static{% endif %}{% if block.settings.image == blank %} pp-has-placeholder{% endif %}"
+              {% if block.settings.image != blank %}
+                style="--pp-bg: url('{{ block.settings.image | image_url: width: hero_card_image_width }}');"
+              {% endif %}
+              {{ block.shopify_attributes }}
+            >
+              <div class="pp-hero-card__shade{{ hero_card_shade_class }}"></div>
+              <div class="pp-hero-card__content">
+                {% if block.settings.badge != blank %}
+                  <span class="pp-badge {{ block.settings.badge_style }}">{{ block.settings.badge }}</span>
+                {% endif %}
+                {% if hero_card_is_main %}
+                  <h1 id="pp-hero-title-{{ section.id }}">{{ block.settings.heading }}</h1>
+                {% else %}
+                  <h2>{{ block.settings.heading }}</h2>
+                {% endif %}
+                {% if block.settings.text != blank %}
+                  <p>{{ block.settings.text }}</p>
+                {% endif %}
+                {% if block.settings.link != blank %}
+                  <a class="pp-button {{ hero_card_button_class }}" href="{{ block.settings.link }}">{{ block.settings.button_label }}</a>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if trust_blocks.size > 0 %}
+    <section class="pp-trust" aria-label="{{ section.settings.trust_label | escape }}">
+      <div class="pp-wrap">
+        <div class="pp-trust__grid">
+          {% for block in trust_blocks %}
+            {% liquid
+              assign trust_heading = block.settings.heading | downcase
+              assign trust_text = block.settings.text | downcase
+              assign trust_icon_hint = block.settings.icon | downcase
+              assign trust_icon_key = 'fallback'
+
+              if trust_heading contains 'secure' or trust_heading contains 'protected' or trust_heading contains 'payment' or trust_heading contains 'checkout' or trust_text contains 'secure' or trust_text contains 'protected' or trust_text contains 'payment' or trust_text contains 'checkout'
+                assign trust_icon_key = 'secure'
+              elsif trust_heading contains 'support' or trust_heading contains 'help' or trust_heading contains 'service' or trust_text contains 'support' or trust_text contains 'help' or trust_text contains 'service'
+                assign trust_icon_key = 'support'
+              elsif trust_heading contains 'fresh' or trust_heading contains 'new' or trust_heading contains 'find' or trust_heading contains 'arrival' or trust_heading contains 'discover' or trust_text contains 'fresh' or trust_text contains 'new' or trust_text contains 'find' or trust_text contains 'arrival' or trust_text contains 'discover'
+                assign trust_icon_key = 'fresh'
+              elsif trust_heading contains 'range' or trust_heading contains 'home' or trust_heading contains 'practical' or trust_heading contains 'essential' or trust_text contains 'range' or trust_text contains 'home' or trust_text contains 'practical' or trust_text contains 'essential'
+                assign trust_icon_key = 'range'
+              elsif trust_icon_hint contains 'ok' or trust_icon_hint contains 'lock' or trust_icon_hint contains 'shield'
+                assign trust_icon_key = 'secure'
+              elsif trust_icon_hint contains 'r' or trust_icon_hint contains 'help' or trust_icon_hint contains 'chat'
+                assign trust_icon_key = 'support'
+              elsif trust_icon_hint contains '+' or trust_icon_hint contains 'spark' or trust_icon_hint contains 'new'
+                assign trust_icon_key = 'fresh'
+              elsif trust_icon_hint contains '*' or trust_icon_hint contains 'home' or trust_icon_hint contains 'grid' or trust_icon_hint contains 'box'
+                assign trust_icon_key = 'range'
+              endif
+            %}
+            <div class="pp-trust__item" {{ block.shopify_attributes }}>
+              <span class="pp-trust__icon" aria-hidden="true">
+                {% case trust_icon_key %}
+                  {% when 'secure' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3 5.5 5.9v5.3c0 4.5 2.8 8.6 6.5 9.8 3.7-1.2 6.5-5.3 6.5-9.8V5.9L12 3Z"/>
+                      <path d="m9.5 12.2 1.8 1.8 3.5-3.8"/>
+                    </svg>
+                  {% when 'support' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12a7.5 7.5 0 0 1 15 0"/>
+                      <path d="M6 13.5v2.2a1.8 1.8 0 0 0 1.8 1.8H9v-5.8H7.8A1.8 1.8 0 0 0 6 13.5Z"/>
+                      <path d="M18 13.5v2.2a1.8 1.8 0 0 1-1.8 1.8H15v-5.8h1.2a1.8 1.8 0 0 1 1.8 1.8Z"/>
+                      <path d="M12 19.5h2.5"/>
+                    </svg>
+                  {% when 'fresh' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3.5v4"/>
+                      <path d="M12 16.5v4"/>
+                      <path d="M3.5 12h4"/>
+                      <path d="M16.5 12h4"/>
+                      <path d="m6 6 2.8 2.8"/>
+                      <path d="m15.2 15.2 2.8 2.8"/>
+                      <path d="m18 6-2.8 2.8"/>
+                      <path d="m8.8 15.2-2.8 2.8"/>
+                      <circle cx="12" cy="12" r="2.5"/>
+                    </svg>
+                  {% when 'range' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 10.5 12 4l8 6.5"/>
+                      <path d="M6.5 9.5v9.5h11V9.5"/>
+                      <path d="M10 19v-4.5h4V19"/>
+                    </svg>
+                  {% else %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="5" width="14" height="14" rx="3"/>
+                      <path d="M9 9h6v6H9z"/>
+                    </svg>
+                {% endcase %}
+              </span>
+              <span>
+                <strong>{{ block.settings.heading }}</strong>
+                {% if block.settings.text != blank %}
+                  <small>{{ block.settings.text }}</small>
+                {% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if promo_blocks.size > 0 %}
+    <section class="pp-promos" aria-label="{{ section.settings.promo_label | escape }}">
+      <div class="pp-wrap">
+        <div class="pp-promo-grid">
+          {% for block in promo_blocks limit: 3 %}
+            {% liquid
+              assign promo_url = block.settings.link
+              if block.settings.collection != blank
+                assign promo_url = block.settings.collection.url
+              endif
+            %}
+            <article
+              class="pp-promo-card {% if promo_url != blank %}is-linked{% else %}is-static{% endif %}{% if block.settings.image == blank %} pp-has-placeholder{% endif %}"
+              {% if block.settings.image != blank %}
+                style="--pp-bg: url('{{ block.settings.image | image_url: width: 900 }}');"
+              {% endif %}
+              {{ block.shopify_attributes }}
+            >
+              <div class="pp-promo-card__shade"></div>
+              <div class="pp-promo-card__content">
+                {% if block.settings.kicker != blank %}
+                  <span>{{ block.settings.kicker }}</span>
+                {% endif %}
+                <h2>{{ block.settings.heading }}</h2>
+                {% if promo_url != blank %}
+                  <a class="pp-button pp-button--glass" href="{{ promo_url }}">{{ block.settings.button_label }}</a>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="pp-products" aria-labelledby="pp-products-title-{{ section.id }}">
+    <div class="pp-wrap">
+      <div class="pp-section-heading">
+        <div>
+          <h2 id="pp-products-title-{{ section.id }}">{{ section.settings.products_heading }}</h2>
+          {% if section.settings.products_subheading != blank %}
+            <p>{{ section.settings.products_subheading }}</p>
+          {% endif %}
+        </div>
+        {% if product_collection.url != blank %}
+          <a class="pp-text-link" href="{{ product_collection.url }}">{{ section.settings.products_link_label }}</a>
+        {% endif %}
+      </div>
+
+      <div class="pp-products__grid">
+        {% if product_collection != blank and product_collection.products_count > 0 %}
+          {% for product in product_collection.products limit: section.settings.product_limit %}
+            {% liquid
+              assign variant = product.selected_or_first_available_variant
+              assign homepage_card_image = product.featured_media.preview_image | default: product.featured_image
+              assign has_sale = false
+              capture pp_promo
+                render 'pp-product-promo', product: product, price: product.price, compare_at: product.compare_at_price_max
+              endcapture
+              assign pp_promo = pp_promo | strip
+              if pp_promo contains '|sale'
+                assign has_sale = true
+              endif
+              assign can_direct_add = false
+              if product.variants_count == 1 and variant.available
+                assign can_direct_add = true
+              endif
+              assign use_quick_add = false
+              if product.variants_count > 1
+                if settings.quick_add or settings.mobile_quick_add
+                  assign use_quick_add = true
+                endif
+              endif
+              assign product_form_id = 'pp-product-form-' | append: section.id | append: '-' | append: product.id
+            %}
+            <product-card class="pp-product-card" data-product-id="{{ product.id }}">
+              <a class="pp-product-card__link" href="{{ product.url }}" ref="productCardLink" aria-label="{{ product.title | escape }}"></a>
+              <a class="pp-product-card__media" href="{{ product.url }}" aria-hidden="true" tabindex="-1">
+                {% if homepage_card_image != blank %}
+                  {{
+                    homepage_card_image
+                    | image_url: width: 620
+                    | image_tag:
+                      class: 'pp-product-card__image',
+                      loading: 'lazy',
+                      widths: '240, 320, 420, 540, 620',
+                      sizes: '(min-width: 1200px) 20vw, (min-width: 750px) 33vw, 50vw',
+                      alt: product.title
+                  }}
+                {% else %}
+                  <span class="pp-product-card__placeholder"></span>
+                {% endif %}
+                {% if has_sale %}
+                  <span class="pp-sale-badge">{{ section.settings.sale_badge_label }}</span>
+                {% elsif product.available == false %}
+                  <span class="pp-sale-badge pp-sale-badge--muted">{{ section.settings.sold_out_badge_label }}</span>
+                {% endif %}
+              </a>
+              <div class="pp-product-card__body">
+                <a class="pp-product-card__title" href="{{ product.url }}">{{ product.title }}</a>
+                <div class="pp-product-card__price">
+                  <span>{{ product.price | money }}</span>
+                  {% if has_sale %}
+                    <s>{{ product.compare_at_price_max | money }}</s>
+                  {% endif %}
+                </div>
+                <div class="pp-product-card__action">
+                  {% if can_direct_add %}
+                    <product-form-component
+                      id="pp-product-form-component-{{ section.id }}-{{ product.id }}"
+                      data-section-id="{{ section.id }}"
+                      data-product-id="{{ product.id }}"
+                      on:submit="/handleSubmit"
+                    >
+                      <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+                      {% form 'product', product, id: product_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' %}
+                        <input type="hidden" name="id" ref="variantId" value="{{ variant.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        {% render 'add-to-cart-button',
+                          add_to_cart_text: section.settings.add_to_cart_label,
+                          class: 'pp-product-atc add-to-cart-button',
+                          can_add_to_cart: true,
+                          product: product
+                        %}
+                      {% endform %}
+                    </product-form-component>
+                  {% elsif use_quick_add %}
+                    {% render 'quick-add', product: product, section_id: section.id, block: section %}
+                  {% else %}
+                    <a class="pp-product-option-link" href="{{ product.url }}">
+                      {% if product.available %}{{ section.settings.choose_options_label }}{% else %}{{ section.settings.view_product_label }}{% endif %}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </product-card>
+          {% endfor %}
+        {% else %}
+          <div class="pp-products__empty">
+            <p>{{ section.settings.empty_products_text }}</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if room_blocks.size > 0 %}
+    <section class="pp-rooms" aria-labelledby="pp-rooms-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-heading">
+          <div>
+            <h2 id="pp-rooms-title-{{ section.id }}">{{ section.settings.rooms_heading }}</h2>
+            {% if section.settings.rooms_subheading != blank %}
+              <p>{{ section.settings.rooms_subheading }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="pp-room-row">
+          {% for block in room_blocks %}
+            {% liquid
+              assign room_url = block.settings.link
+              if block.settings.collection != blank
+                assign room_url = block.settings.collection.url
+              endif
+            %}
+            <article
+              class="pp-room-card {% if room_url != blank %}is-linked{% else %}is-static{% endif %}{% if block.settings.image == blank %} pp-has-placeholder{% endif %}"
+              {% if block.settings.image != blank %}
+                style="--pp-bg: url('{{ block.settings.image | image_url: width: 900 }}');"
+              {% endif %}
+              {{ block.shopify_attributes }}
+            >
+              <div class="pp-room-card__shade"></div>
+              <div class="pp-room-card__content">
+                <h3>{{ block.settings.heading }}</h3>
+                {% if block.settings.text != blank %}
+                  <p>{{ block.settings.text }}</p>
+                {% endif %}
+                {% if room_url != blank %}
+                  <a class="pp-button pp-button--glass" href="{{ room_url }}">{{ block.settings.button_label }}</a>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if shop_category_blocks.size > 0 %}
+    <section class="pp-shop-categories" aria-labelledby="pp-shop-categories-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-heading">
+          <div>
+            <h2 id="pp-shop-categories-title-{{ section.id }}">{{ section.settings.categories_heading }}</h2>
+            {% if section.settings.categories_subheading != blank %}
+              <p>{{ section.settings.categories_subheading }}</p>
+            {% endif %}
+          </div>
+          {% if section.settings.categories_link != blank %}
+            <a class="pp-text-link" href="{{ section.settings.categories_link }}">{{ section.settings.categories_link_label }}</a>
+          {% endif %}
+        </div>
+        <div class="pp-shop-categories__grid">
+          {% for block in shop_category_blocks %}
+            {% liquid
+              assign shop_category_url = block.settings.link
+              if block.settings.collection != blank
+                assign shop_category_url = block.settings.collection.url
+              endif
+            %}
+            {% if shop_category_url != blank %}
+              <a class="pp-shop-category is-linked" href="{{ shop_category_url }}" {{ block.shopify_attributes }}>
+            {% else %}
+              <div class="pp-shop-category is-static" {{ block.shopify_attributes }}>
+            {% endif %}
+              <span class="pp-shop-category__image">
+                {% if block.settings.image != blank %}
+                  {{ block.settings.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: block.settings.label }}
+                {% elsif block.settings.collection.featured_image != blank %}
+                  {{ block.settings.collection.featured_image | image_url: width: 300 | image_tag: loading: 'lazy', alt: block.settings.label }}
+                {% else %}
+                  <span></span>
+                {% endif %}
+              </span>
+              <strong>{{ block.settings.label }}</strong>
+              {% if block.settings.text != blank %}
+                <small>{{ block.settings.text }}</small>
+              {% endif %}
+            {% if shop_category_url != blank %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if testimonial_blocks.size > 0 %}
+    <section class="pp-testimonials" aria-labelledby="pp-testimonials-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-heading">
+          <div>
+            <h2 id="pp-testimonials-title-{{ section.id }}">{{ section.settings.testimonials_heading }}</h2>
+            {% if section.settings.testimonials_subheading != blank %}
+              <p>{{ section.settings.testimonials_subheading }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="pp-testimonials__row">
+          {% for block in testimonial_blocks %}
+            <article class="pp-testimonial" {{ block.shopify_attributes }}>
+              <p>{{ block.settings.quote }}</p>
+              <strong>{{ block.settings.author }}</strong>
+              {% if block.settings.context != blank %}
+                <small>{{ block.settings.context }}</small>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+</div>
+
+{% schema %}
+{
+  "name": "Storefront Home",
+  "settings": [
+    { "type": "text", "id": "trust_label", "label": "Trust strip aria label", "default": "Store benefits" },
+    { "type": "text", "id": "promo_label", "label": "Promo aria label", "default": "Featured promotions" },
+    { "type": "collection", "id": "products_collection", "label": "Products collection" },
+    { "type": "range", "id": "product_limit", "label": "Product count", "min": 4, "max": 15, "step": 1, "default": 10 },
+    { "type": "text", "id": "products_heading", "label": "Products heading", "default": "Shop Top Sellers" },
+    { "type": "text", "id": "products_subheading", "label": "Products subheading", "default": "A selection of customer favourites from the store." },
+    { "type": "text", "id": "products_link_label", "label": "Products link label", "default": "View All Products" },
+    { "type": "text", "id": "sale_badge_label", "label": "Sale badge", "default": "Sale" },
+    { "type": "text", "id": "sold_out_badge_label", "label": "Sold out badge", "default": "Sold out" },
+    { "type": "text", "id": "add_to_cart_label", "label": "Add to cart label", "default": "Add to Cart" },
+    { "type": "text", "id": "choose_options_label", "label": "Choose options label", "default": "Choose Options" },
+    { "type": "text", "id": "view_product_label", "label": "View product label", "default": "View Product" },
+    { "type": "text", "id": "empty_products_text", "label": "Empty products text", "default": "Select a collection with products to show this section." },
+    { "type": "text", "id": "rooms_heading", "label": "Rooms heading", "default": "Shop by Room" },
+    { "type": "text", "id": "rooms_subheading", "label": "Rooms subheading", "default": "Curated ideas for every part of home." },
+    { "type": "text", "id": "categories_heading", "label": "Categories heading", "default": "Shop by Category" },
+    { "type": "text", "id": "categories_subheading", "label": "Categories subheading", "default": "Browse departments across the store." },
+    { "type": "url", "id": "categories_link", "label": "Categories link" },
+    { "type": "text", "id": "categories_link_label", "label": "Categories link label", "default": "All Categories" },
+    { "type": "text", "id": "testimonials_heading", "label": "Testimonials heading", "default": "Customer Stories" },
+    { "type": "text", "id": "testimonials_subheading", "label": "Testimonials subheading", "default": "Real quotes added by the store team." }
+  ],
+  "blocks": [
+    {
+      "type": "hero_card",
+      "name": "Hero card",
+      "limit": 3,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        {
+          "type": "select",
+          "id": "badge_style",
+          "label": "Badge style",
+          "default": "pp-badge--orange",
+          "options": [
+            { "value": "pp-badge--orange", "label": "Orange" },
+            { "value": "pp-badge--gold", "label": "Gold" },
+            { "value": "pp-badge--green", "label": "Green" }
+          ]
+        },
+        { "type": "text", "id": "badge", "label": "Badge", "default": "Featured" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Hero card" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Add a short supporting message for this homepage card." },
+        { "type": "url", "id": "link", "label": "Link" },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop now" }
+      ]
+    },
+    {
+      "type": "trust_item",
+      "name": "Trust item",
+      "limit": 4,
+      "settings": [
+        { "type": "text", "id": "icon", "label": "Icon", "default": "OK" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Store benefit" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Editable supporting text" }
+      ]
+    },
+    {
+      "type": "promo",
+      "name": "Promo card",
+      "limit": 3,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "kicker", "label": "Kicker", "default": "Featured" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Promo card" },
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "url", "id": "link", "label": "Fallback link" },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop Now" }
+      ]
+    },
+    {
+      "type": "room",
+      "name": "Room card",
+      "limit": 8,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Room" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Editable room description" },
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "url", "id": "link", "label": "Fallback link" },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop This Look" }
+      ]
+    },
+    {
+      "type": "shop_category",
+      "name": "Category card",
+      "limit": 12,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Category" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Browse products" },
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "url", "id": "link", "label": "Fallback link" }
+      ]
+    },
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "limit": 10,
+      "settings": [
+        { "type": "textarea", "id": "quote", "label": "Quote" },
+        { "type": "text", "id": "author", "label": "Author" },
+        { "type": "text", "id": "context", "label": "Context" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pretty homepage storefront",
+      "category": "Homepage"
+    }
+  ]
+}
+{% endschema %}

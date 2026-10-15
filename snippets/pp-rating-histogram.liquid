@@ -1,0 +1,54 @@
+{% doc %}
+Amazon-style star histogram.
+@param {string} [rating] - Average rating
+@param {string} [count] - Total review count
+@param {boolean} [show_cta] - Show see-all / write-review actions
+{% enddoc %}
+{%- liquid
+  assign hist_rating = rating | default: '4.8'
+  assign hist_count = count | default: '127'
+  assign hist_show_cta = show_cta | default: false, allow_false: true
+-%}
+<div class="pp-hist" data-pp-histogram>
+  <div class="pp-hist__top">
+    <span class="pp-hist__score">{{ hist_rating }}</span>
+    <div>
+      <span class="pp-stars pp-hist__stars" aria-hidden="true">
+        {% for i in (1..5) %}
+          <svg viewBox="0 0 24 24" class="star-fill" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+        {% endfor %}
+      </span>
+      <p class="pp-hist__based">Based on {{ hist_count }} reviews</p>
+    </div>
+  </div>
+  <ul class="pp-hist__bars" aria-label="Rating breakdown">
+    <li class="pp-hist__row">
+      <span class="pp-hist__label">5 star</span>
+      <span class="pp-hist__track"><span class="pp-hist__fill" style="width:85%"></span></span>
+      <span class="pp-hist__count">108</span>
+    </li>
+    <li class="pp-hist__row">
+      <span class="pp-hist__label">4 star</span>
+      <span class="pp-hist__track"><span class="pp-hist__fill" style="width:11%"></span></span>
+      <span class="pp-hist__count">14</span>
+    </li>
+    <li class="pp-hist__row">
+      <span class="pp-hist__label">3 star</span>
+      <span class="pp-hist__track"><span class="pp-hist__fill" style="width:2%"></span></span>
+      <span class="pp-hist__count">3</span>
+    </li>
+    <li class="pp-hist__row">
+      <span class="pp-hist__label">2 star</span>
+      <span class="pp-hist__track"><span class="pp-hist__fill" style="width:1%"></span></span>
+      <span class="pp-hist__count">1</span>
+    </li>
+    <li class="pp-hist__row">
+      <span class="pp-hist__label">1 star</span>
+      <span class="pp-hist__track"><span class="pp-hist__fill" style="width:1%"></span></span>
+      <span class="pp-hist__count">1</span>
+    </li>
+  </ul>
+  {% if hist_show_cta %}
+    <a class="pp-hist__link" href="#reviews">See all customer reviews</a>
+  {% endif %}
+</div>

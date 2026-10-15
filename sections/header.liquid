@@ -1,0 +1,179 @@
+{% liquid
+  assign menu_block = blank
+
+  for block in section.blocks
+    if block.type == '_header-menu'
+      assign menu_block = block
+    endif
+  endfor
+
+  assign main_menu_handle = blank
+  if menu_block
+    assign main_menu_handle = menu_block.settings.menu
+  endif
+
+  assign category_menu_handle = section.settings.category_menu
+  if category_menu_handle == blank
+    assign category_menu_handle = main_menu_handle
+  endif
+
+  assign category_menu = section.settings.category_menu
+  if category_menu != blank and category_menu.links == blank
+    assign category_menu = linklists[category_menu]
+  endif
+  if category_menu == blank and category_menu_handle != blank
+    assign category_menu = linklists[category_menu_handle]
+  endif
+
+  assign announcement_blocks = section.blocks | where: 'type', '_announcement'
+  assign category_blocks = section.blocks | where: 'type', 'category_link'
+%}
+
+{% render 'pp-site-header',
+  section: section,
+  header_section: section,
+  announcements: announcement_blocks,
+  utility_menu: section.settings.utility_menu,
+  utility_menu_label: section.settings.utility_menu_label,
+  announcement_label: section.settings.announcements_label,
+  container_class: 'pp-wrap',
+  category_menu: category_menu,
+  category_menu_handle: category_menu_handle,
+  category_blocks: category_blocks,
+  main_menu_handle: main_menu_handle,
+  show_search: section.settings.show_search,
+  search_placeholder: section.settings.search_placeholder,
+  search_button_label: 'Search',
+  category_nav_label: section.settings.category_nav_label,
+  wishlist_link: section.settings.wishlist_link,
+  wishlist_label: section.settings.wishlist_label,
+  alerts_link: section.settings.alerts_link,
+  alerts_label: section.settings.alerts_label,
+  alerts_badge_text: section.settings.alerts_badge_text
+%}
+
+{% schema %}
+{
+  "name": "t:names.header",
+  "class": "header-section",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "select",
+      "id": "enable_sticky_header",
+      "label": "Sticky header",
+      "options": [
+        {
+          "value": "none",
+          "label": "Disabled"
+        },
+        {
+          "value": "scroll-up",
+          "label": "Show on scroll up"
+        },
+        {
+          "value": "always",
+          "label": "Always visible"
+        }
+      ],
+      "default": "always"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search placeholder",
+      "default": "Search furniture, outdoor, kitchen, toys, pets & more..."
+    },
+    {
+      "type": "text",
+      "id": "logo_tagline",
+      "label": "Logo tagline",
+      "default": "Australia's Home Store"
+    },
+    {
+      "type": "link_list",
+      "id": "utility_menu",
+      "label": "Utility menu"
+    },
+    {
+      "type": "text",
+      "id": "announcements_label",
+      "label": "Announcements label",
+      "default": "Store updates"
+    },
+    {
+      "type": "text",
+      "id": "utility_menu_label",
+      "label": "Utility menu label",
+      "default": "Utility navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "category_menu",
+      "label": "Category menu"
+    },
+    {
+      "type": "text",
+      "id": "category_nav_label",
+      "label": "Category navigation label",
+      "default": "Shop categories"
+    },
+    {
+      "type": "link_list",
+      "id": "customer_account_menu",
+      "label": "Customer account menu"
+    },
+    {
+      "type": "url",
+      "id": "alerts_link",
+      "label": "Alerts link"
+    },
+    {
+      "type": "text",
+      "id": "alerts_label",
+      "label": "Alerts label",
+      "default": "Alerts"
+    },
+    {
+      "type": "text",
+      "id": "alerts_badge_text",
+      "label": "Alerts badge text"
+    },
+    {
+      "type": "url",
+      "id": "wishlist_link",
+      "label": "Wishlist link"
+    },
+    {
+      "type": "text",
+      "id": "wishlist_label",
+      "label": "Wishlist label",
+      "default": "Wishlist"
+    }
+  ]
+}
+{% endschema %}

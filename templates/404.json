@@ -1,0 +1,33 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-404",
+      "settings": {
+        "furniture_url": "",
+        "outdoor_url": "",
+        "kitchen_url": "",
+        "decor_url": "",
+        "bath_url": "",
+        "baby_kids_url": "",
+        "toys_url": "",
+        "hobbies_url": "",
+        "sports_url": "",
+        "pets_url": "",
+        "lighting_url": "",
+        "bedding_url": ""
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

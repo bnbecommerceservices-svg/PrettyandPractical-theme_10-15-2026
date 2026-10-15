@@ -1,0 +1,61 @@
+{{ 'pp-account.css' | asset_url | stylesheet_tag }}
+
+<section class="pp-account pp-account-body" {{ section.shopify_attributes }}>
+  <div class="pp-wrap">
+    <div class="pp-account-auth">
+      <div class="pp-account-auth__banner pp-account-auth__banner--media">
+        <span class="pp-account-auth__media" aria-hidden="true">
+          {% if section.settings.image != blank %}
+            {{ section.settings.image | image_url: width: 1200 | image_tag: loading: 'eager', alt: '' }}
+          {% else %}
+            <img src="{{ 'pp-banner-living.jpg' | asset_url }}" alt="" width="1200" height="900" loading="eager">
+          {% endif %}
+        </span>
+        <div class="pp-account-auth__banner-copy">
+          <p class="pp-account-hero__brand" style="margin-bottom:18px">pretty<span>&amp;</span>practical</p>
+          <h1>Join Pretty &amp; Practical</h1>
+          <p>Create an account to track deliveries, save addresses, and shop home essentials faster.</p>
+        </div>
+      </div>
+      <div class="pp-account-auth__form">
+        <h2>Create account</h2>
+        <p class="pp-account-panel__sub">Takes less than a minute.</p>
+        {% form 'create_customer' %}
+          {% if form.errors %}
+            <div class="pp-account-errors" role="alert">{{ form.errors | default_errors }}</div>
+          {% endif %}
+          <div class="pp-account-field">
+            <label for="RegisterFirstName">First name</label>
+            <input id="RegisterFirstName" type="text" name="customer[first_name]" autocomplete="given-name" value="{{ form.first_name | escape }}">
+          </div>
+          <div class="pp-account-field">
+            <label for="RegisterLastName">Last name</label>
+            <input id="RegisterLastName" type="text" name="customer[last_name]" autocomplete="family-name" value="{{ form.last_name | escape }}">
+          </div>
+          <div class="pp-account-field">
+            <label for="RegisterEmail">Email</label>
+            <input id="RegisterEmail" type="email" name="customer[email]" autocomplete="email" required value="{{ form.email | escape }}">
+          </div>
+          <div class="pp-account-field">
+            <label for="RegisterPassword">Password</label>
+            <input id="RegisterPassword" type="password" name="customer[password]" autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="pp-account-btn pp-account-btn--primary" style="width:100%;justify-content:center">Create account</button>
+        {% endform %}
+        <div class="pp-account-auth__links">
+          Already have an account? <a href="{{ routes.account_login_url }}">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PP Customer Register",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Banner image" }
+  ],
+  "presets": [{ "name": "PP Customer Register" }]
+}
+{% endschema %}

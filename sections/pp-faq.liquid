@@ -1,0 +1,284 @@
+{% liquid
+  assign pp_show = false
+  assign page_handle = page.handle | default: ''
+  if template.suffix == 'faq'
+    assign pp_show = true
+  elsif page_handle == 'faq' or page_handle == 'faqs'
+    assign pp_show = true
+  endif
+%}
+{% if pp_show %}
+{{ 'pp-faq.css' | asset_url | stylesheet_tag }}
+{{ 'pp-policy-toc.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pp-faq.js' | asset_url }}" defer></script>
+<script src="{{ 'pp-policy-toc.js' | asset_url }}" defer></script>
+
+{% assign pp_faq_contact_url = pages['contact'].url | default: '/pages/contact' %}
+
+<section class="pp-faq">
+  <div class="pp-wrap">
+    <header class="faq-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a><span aria-hidden="true" style="margin:0 6px;">›</span>FAQ
+      </nav>
+      <h1>Frequently Asked Questions</h1>
+      <p class="lead">Quick answers to common questions about ordering, shipping, returns and more. Can't find what you need? <a href="{{ pp_faq_contact_url }}">Contact us</a> — we're happy to help.</p>
+    </header>
+
+    <div class="page-layout">
+      <aside class="sidebar" aria-label="On this page">
+        <p class="toc-label">ON THIS PAGE</p>
+        <ul class="toc-list">
+          <li><a href="#cat-orders">Orders &amp; Payment</a></li>
+          <li><a href="#cat-shipping">Shipping &amp; Delivery</a></li>
+          <li><a href="#cat-returns">Returns &amp; Refunds</a></li>
+          <li><a href="#cat-general">General</a></li>
+        </ul>
+      </aside>
+
+    <main class="faq-main pp-faq-content" id="main-content">
+      <section class="faq-category" id="cat-orders" aria-labelledby="cat-orders-heading">
+        <div class="category-heading">
+          <span class="category-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </span>
+          <h2 id="cat-orders-heading">Orders &amp; Payment</h2>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-ord-1" aria-expanded="true" aria-controls="ans-ord-1">
+            <span class="accordion-question">How can I order multiple items?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer is-open" id="ans-ord-1" role="region" aria-labelledby="q-ord-1">
+            <div class="accordion-answer-inner">
+              You can add your orders in the cart. Once you are done with your shopping you may see your orders at My cart section on our page.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-ord-2" aria-expanded="false" aria-controls="ans-ord-2">
+            <span class="accordion-question">Can I modify or cancel my order after placing it?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-ord-2" role="region" aria-labelledby="q-ord-2">
+            <div class="accordion-answer-inner">
+              Once an order is placed, it is processed quickly to ensure timely delivery. Unfortunately, we cannot modify or cancel orders once they have been shipped. Please double check your order before completing the purchase.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-ord-3" aria-expanded="false" aria-controls="ans-ord-3">
+            <span class="accordion-question">Can I change my shipping address after placing order?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-ord-3" role="region" aria-labelledby="q-ord-3">
+            <div class="accordion-answer-inner">
+              You may change the shipping address as soon as possible by contacting us. We will try to change it with our delivery partners.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-ord-4" aria-expanded="false" aria-controls="ans-ord-4">
+            <span class="accordion-question">What payment methods do you accept?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-ord-4" role="region" aria-labelledby="q-ord-4">
+            <div class="accordion-answer-inner">
+              We offer payments via Visa, MasterCard, American Express, Google Pay, Apple Pay, PayPal, ZipPay, Afterpay, UnionPay and ShopPay.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq-category" id="cat-shipping" aria-labelledby="cat-shipping-heading">
+        <div class="category-heading">
+          <span class="category-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </span>
+          <h2 id="cat-shipping-heading">Shipping &amp; Delivery</h2>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-shp-1" aria-expanded="true" aria-controls="ans-shp-1">
+            <span class="accordion-question">How much is the shipping cost for delivery?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer is-open" id="ans-shp-1" role="region" aria-labelledby="q-shp-1">
+            <div class="accordion-answer-inner">
+              The shipping cost is free for all orders. Currently, we only ship in Australia.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-shp-2" aria-expanded="false" aria-controls="ans-shp-2">
+            <span class="accordion-question">How can I track my order?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-shp-2" role="region" aria-labelledby="q-shp-2">
+            <div class="accordion-answer-inner">
+              Once your order is dispatched, you will receive a tracking number. You can use this number to track your package on our website or the courier's website.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-shp-3" aria-expanded="false" aria-controls="ans-shp-3">
+            <span class="accordion-question">How much time it takes to ship the product?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-shp-3" role="region" aria-labelledby="q-shp-3">
+            <div class="accordion-answer-inner">
+              We generally take 1-2 business days(Mon-Fri) to ship and 7-15 business days(Mon-Fri) to transit.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-shp-4" aria-expanded="false" aria-controls="ans-shp-4">
+            <span class="accordion-question">Do you offer international shipping?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-shp-4" role="region" aria-labelledby="q-shp-4">
+            <div class="accordion-answer-inner">
+              At present, we do not offer international shipping.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq-category" id="cat-returns" aria-labelledby="cat-returns-heading">
+        <div class="category-heading">
+          <span class="category-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+            </svg>
+          </span>
+          <h2 id="cat-returns-heading">Returns &amp; Refunds</h2>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-ret-1" aria-expanded="true" aria-controls="ans-ret-1">
+            <span class="accordion-question">What happens if I receive a faulty or broken item?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer is-open" id="ans-ret-1" role="region" aria-labelledby="q-ret-1">
+            <div class="accordion-answer-inner">
+              If an item arrives and the packaging or the item itself is clearly and significantly damaged/faulty, you should take photos or video showing the damage/fault and contact us immediately. We'll share your feedback with our delivery partners and suppliers to ensure our service and the quality of packaging is improved.
+              <br><br>
+              If you notice that an item is damaged/faulty after it has been delivered to you, please take photos or video clearly showing the damage/fault and contact us as soon as possible.
+              <br><br>
+              We will refund or replace the product with a new one.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-ret-2" aria-expanded="false" aria-controls="ans-ret-2">
+            <span class="accordion-question">What should I do if I receive a damaged product?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-ret-2" role="region" aria-labelledby="q-ret-2">
+            <div class="accordion-answer-inner">
+              We are sorry that you received a damaged product. Kindly keep the item in the condition you received it and contact us. We will make sure that you receive the correct product.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq-category" id="cat-general" aria-labelledby="cat-general-heading">
+        <div class="category-heading">
+          <span class="category-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
+          <h2 id="cat-general-heading">General</h2>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-gen-1" aria-expanded="true" aria-controls="ans-gen-1">
+            <span class="accordion-question">How can I stay updated on promotions and new arrivals?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer is-open" id="ans-gen-1" role="region" aria-labelledby="q-gen-1">
+            <div class="accordion-answer-inner">
+              To stay informed about our latest promotions, discounts, and new arrivals, follow our social media handles. You may subscribe our newsletter for more updates.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-button" id="q-gen-2" aria-expanded="false" aria-controls="ans-gen-2">
+            <span class="accordion-question">How can I contact customer service?</span>
+            <svg class="accordion-caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="accordion-answer" id="ans-gen-2" role="region" aria-labelledby="q-gen-2">
+            <div class="accordion-answer-inner">
+              You may reach out to us via our email contact@prettyandpractical.com.au or customer service phone: +61 411 597 261. Our office is at Suite 1.01, Level 1, 4 Burbank Place, Norwest NSW 2153.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="faq-cta">
+        <p>Can't find the answer you need? Our team is here to help.</p>
+        <a href="{{ pp_faq_contact_url }}" class="btn-contact">Contact us</a>
+      </div>
+    </main>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "PP FAQ",
+  "settings": [],
+  "presets": [
+    {
+      "name": "PP FAQ"
+    }
+  ]
+}
+{% endschema %}

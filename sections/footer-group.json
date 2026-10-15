@@ -1,0 +1,67 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer",
+  "sections": {
+    "footer_m9NzUG": {
+      "type": "footer",
+      "settings": {
+        "section_width": "page-width",
+        "show_newsletter": false,
+        "newsletter_eyebrow": "",
+        "newsletter_heading": "Sign up for our newsletter and be the first to know about coupons and special promotions",
+        "newsletter_subtext": "",
+        "newsletter_placeholder": "Email",
+        "newsletter_button_label": "Subscribe",
+        "logo_tagline": "Australia's Home Store",
+        "brand_text": "Your destination for stylish, functional, and high-quality home and lifestyle products.",
+        "footer_brand_description": "We believe that your home is more than just a place; it's a reflection of your style, personality, and the memories you create within its walls. That's why we're dedicated to helping you transform your living spaces into functional and beautiful sanctuaries, one piece of furniture or decor item at a time.",
+        "menu_legal": "",
+        "privacy_policy_url": "/policies/privacy-policy",
+        "refund_policy_url": "/policies/refund-policy",
+        "shipping_policy_url": "/policies/shipping-policy",
+        "terms_policy_url": "/policies/terms-of-service",
+        "contact_information_url": "/policies/contact-information",
+        "heading_explore": "Explore",
+        "menu_explore": "main-menu",
+        "heading_help": "Help",
+        "menu_help": "",
+        "help_faq_url": "/pages/faq",
+        "help_about_url": "/pages/about-us",
+        "help_contact_url": "/pages/contact-us",
+        "help_search_url": "/search",
+        "help_blogs_url": "/blogs/news",
+        "help_track_url": "/account",
+        "heading_account": "My Account",
+        "menu_account": "",
+        "heading_company": "Company",
+        "menu_company": "",
+        "contact_lead": "Reach out to us on below details:",
+        "contact_phone": "+61 411597261",
+        "contact_email": "contact@prettyandpractical.com.au",
+        "contact_hours": "Mon–Fri: 9am–6pm · Sat: 10am–4pm AEST",
+        "contact_address": "Suite 1.01, Level 1, 4 Burbank Place, Norwest NSW 2153",
+        "contact_maps_url": "https://www.google.com/maps/place/Pretty+and+Practical/@-33.7330975,150.9580407,17z",
+        "acknowledgement_text": "We acknowledge the Traditional Owners and Custodians of Country throughout Australia. We pay our respect to all First Nations peoples and acknowledge Elders past and present.",
+        "facebook_url": "https://www.facebook.com/prettyandpracticalOZ",
+        "instagram_url": "https://www.instagram.com/prettyandpracticalau",
+        "youtube_url": "",
+        "tiktok_url": "",
+        "twitter_url": "",
+        "linkedin_url": "",
+        "pinterest_url": ""
+      }
+    }
+  },
+  "order": [
+    "footer_m9NzUG"
+  ]
+}

@@ -1,0 +1,177 @@
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+<script
+  src="{{ 'product-recommendations.js' | asset_url }}"
+  type="module"
+></script>
+
+{% assign related_products = recommendations.products %}
+
+<product-recommendations
+  id="product-recommendations-{{ section.id }}"
+  class="product-recommendations"
+  data-url="{{ routes.product_recommendations_url }}?limit=4"
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-intent="{{ section.settings.intent }}"
+  data-recommendations-performed="{{ recommendations.performed }}"
+  data-hydration-key="product-recommendations-{{ section.id }}"
+  data-testid="product-recommendations-section"
+>
+  {% if recommendations.performed and related_products != blank and recommendations.products_count > 0 %}
+    {% assign rendered_count = 0 %}
+    {% capture related_cards %}
+      {% for related_product in related_products %}
+        {% if related_product.id != product.id and rendered_count < 4 %}
+          {% liquid
+            assign card_variant = related_product.selected_or_first_available_variant
+            assign card_compare_at_price = card_variant.compare_at_price
+            assign card_on_sale = false
+            assign show_quick_add = false
+            assign show_new_badge = false
+            assign card_image = related_product.featured_image
+            assign rating = related_product.metafields.reviews.rating.value.rating
+            assign rating_count = related_product.metafields.reviews.rating_count.value | default: related_product.metafields.reviews.rating_count
+            assign rating_fill = rating | floor
+            capture pp_promo
+              render 'pp-product-promo', product: related_product, price: card_variant.price, compare_at: card_compare_at_price
+            endcapture
+            assign pp_promo = pp_promo | strip
+            if pp_promo contains '|sale'
+              assign card_on_sale = true
+            endif
+            if pp_promo contains '|new'
+              assign show_new_badge = true
+            endif
+
+            if related_product.variants.size == 1 and card_variant != blank and card_variant.available
+              assign show_quick_add = true
+            endif
+          %}
+          <article class="pp-card">
+            <div class="pp-card__image">
+              <div class="pp-card__badges">
+                {% if card_on_sale %}
+                  <span class="pp-pill pp-pill--sale">Sale</span>
+                {% endif %}
+                {% if show_new_badge %}
+                  <span class="pp-pill pp-pill--new">New</span>
+                {% endif %}
+              </div>
+              <button
+                type="button"
+                class="pp-wishlist"
+                data-pp-wishlist
+                data-wishlist-label="wishlist"
+                data-product-id="{{ related_product.id }}"
+                data-product-handle="{{ related_product.handle | escape }}"
+                data-product-title="{{ related_product.title | escape }}"
+                data-product-url="{{ related_product.url }}"
+                data-product-image="{% if card_image %}{{ card_image | image_url: width: 600 }}{% endif %}"
+                data-product-price="{{ card_variant.price | money }}"
+                aria-label="Add {{ related_product.title | escape }} to wishlist"
+                aria-pressed="false"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path></svg>
+              </button>
+              <a href="{{ related_product.url }}" class="pp-card__image-inner" aria-label="{{ related_product.title | escape }}">
+                {% if card_image %}
+                  {{
+                    card_image
+                    | image_url: width: 900
+                    | image_tag:
+                      class: 'pp-card__img',
+                      loading: 'lazy',
+                      widths: '240, 360, 540, 720, 900',
+                      sizes: '(min-width: 990px) 25vw, (min-width: 768px) 33vw, 100vw',
+                      alt: related_product.title | escape
+                  }}
+                {% else %}
+                  <div class="pp-card__placeholder" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+                    <span>{{ related_product.title }}</span>
+                  </div>
+                {% endif %}
+              </a>
+              {% if show_quick_add %}
+                {%- form 'product', related_product, class: 'pp-quickadd-form' -%}
+                  <input type="hidden" name="id" value="{{ card_variant.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button class="pp-quickadd" type="submit" data-quick-add-variant-id="{{ card_variant.id }}" aria-label="Add {{ related_product.title | escape }} to cart">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                    <span>Add to cart</span>
+                  </button>
+                {%- endform -%}
+              {% endif %}
+            </div>
+            <div class="pp-card__body">
+              <a href="{{ related_product.url }}" class="pp-card__title">{{ related_product.title }}</a>
+              <div class="pp-card__rating">
+                {% render 'pp-judgeme-badge', product: related_product %}
+              </div>
+              <div class="pp-card__price">
+                <span class="pp-price{% if card_on_sale %} pp-price--sale{% endif %}">{{ card_variant.price | money }}</span>
+                {% if card_on_sale %}
+                  <span class="pp-price__was">{{ card_compare_at_price | money }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+          {% assign rendered_count = rendered_count | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+    {% endcapture %}
+
+    {% if rendered_count > 0 %}
+      <section class="pp-recommend" aria-labelledby="related-heading">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="related-heading">You may also like</h2>
+            <p class="pp-section-head__sub">More pieces you might love</p>
+          </div>
+          <a href="{{ routes.all_products_collection_url }}" class="pp-view-all">
+            <span>View all</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="pp-recommend__grid">
+          {{ related_cards }}
+        </div>
+      </section>
+    {% else %}
+      <div class="hidden" data-has-recommendations="false"></div>
+    {% endif %}
+  {% elsif recommendations.performed %}
+    <div class="hidden" data-has-recommendations="false"></div>
+  {% elsif product != blank %}
+    <div class="resource-list resource-list--grid" aria-hidden="true">
+      {% for i in (1..4) %}
+        <div
+          class="resource-list__item product-recommendations__skeleton-item"
+          aria-label="{{ 'accessibility.loading_product_recommendations' | t }}"
+        ></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</product-recommendations>
+
+{% schema %}
+{
+  "name": "Product Recommendations",
+  "settings": [
+    {
+      "type": "select",
+      "id": "intent",
+      "label": "Recommendation intent",
+      "default": "related",
+      "options": [
+        { "value": "related", "label": "Related products" },
+        { "value": "complementary", "label": "Complementary products" }
+      ]
+    }
+  ],
+  "presets": []
+}
+{% endschema %}

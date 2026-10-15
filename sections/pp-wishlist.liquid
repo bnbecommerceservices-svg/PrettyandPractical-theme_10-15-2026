@@ -1,0 +1,146 @@
+{{ 'pp-wishlist.css' | asset_url | stylesheet_tag }}
+
+<section class="pp-wishlist-page" data-pp-wishlist-page>
+  <div class="pp-wrap">
+    <div class="pp-wishlist-page__head">
+      <div>
+        <h1>Wishlist</h1>
+        <p class="pp-wishlist-page__sub" data-pp-wishlist-summary>Saved pieces you love.</p>
+      </div>
+      <button type="button" class="pp-wishlist-page__clear" data-pp-wishlist-clear hidden>Clear all</button>
+    </div>
+
+    <div class="pp-wishlist-page__grid" data-pp-wishlist-grid></div>
+
+    <div class="pp-wishlist-empty" data-pp-wishlist-empty hidden>
+      <h2>Your wishlist is empty</h2>
+      <p>Tap the heart on products to save them here.</p>
+      <a href="{{ routes.all_products_collection_url }}">Continue shopping</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function bootWishlistPage() {
+      var root = document.querySelector('[data-pp-wishlist-page]');
+      if (!root || !window.PPWishlist) return false;
+
+      var grid = root.querySelector('[data-pp-wishlist-grid]');
+      var empty = root.querySelector('[data-pp-wishlist-empty]');
+      var clearBtn = root.querySelector('[data-pp-wishlist-clear]');
+      var summary = root.querySelector('[data-pp-wishlist-summary]');
+
+      function escapeHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function render(items) {
+        if (!grid || !empty) return;
+        var list = Array.isArray(items) ? items : window.PPWishlist.getAll();
+
+        if (!list.length) {
+          grid.innerHTML = '';
+          empty.hidden = false;
+          if (clearBtn) clearBtn.hidden = true;
+          if (summary) summary.textContent = 'Saved pieces you love.';
+          window.PPWishlist.updateHeaderCount();
+          return;
+        }
+
+        empty.hidden = true;
+        if (clearBtn) clearBtn.hidden = false;
+        if (summary) summary.textContent = list.length + (list.length === 1 ? ' saved item' : ' saved items');
+
+        grid.innerHTML = list.map(function (item) {
+          var href = item.url || (item.handle ? '/products/' + item.handle : '#');
+          var image = item.image
+            ? '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.title) + '" loading="lazy">'
+            : '<div class="pp-wishlist-card__placeholder">No image</div>';
+
+          return (
+            '<article class="pp-wishlist-card">' +
+              '<div class="pp-wishlist-card__media">' +
+                '<a href="' + escapeHtml(href) + '" aria-label="' + escapeHtml(item.title) + '">' + image + '</a>' +
+                '<button type="button" class="pp-wishlist-card__remove" data-pp-wishlist-remove' +
+                  ' data-product-id="' + escapeHtml(item.id) + '"' +
+                  ' data-product-handle="' + escapeHtml(item.handle) + '"' +
+                  ' aria-label="Remove ' + escapeHtml(item.title || 'item') + ' from wishlist">' +
+                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>' +
+                '</button>' +
+              '</div>' +
+              '<div class="pp-wishlist-card__body">' +
+                '<a class="pp-wishlist-card__title" href="' + escapeHtml(href) + '">' + escapeHtml(item.title || 'Product') + '</a>' +
+                (item.price ? '<p class="pp-wishlist-card__price">' + escapeHtml(item.price) + '</p>' : '') +
+                '<a class="pp-wishlist-card__cta" href="' + escapeHtml(href) + '">View product</a>' +
+              '</div>' +
+            '</article>'
+          );
+        }).join('');
+
+        window.PPWishlist.updateHeaderCount();
+      }
+
+      if (root.dataset.ppWishlistPageBound === 'true') {
+        render(window.PPWishlist.getAll());
+        return true;
+      }
+      root.dataset.ppWishlistPageBound = 'true';
+
+      root.addEventListener('click', function (event) {
+        var removeBtn = event.target.closest('[data-pp-wishlist-remove]');
+        if (removeBtn) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.PPWishlist.remove(
+            removeBtn.getAttribute('data-product-id'),
+            removeBtn.getAttribute('data-product-handle')
+          );
+          return;
+        }
+
+        if (event.target.closest('[data-pp-wishlist-clear]')) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.PPWishlist.clear();
+        }
+      });
+
+      render(window.PPWishlist.getAll());
+      window.PPWishlist.subscribe(render);
+      return true;
+    }
+
+    function start() {
+      if (bootWishlistPage()) return;
+      var tries = 0;
+      var timer = window.setInterval(function () {
+        tries += 1;
+        if (bootWishlistPage() || tries > 40) window.clearInterval(timer);
+      }, 50);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start);
+    } else {
+      start();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Wishlist",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Wishlist"
+    }
+  ]
+}
+{% endschema %}

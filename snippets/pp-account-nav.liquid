@@ -1,0 +1,21 @@
+{%- liquid
+  assign nav_current = current | default: 'orders'
+  assign help_url = pages['contact-us'].url | default: pages['contact'].url | default: '/pages/contact-us'
+-%}
+<nav class="pp-account-nav" aria-label="Account">
+  <p class="pp-account-nav__brand">pretty<span>&amp;</span>practical</p>
+  <p class="pp-account-nav__label">Your account</p>
+  <a href="{{ routes.account_url }}"{% if nav_current == 'orders' %} class="is-active" aria-current="page"{% endif %}>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 2h12v4H6zM4 6h16v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"/><path d="M9 11h6M9 15h4"/></svg>
+    Orders
+  </a>
+  <a href="{{ routes.account_addresses_url }}"{% if nav_current == 'profile' %} class="is-active" aria-current="page"{% endif %}>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
+    Profile
+  </a>
+  <a href="{{ help_url }}">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Help
+  </a>
+  <a href="{{ routes.account_logout_url }}" class="pp-account-nav__signout">Sign out</a>
+</nav>

@@ -1,0 +1,70 @@
+{{ 'pp-account.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign hero_mode = section.settings.hero_mode | default: 'orders'
+
+  case hero_mode
+    when 'profile'
+      assign crumb = 'Profile'
+      assign eyebrow = 'My profile'
+      assign heading = section.settings.heading | default: 'Your details'
+      assign lead = section.settings.lead | default: 'Update contact details and keep delivery info ready for faster checkout.'
+    when 'order'
+      assign crumb = 'Order'
+      assign eyebrow = 'Order details'
+      assign heading = section.settings.heading | default: 'Track your purchase'
+      assign lead = section.settings.lead | default: 'Review items, shipping status, and support options for this order.'
+    else
+      assign crumb = 'Orders'
+      assign eyebrow = 'My orders'
+      assign heading = section.settings.heading | default: 'Your orders'
+      assign lead = section.settings.lead | default: 'Track deliveries, reorder favourites, and shop new arrivals for your home.'
+  endcase
+
+  if customer and customer.first_name != blank and hero_mode == 'orders'
+    assign heading = 'Welcome back, ' | append: customer.first_name
+  endif
+  if customer and customer.first_name != blank and hero_mode == 'profile'
+    assign heading = customer.first_name | append: ', your profile'
+  endif
+-%}
+
+<section class="pp-account pp-account-hero" {{ section.shopify_attributes }}>
+  <div class="pp-wrap">
+    <p class="pp-account-crumb">
+      <a href="{{ routes.root_url }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <a href="{{ routes.account_url }}">Account</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ crumb }}</span>
+    </p>
+    <p class="pp-account-hero__eyebrow">{{ eyebrow }}</p>
+    <h1>{{ heading | escape }}</h1>
+    <p class="pp-account-hero__lead">{{ lead | escape }}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PP Account Hero",
+  "settings": [
+    {
+      "type": "select",
+      "id": "hero_mode",
+      "label": "Banner mode",
+      "default": "orders",
+      "options": [
+        { "value": "orders", "label": "Orders" },
+        { "value": "profile", "label": "Profile" },
+        { "value": "order", "label": "Order detail" }
+      ]
+    },
+    { "type": "image_picker", "id": "image", "label": "Main banner image" },
+    { "type": "image_picker", "id": "side_image_1", "label": "Furniture card image" },
+    { "type": "image_picker", "id": "side_image_2", "label": "Outdoor card image" },
+    { "type": "text", "id": "heading", "label": "Custom heading" },
+    { "type": "textarea", "id": "lead", "label": "Supporting text" }
+  ],
+  "presets": [{ "name": "PP Account Hero" }]
+}
+{% endschema %}

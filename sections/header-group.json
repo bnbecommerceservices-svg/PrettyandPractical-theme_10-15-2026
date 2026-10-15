@@ -1,0 +1,36 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "header_section": {
+      "type": "header",
+      "settings": {
+        "section_width": "page-width",
+        "enable_sticky_header": "always",
+        "show_search": true,
+        "search_placeholder": "Search furniture, home decor, plant stands, pets & more...",
+        "logo_tagline": "Australia's Home Store",
+        "utility_menu": "",
+        "announcements_label": "Store updates",
+        "utility_menu_label": "Utility navigation",
+        "category_menu": "main-menu",
+        "category_nav_label": "Shop categories",
+        "customer_account_menu": "",
+        "wishlist_link": "/pages/wishlist",
+        "wishlist_label": "Wishlist"
+      }
+    }
+  },
+  "order": [
+    "header_section"
+  ]
+}

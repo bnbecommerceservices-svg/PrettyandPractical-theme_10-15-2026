@@ -1,0 +1,1257 @@
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign compare_at_price = current_variant.compare_at_price
+  assign on_sale = false
+  capture pp_promo
+    render 'pp-product-promo', product: product, price: current_variant.price, compare_at: compare_at_price
+  endcapture
+  assign pp_promo = pp_promo | strip
+  if pp_promo contains '|sale'
+    assign on_sale = true
+  endif
+
+  assign review_rating = product.metafields.reviews.rating.value.rating | default: product.metafields.judgeme.rating
+  assign review_scale = product.metafields.reviews.rating.value.scale_max | default: 5
+  assign review_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count | default: product.metafields.judgeme.review_count
+  if review_rating == blank
+    assign review_rating = 4.8
+  endif
+  if review_count == blank or review_count < 1
+    assign review_count = 127
+  endif
+  assign review_rating_rounded = review_rating | floor
+  assign has_review_summary = true
+  assign review_app_provider = 'judgeme'
+  assign has_fallback_review_app_markup = true
+  assign has_review_app_content = true
+  assign free_shipping_threshold = settings.cart_discount_threshold | plus: 0
+  assign free_shipping_threshold_enabled = false
+  if free_shipping_threshold > 0
+    assign free_shipping_threshold_enabled = true
+  endif
+  assign free_shipping_threshold_cents = free_shipping_threshold | times: 100
+  if settings.currency_code_enabled_product_pages
+    assign free_shipping_threshold_money = free_shipping_threshold_cents | money_with_currency
+  else
+    assign free_shipping_threshold_money = free_shipping_threshold_cents | money
+  endif
+  assign shipping_policy_url = '/policies/shipping-policy'
+  assign refund_policy_url = '/policies/refund-policy'
+  capture product_tax_note
+    if cart.duties_included and cart.taxes_included
+      echo 'content.duties_and_taxes_included_shipping_at_checkout_without_policy_without_discounts' | t
+    elsif cart.taxes_included
+      echo 'content.taxes_included_shipping_at_checkout_without_policy_without_discounts' | t
+    elsif cart.duties_included
+      echo 'content.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy_without_discounts' | t
+    else
+      echo 'content.taxes_at_checkout_shipping_at_checkout_without_policy_without_discounts' | t
+    endif
+  endcapture
+  assign current_collection = collection
+  if current_collection == blank or current_collection.title == 'Automated Collection' or current_collection.handle == 'all'
+    assign current_collection = blank
+    for col in product.collections
+      assign col_title_l = col.title | downcase
+      if col.handle != 'all' and col.handle != 'automated-collection' and col_title_l != 'automated collection'
+        assign current_collection = col
+        break
+      endif
+    endfor
+  endif
+  assign breadcrumb_fallback = blank
+  assign feature_source_blob = ''
+  assign bullet_metafield = product.metafields.custom.bullet_points
+  if bullet_metafield == blank
+    assign bullet_metafield = product.metafields.custom.highlights
+  endif
+  assign selected_option_summary = ''
+
+  if bullet_metafield != blank and bullet_metafield.value != blank
+    if bullet_metafield.type contains 'list.'
+      for bullet_item in bullet_metafield.value
+        assign bullet_text = bullet_item | strip
+        if bullet_text != blank
+          assign feature_source_blob = feature_source_blob | append: bullet_text | append: '|||'
+        endif
+      endfor
+    else
+      assign bullet_plain = bullet_metafield.value | replace: '</p>', '|||' | replace: '</li>', '|||' | replace: '<br />', '|||' | replace: '<br/>', '|||' | replace: '<br>', '|||' | strip_html
+      assign bullet_lines = bullet_plain | newline_to_br | split: '<br />'
+      for bullet_item in bullet_lines
+        assign bullet_parts = bullet_item | split: '|||'
+        for bullet_part in bullet_parts
+          assign bullet_text = bullet_part | strip
+          if bullet_text != blank
+            assign feature_source_blob = feature_source_blob | append: bullet_text | append: '|||'
+          endif
+        endfor
+      endfor
+    endif
+  endif
+
+  unless product.has_only_default_variant
+    for option in product.options_with_values
+      assign option_has_meaningful_values = false
+
+      for value in option.values
+        if value != blank and value != 'Default Title'
+          assign option_has_meaningful_values = true
+        endif
+      endfor
+
+      if option_has_meaningful_values
+        if option.selected_value != blank and option.selected_value != 'Default Title'
+          if selected_option_summary == blank
+            assign selected_option_summary = option.selected_value
+          else
+            assign selected_option_summary = selected_option_summary | append: ' / ' | append: option.selected_value
+          endif
+        endif
+      endif
+    endfor
+  endunless
+
+  assign is_bestseller = false
+  for tag in product.tags
+    assign tag_l = tag | strip | downcase
+    if tag_l == 'bestseller' or tag_l == 'best seller' or tag_l == 'best-seller'
+      assign is_bestseller = true
+      break
+    endif
+  endfor
+
+  assign installment_cents = current_variant.price | divided_by: 4
+  assign installment_money = installment_cents | money
+  assign short_blurb = product.metafields.custom.short_description.value | default: product.metafields.custom.subtitle.value
+  if short_blurb == blank and product.description != blank
+    assign short_blurb = product.description | strip_html | truncate: 220
+  endif
+  assign care_content = product.metafields.custom.care_guide.value | default: product.metafields.custom.care.value
+  assign faq_content = product.metafields.custom.faqs.value | default: product.metafields.custom.faq.value
+  assign spec_material = product.metafields.custom.material.value | default: product.metafields.descriptors.material.value
+  assign spec_finish = product.metafields.custom.finish.value
+  assign spec_colour = product.metafields.custom.colour.value | default: product.metafields.custom.color.value
+  assign spec_use = product.metafields.custom.use.value
+  assign spec_assembly = product.metafields.custom.assembly.value
+  assign spec_care = product.metafields.custom.care_summary.value
+  assign spec_feature = product.metafields.custom.feature.value
+  assign spec_suitable = product.metafields.custom.suitable_for.value
+  assign product_sku = current_variant.sku | default: product.variants.first.sku
+  assign feature_items = ''
+  assign feature_count = 0
+
+  if product.description contains 'Specifications'
+    assign desc_spec_block = product.description
+    if product.description contains 'Specifications:'
+      assign desc_spec_block = product.description | split: 'Specifications:' | last
+    else
+      assign desc_spec_block = product.description | split: 'Specifications' | last
+    endif
+    if desc_spec_block contains 'Package Included'
+      assign desc_spec_block = desc_spec_block | split: 'Package Included' | first
+    endif
+    if desc_spec_block contains 'Note:'
+      assign desc_spec_block = desc_spec_block | split: 'Note:' | first
+    endif
+    assign spec_lines = desc_spec_block | replace: '</p>', '|' | replace: '<br />', '|' | replace: '<br/>', '|' | replace: '<br>', '|' | strip_html | split: '|'
+    for spec_line in spec_lines
+      assign spec_line_clean = spec_line | strip
+      if spec_line_clean contains ':'
+        assign spec_parts = spec_line_clean | split: ':'
+        assign spec_key = spec_parts | first | strip | downcase
+        assign spec_val = spec_parts | last | strip
+        if spec_val != blank and spec_val.size < 90
+          if spec_key == 'material' and spec_material == blank
+            assign spec_material = spec_val
+          elsif spec_key == 'color' or spec_key == 'colour'
+            if spec_colour == blank
+              assign spec_colour = spec_val
+            endif
+          elsif spec_key == 'type' and spec_use == blank
+            unless spec_val contains 'UPC' or spec_val contains 'SKU'
+              assign spec_use = spec_val
+            endunless
+          elsif spec_key == 'feature' and spec_feature == blank
+            assign spec_feature = spec_val
+          elsif spec_key == 'suitable for' and spec_suitable == blank
+            assign spec_suitable = spec_val
+          endif
+        endif
+      endif
+    endfor
+  endif
+
+  if spec_use == blank and current_collection != blank
+    assign spec_use = current_collection.title
+  endif
+
+  if product.description contains '</li>'
+    assign li_chunks = product.description | split: '</li>'
+    for li_chunk in li_chunks
+      assign feature_text = li_chunk | strip_html | replace: '&nbsp;', ' ' | replace: 'Features:', '' | replace: 'Feature:', '' | replace: 'FEATURES:', '' | replace: 'FEATURE:', '' | strip
+      assign feature_head8 = feature_text | downcase | slice: 0, 8
+      assign feature_head7 = feature_text | downcase | slice: 0, 7
+      if feature_head8 == 'features'
+        assign feature_text = feature_text | slice: 8, 400 | strip
+      elsif feature_head7 == 'feature'
+        assign feature_text = feature_text | slice: 7, 400 | strip
+      endif
+      assign feature_lead = feature_text | slice: 0, 1
+      if feature_lead == ':' or feature_lead == '-' or feature_lead == '•' or feature_lead == '·'
+        assign feature_text = feature_text | slice: 1, 400 | strip
+      endif
+      assign feature_check = feature_text | downcase
+      if feature_check == 'feature' or feature_check == 'features'
+        continue
+      endif
+      if feature_text.size > 8
+        unless feature_check contains 'specification' or feature_check contains 'package include' or feature_check contains 'package size' or feature_check contains 'package weight' or feature_check contains 'please measure' or feature_check contains 'measuring error' or feature_check contains 'color difference' or feature_check contains 'colour difference' or feature_check contains 'note:' or feature_check contains 'upc'
+          assign feature_source_blob = feature_source_blob | append: feature_text | append: '|||'
+        endunless
+      endif
+    endfor
+  endif
+
+  if feature_source_blob == blank and product.description != blank
+    assign feature_source = product.description | replace: '</p>', '. ' | replace: '<br />', '. ' | replace: '<br/>', '. ' | replace: '<br>', '. ' | strip_html | replace: 'Features:', '' | replace: 'Feature:', '' | strip
+    assign feature_chunks = feature_source | split: '. '
+    for sentence in feature_chunks
+      assign feature_text = sentence | strip
+      assign feature_head8 = feature_text | downcase | slice: 0, 8
+      assign feature_head7 = feature_text | downcase | slice: 0, 7
+      if feature_head8 == 'features'
+        assign feature_text = feature_text | slice: 8, 400 | strip
+      elsif feature_head7 == 'feature'
+        assign feature_text = feature_text | slice: 7, 400 | strip
+      endif
+      assign feature_lead = feature_text | slice: 0, 1
+      if feature_lead == ':' or feature_lead == '-' or feature_lead == '•' or feature_lead == '·'
+        assign feature_text = feature_text | slice: 1, 400 | strip
+      endif
+      assign feature_check = feature_text | downcase
+      if feature_check == 'feature' or feature_check == 'features'
+        continue
+      endif
+      if feature_text.size > 12
+        unless feature_check contains 'specification' or feature_check contains 'package include' or feature_check contains 'please measure' or feature_check contains 'measuring error' or feature_check contains 'color difference' or feature_check contains 'note:' or feature_check contains 'upc'
+          assign feature_source_blob = feature_source_blob | append: feature_text | append: '|||'
+        endunless
+      endif
+    endfor
+  endif
+
+  assign raw_feature_list = feature_source_blob | split: '|||'
+  for feature_text in raw_feature_list
+    if feature_count >= 7
+      break
+    endif
+    assign feature_line = feature_text | strip
+    if feature_line == blank
+      continue
+    endif
+    if feature_line contains ' - '
+      assign feature_line = feature_line | split: ' - ' | first | strip
+    elsif feature_line contains ' – '
+      assign feature_line = feature_line | split: ' – ' | first | strip
+    elsif feature_line contains '- '
+      assign feature_title = feature_line | split: '- ' | first | strip
+      if feature_title.size > 8 and feature_title.size < 72
+        assign feature_line = feature_title
+      endif
+    elsif feature_line contains ': '
+      assign feature_title = feature_line | split: ': ' | first | strip
+      if feature_title.size > 8 and feature_title.size < 72
+        assign feature_line = feature_title
+      endif
+    endif
+    if feature_line.size > 70
+      if feature_line contains '. '
+        assign feature_sentence = feature_line | split: '. ' | first | strip
+        if feature_sentence.size > 12 and feature_sentence.size <= 70
+          assign feature_line = feature_sentence
+        endif
+      endif
+    endif
+    if feature_line.size > 70
+      assign feature_line = feature_line | truncate: 70
+    endif
+    assign feature_line_check = feature_line | downcase
+    if feature_line.size < 8 or feature_line_check == 'feature' or feature_line_check == 'features'
+      continue
+    endif
+    if feature_items contains feature_line
+      continue
+    endif
+    capture feature_items
+      echo feature_items
+      echo '<li>'
+      echo feature_line | escape
+      echo '</li>'
+    endcapture
+    assign feature_count = feature_count | plus: 1
+  endfor
+
+  assign feature_pad_blob = ''
+  if spec_feature != blank
+    assign feature_pad_blob = feature_pad_blob | append: spec_feature | append: '|||'
+  endif
+  if spec_material != blank
+    assign feature_pad_blob = feature_pad_blob | append: 'Made from ' | append: spec_material | append: '|||'
+  endif
+  if spec_suitable != blank
+    assign feature_pad_blob = feature_pad_blob | append: 'Suitable for ' | append: spec_suitable | append: '|||'
+  endif
+  if spec_use != blank
+    assign feature_pad_blob = feature_pad_blob | append: spec_use | append: '|||'
+  endif
+  assign feature_pad_blob = feature_pad_blob | append: 'Australia wide shipping|||30 day hassle free returns|||Quality checked before dispatch|||Simple setup|||Secure checkout|||Fast dispatch from Australia'
+  assign feature_pad_list = feature_pad_blob | split: '|||'
+  for feature_line in feature_pad_list
+    if feature_count >= 7
+      break
+    endif
+    assign feature_line = feature_line | strip
+    if feature_line.size < 8
+      continue
+    endif
+    if feature_items contains feature_line
+      continue
+    endif
+    if feature_line.size > 70
+      assign feature_line = feature_line | truncate: 70
+    endif
+    capture feature_items
+      echo feature_items
+      echo '<li>'
+      echo feature_line | escape
+      echo '</li>'
+    endcapture
+    assign feature_count = feature_count | plus: 1
+  endfor
+
+  assign desc_html = product.description | replace: '&nbsp;', ' '
+  assign desc_body_html = desc_html
+  if desc_body_html contains 'Specifications:'
+    assign desc_body_html = desc_body_html | split: 'Specifications:' | first
+  elsif desc_body_html contains 'Specifications'
+    assign desc_body_html = desc_body_html | split: 'Specifications' | first
+  endif
+  if desc_body_html contains 'Package Included'
+    assign desc_body_html = desc_body_html | split: 'Package Included' | first
+  elsif desc_body_html contains 'Package Includes'
+    assign desc_body_html = desc_body_html | split: 'Package Includes' | first
+  elsif desc_body_html contains 'Package Include'
+    assign desc_body_html = desc_body_html | split: 'Package Include' | first
+  endif
+  if desc_body_html contains 'Note:'
+    assign desc_body_html = desc_body_html | split: 'Note:' | first
+  endif
+
+  assign desc_intro_html = desc_body_html
+  assign desc_feature_html = ''
+  if desc_body_html contains 'Features:'
+    assign desc_intro_html = desc_body_html | split: 'Features:' | first
+    assign desc_feature_html = desc_body_html | split: 'Features:' | last
+  elsif desc_body_html contains 'FEATURES:'
+    assign desc_intro_html = desc_body_html | split: 'FEATURES:' | first
+    assign desc_feature_html = desc_body_html | split: 'FEATURES:' | last
+  elsif desc_body_html contains 'Feature:'
+    assign desc_intro_html = desc_body_html | split: 'Feature:' | first
+    assign desc_feature_html = desc_body_html | split: 'Feature:' | last
+  elsif desc_body_html contains 'Features'
+    assign desc_intro_html = desc_body_html | split: 'Features' | first
+    assign desc_feature_html = desc_body_html | split: 'Features' | last
+  elsif desc_body_html contains 'Feature'
+    assign desc_intro_html = desc_body_html | split: 'Feature' | first
+    assign desc_feature_html = desc_body_html | split: 'Feature' | last
+  endif
+
+  assign desc_intro = desc_intro_html | strip_html | strip
+  assign desc_detail_items = ''
+  assign desc_detail_count = 0
+  if desc_feature_html != blank
+    if desc_feature_html contains '</li>'
+      assign desc_feature_chunks = desc_feature_html | split: '</li>'
+      for desc_feature_chunk in desc_feature_chunks
+        assign desc_feature_text = desc_feature_chunk | strip_html | strip
+        assign desc_feature_check = desc_feature_text | downcase
+        if desc_feature_text.size > 8 and desc_detail_count < 12
+          unless desc_feature_check == 'feature' or desc_feature_check == 'features'
+            capture desc_detail_items
+              echo desc_detail_items
+              echo '<li>'
+              echo desc_feature_text | escape
+              echo '</li>'
+            endcapture
+            assign desc_detail_count = desc_detail_count | plus: 1
+          endunless
+        endif
+      endfor
+    endif
+    if desc_detail_count == 0 and desc_feature_html contains '</p>'
+      assign desc_feature_chunks = desc_feature_html | split: '</p>'
+      for desc_feature_chunk in desc_feature_chunks
+        assign desc_feature_text = desc_feature_chunk | strip_html | strip
+        assign desc_feature_check = desc_feature_text | downcase
+        if desc_feature_text.size > 18 and desc_detail_count < 12
+          unless desc_feature_check == 'feature' or desc_feature_check == 'features'
+            capture desc_detail_items
+              echo desc_detail_items
+              echo '<li>'
+              echo desc_feature_text | escape
+              echo '</li>'
+            endcapture
+            assign desc_detail_count = desc_detail_count | plus: 1
+          endunless
+        endif
+      endfor
+    endif
+  endif
+
+  if desc_intro.size < 80
+    assign desc_intro = product.title | append: ' is designed for everyday Australian homes — practical, well finished, and easy to live with. Use it to refresh a living room, entry, bedroom, or covered outdoor corner without adding clutter. '
+    if spec_material != blank
+      assign desc_intro = desc_intro | append: 'It is made from ' | append: spec_material | append: ', chosen for day-to-day durability and a clean look. '
+    endif
+    if spec_colour != blank
+      assign desc_intro = desc_intro | append: 'The colour is ' | append: spec_colour | append: ', so it sits comfortably with timber, stone, and neutral interiors. '
+    endif
+    if spec_use != blank
+      assign desc_intro = desc_intro | append: 'Best suited to ' | append: spec_use | append: '. '
+    else
+      assign desc_intro = desc_intro | append: 'Built for real homes, not showrooms. '
+    endif
+    assign desc_intro = desc_intro | append: 'Read the full details below, including what is in the box, specifications, shipping, care, and common questions, so you can check fit and finish before you buy.'
+  endif
+
+  assign desc_intro_markup = ''
+  assign desc_sentence_chunk = ''
+  assign desc_sentence_count = 0
+  assign desc_sentences = desc_intro | split: '. '
+  for desc_sentence in desc_sentences
+    assign desc_sentence_text = desc_sentence | strip
+    if desc_sentence_text == blank
+      continue
+    endif
+    if desc_sentence_chunk == blank
+      assign desc_sentence_chunk = desc_sentence_text
+    else
+      assign desc_sentence_chunk = desc_sentence_chunk | append: '. ' | append: desc_sentence_text
+    endif
+    assign desc_sentence_count = desc_sentence_count | plus: 1
+    if desc_sentence_count == 2 or forloop.last
+      unless desc_sentence_chunk contains '.'
+        assign desc_sentence_chunk = desc_sentence_chunk | append: '.'
+      endunless
+      capture desc_intro_markup
+        echo desc_intro_markup
+        echo '<p>'
+        echo desc_sentence_chunk | escape
+        echo '</p>'
+      endcapture
+      assign desc_sentence_chunk = ''
+      assign desc_sentence_count = 0
+    endif
+  endfor
+
+  assign package_items = ''
+  assign package_count = 0
+  assign package_block = ''
+  if product.description contains 'Package Includes'
+    assign package_block = product.description | split: 'Package Includes' | last
+  elsif product.description contains 'Package Include'
+    assign package_block = product.description | split: 'Package Include' | last
+  elsif product.description contains 'Package Included'
+    assign package_block = product.description | split: 'Package Included' | last
+  endif
+  if package_block contains 'Note:'
+    assign package_block = package_block | split: 'Note:' | first
+  endif
+  if package_block != blank
+    if package_block contains '</li>'
+      assign package_chunks = package_block | split: '</li>'
+      for package_chunk in package_chunks
+        assign package_text = package_chunk | strip_html | strip
+        if package_text.size > 2 and package_count < 8
+          capture package_items
+            echo package_items
+            echo '<li>'
+            echo package_text | escape
+            echo '</li>'
+          endcapture
+          assign package_count = package_count | plus: 1
+        endif
+      endfor
+    else
+      assign package_plain = package_block | strip_html | strip
+      assign package_lines = package_plain | newline_to_br | split: '<br />'
+      for package_line in package_lines
+        assign package_text = package_line | strip
+        if package_text.size > 2 and package_count < 8
+          capture package_items
+            echo package_items
+            echo '<li>'
+            echo package_text | escape
+            echo '</li>'
+          endcapture
+          assign package_count = package_count | plus: 1
+        endif
+      endfor
+    endif
+  endif
+
+  assign keyword_count = 0
+  capture keyword_markup
+    if current_collection != blank
+      echo '<span class="pp-keyword">'
+      echo current_collection.title | escape
+      echo '</span>'
+      assign keyword_count = keyword_count | plus: 1
+    endif
+    for tag in product.tags
+      assign tag_l = tag | strip | downcase
+      unless tag_l == 'new' or tag_l == 'new arrival' or tag_l == 'sale' or tag_l == 'bestseller' or tag_l == 'best seller' or tag_l == 'best-seller'
+        if keyword_count < 8
+          echo '<span class="pp-keyword">'
+          echo tag | escape
+          echo '</span>'
+          assign keyword_count = keyword_count | plus: 1
+        endif
+      endunless
+    endfor
+    if keyword_count < 8 and product.type != blank and product.type.size < 40
+      unless product.type contains 'UPC' or product.type contains 'SKU'
+        echo '<span class="pp-keyword">'
+        echo product.type | escape
+        echo '</span>'
+        assign keyword_count = keyword_count | plus: 1
+      endunless
+    endif
+    for col in product.collections
+      assign col_title_l = col.title | downcase
+      if keyword_count < 8 and col.handle != 'all' and col.handle != 'automated-collection' and col_title_l != 'automated collection'
+        if current_collection == blank or col.id != current_collection.id
+          echo '<span class="pp-keyword">'
+          echo col.title | escape
+          echo '</span>'
+          assign keyword_count = keyword_count | plus: 1
+        endif
+      endif
+    endfor
+    if keyword_count == 0 and product.vendor != blank
+      echo '<span class="pp-keyword">'
+      echo product.vendor | escape
+      echo '</span>'
+      assign keyword_count = 1
+    endif
+  endcapture
+%}
+
+{{ 'pp-product-page.css' | asset_url | stylesheet_tag }}
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pp-product.js' | asset_url }}" defer></script>
+
+<script type="application/ld+json">
+  {{ product | structured_data }}
+</script>
+
+<div
+  class="pp-product-page pp-pdp-v2"
+  data-product-title="{{ product.title | escape }}"
+  data-product-handle="{{ product.handle }}"
+  data-product-url="{{ shop.url }}{{ product.url }}"
+>
+  <script type="application/json" id="pp-product-data">
+    {
+      "productId": {{ product.id | json }},
+      "title": {{ product.title | json }},
+      "selectedVariantId": {{ current_variant.id | json }},
+      "selectedVariantTitle": {{ current_variant.title | json }},
+      "selectedVariantOptions": {{ current_variant.options | json }},
+      "saleTagged": {{ on_sale | json }},
+      "variants": [
+        {% for variant in product.variants %}
+          {% liquid
+            assign variant_savings = 0
+            if variant.compare_at_price > variant.price
+              assign variant_savings = variant.compare_at_price | minus: variant.price
+            endif
+          %}
+          {
+            "id": {{ variant.id | json }},
+            "title": {{ variant.title | json }},
+            "available": {{ variant.available | json }},
+            "sku": {{ variant.sku | json }},
+            "price": {{ variant.price | money | json }},
+            "priceValue": {{ variant.price | json }},
+            "compareAtPrice": {{ variant.compare_at_price | money | json }},
+            "compareAtPriceValue": {{ variant.compare_at_price | json }},
+            "savingsMoney": {{ variant_savings | money | json }},
+            "featuredMediaId": {{ variant.featured_media.id | json }},
+            "options": {{ variant.options | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ]
+    }
+  </script>
+
+  <div class="pp-header-spacer" aria-hidden="true"></div>
+
+  <nav class="pp-breadcrumbs" aria-label="Breadcrumb">
+    <div class="pp-wrap">
+      <ol>
+        <li><a href="{{ routes.root_url }}">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="{{ routes.all_products_collection_url }}">Shop</a></li>
+        {% if current_collection != blank %}
+          <li aria-hidden="true">/</li>
+          <li aria-current="page">
+            <a href="{{ current_collection.url }}">{{ current_collection.title }}</a>
+          </li>
+        {% endif %}
+      </ol>
+    </div>
+  </nav>
+
+  <section class="pp-hero" aria-labelledby="product-title">
+    <div class="pp-wrap">
+      <div class="pp-hero-grid">
+        <div class="pp-hero-media">
+        <div class="pp-gallery" role="region" aria-roledescription="carousel" aria-label="Product images">
+          <div class="pp-gallery-main" id="gallery-main" style="--pp-gallery-ratio: {{ product.featured_image.aspect_ratio | default: product.media.first.preview_image.aspect_ratio | default: 1 }};">
+            {% if on_sale %}
+              <span class="pp-sale-badge">Sale</span>
+            {% elsif is_bestseller %}
+              <span class="pp-sale-badge pp-sale-badge--bestseller">Best Seller</span>
+            {% endif %}
+            {% if on_sale and is_bestseller %}
+              <span class="pp-sale-badge pp-sale-badge--bestseller pp-sale-badge--secondary">Best Seller</span>
+            {% endif %}
+
+            <button
+              class="pp-wishlist-btn"
+              id="wishlist-main"
+              type="button"
+              data-pp-wishlist
+              data-wishlist-label="wishlist"
+              data-product-id="{{ product.id }}"
+              data-product-handle="{{ product.handle | escape }}"
+              data-product-title="{{ product.title | escape }}"
+              data-product-url="{{ product.url | escape }}"
+              data-product-image="{% if product.featured_image %}{{ product.featured_image | image_url: width: 600 | escape }}{% endif %}"
+              data-product-price="{{ current_variant.price | money | escape }}"
+              aria-label="Add to wishlist"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+
+            {% if product.media.size > 1 %}
+              <button class="pp-gallery-arrow prev" id="gallery-prev" aria-label="Previous image">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button class="pp-gallery-arrow next" id="gallery-next" aria-label="Next image">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            {% endif %}
+
+            {% if product.media.size > 0 %}
+              {% for media in product.media %}
+                {% assign media_image = media.preview_image %}
+                <div class="pp-gallery-slide{% if forloop.first %} is-active{% endif %}" data-slide="{{ forloop.index0 }}" data-media-id="{{ media.id }}" data-ratio="{{ media_image.aspect_ratio | default: 1 }}">
+                  {% if media_image != blank %}
+                    {% liquid
+                      assign zoom_src = media_image | image_url: width: 2400
+                      if forloop.first
+                        assign gallery_loading = 'eager'
+                      else
+                        assign gallery_loading = 'lazy'
+                      endif
+                    %}
+                    <img
+                      class="pp-gallery-image"
+                      src="{{ media_image | image_url: width: 1200 }}"
+                      srcset="{{ media_image | image_url: width: 600 }} 600w, {{ media_image | image_url: width: 900 }} 900w, {{ media_image | image_url: width: 1200 }} 1200w, {{ media_image | image_url: width: 1600 }} 1600w, {{ media_image | image_url: width: 2000 }} 2000w"
+                      sizes="(min-width: 990px) 55vw, 100vw"
+                      width="{{ media_image.width }}"
+                      height="{{ media_image.height }}"
+                      alt="{{ media.alt | default: product.title | escape }}"
+                      loading="{{ gallery_loading }}"
+                      data-zoom-src="{{ zoom_src }}"
+                    >
+                  {% else %}
+                    <div class="pp-placeholder" aria-hidden="true"></div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              {% for index in (1..5) %}
+                <div class="pp-gallery-slide{% if forloop.first %} is-active{% endif %}" data-slide="{{ forloop.index0 }}">
+                  <div class="pp-placeholder" aria-hidden="true"></div>
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            <button type="button" class="pp-zoom-hint" id="gallery-zoom-open" aria-label="Zoom image">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+            </button>
+          </div>
+
+          <div class="pp-thumbs" role="tablist" aria-label="Product image thumbnails">
+            {% if product.media.size > 0 %}
+              {% assign pp_thumb_extra = product.media.size | minus: 4 %}
+              {% for media in product.media %}
+                {% assign media_image = media.preview_image %}
+                {% assign pp_thumb_more = false %}
+                {% if forloop.index == 4 and pp_thumb_extra > 0 %}
+                  {% assign pp_thumb_more = true %}
+                {% endif %}
+                <button
+                  type="button"
+                  class="pp-thumb{% if pp_thumb_more %} pp-thumb--more{% endif %}"
+                  data-thumb="{{ forloop.index0 }}"
+                  {% if pp_thumb_more %}data-open-gallery="true"{% endif %}
+                  {% if forloop.first %}aria-current="true"{% else %}aria-current="false"{% endif %}
+                  aria-label="{% if pp_thumb_more %}View all {{ product.media.size }} images{% else %}View image {{ forloop.index }}{% endif %}"
+                >
+                  {% if media_image != blank %}
+                    {{
+                      media_image
+                      | image_url: width: 240
+                      | image_tag:
+                        class: 'pp-thumb-image',
+                        loading: 'lazy',
+                        widths: '80, 120, 180, 240',
+                        sizes: '56px',
+                        alt: media.alt | default: product.title | escape
+                    }}
+                  {% else %}
+                    <div class="pp-placeholder" aria-hidden="true"></div>
+                  {% endif %}
+                  {% if pp_thumb_more %}
+                    <span class="pp-thumb__more" aria-hidden="true">+{{ pp_thumb_extra }}</span>
+                  {% endif %}
+                </button>
+              {% endfor %}
+            {% else %}
+              {% for index in (1..4) %}
+                <button type="button" class="pp-thumb" data-thumb="{{ forloop.index0 }}" {% if forloop.first %}aria-current="true"{% else %}aria-current="false"{% endif %} aria-label="View image {{ index }}">
+                  <div class="pp-placeholder" aria-hidden="true"></div>
+                </button>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+
+        </div>
+
+        {%- form 'product', product, id: 'product-form', class: 'pp-product-form' -%}
+          <input type="hidden" name="id" value="{{ current_variant.id }}" id="variant-id-input">
+          <input type="hidden" name="quantity" value="1" id="qty-hidden">
+
+          <div class="pp-product-info">
+            <div class="pp-title-group">
+              <h1 class="pp-title" id="product-title">{{ product.title }}</h1>
+              {% liquid
+                assign seller_name = product.vendor | strip
+                assign shop_name_l = shop.name | downcase
+                assign seller_name_l = seller_name | downcase
+              %}
+              {% if settings.nexus_show_sold_by and seller_name != blank and seller_name_l != shop_name_l %}
+                <p class="pp-sold-by">Sold by {{ seller_name | escape }}</p>
+              {% endif %}
+            </div>
+
+            <div class="pp-rating-wrap" data-pp-rating-hover>
+              <a href="#reviews" class="pp-rating-row pp-rating-row--judgeme" id="reviews-link">
+                {% render 'pp-home-rating', product: product %}
+                <span class="pp-rating-num">{{ review_rating | round: 1 }}</span>
+                <span class="pp-rating-sep">·</span>
+                <span class="pp-rating-link">{{ review_count }} ratings</span>
+              </a>
+              <div class="pp-rating-popover" id="pp-rating-popover" role="tooltip">
+                {% render 'pp-rating-histogram', rating: review_rating, count: review_count, show_cta: true %}
+              </div>
+            </div>
+
+            <div class="pp-info-actions">
+              <button
+                type="button"
+                class="pp-info-action"
+                data-pp-wishlist
+                data-wishlist-label="wishlist"
+                data-product-id="{{ product.id }}"
+                data-product-handle="{{ product.handle | escape }}"
+                data-product-title="{{ product.title | escape }}"
+                data-product-url="{{ product.url | escape }}"
+                data-product-image="{% if product.featured_image %}{{ product.featured_image | image_url: width: 600 | escape }}{% endif %}"
+                data-product-price="{{ current_variant.price | money | escape }}"
+                aria-pressed="false"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Save
+              </button>
+              <button type="button" class="pp-info-action" id="copy-link-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Share
+              </button>
+            </div>
+
+            {% if feature_count > 0 %}
+              <ul class="pp-feature-points" aria-label="Product features">
+                {{ feature_items }}
+              </ul>
+            {% endif %}
+
+            {% unless product.has_only_default_variant %}
+              {% for option in product.options_with_values %}
+                {% liquid
+                  assign option_has_meaningful_values = false
+                  assign option_name_l = option.name | strip | downcase
+                  assign option_longest_value = 0
+                  assign is_swatch_option = false
+                  assign is_size_option = false
+
+                  if option_name_l == 'colour' or option_name_l == 'color' or option_name_l == 'frame' or option_name_l == 'colourway'
+                    assign is_swatch_option = true
+                  endif
+
+                  for value in option.values
+                    if value != blank and value != 'Default Title'
+                      assign option_has_meaningful_values = true
+                      assign value_len = value | append: '' | size
+                      if value_len > option_longest_value
+                        assign option_longest_value = value_len
+                      endif
+                    endif
+                  endfor
+
+                  if option_name_l == 'size' or option_name_l == 'sizes' or option_name_l contains 'size' or option_name_l contains 'dimension' or option_name_l contains 'measurement'
+                    assign is_size_option = true
+                  elsif is_swatch_option == false and option_longest_value > 16
+                    assign is_size_option = true
+                  endif
+                %}
+                {% if option_has_meaningful_values %}
+                  <div class="pp-variant-group{% if is_size_option %} pp-variant-group--size{% endif %}">
+                    <span class="pp-variant-label">{{ option.name }}</span>
+                    <div
+                      class="pp-variant-options{% if is_size_option %} pp-variant-options--size{% endif %}"
+                      data-variant-group="{{ option.name | handleize }}"
+                      data-option-position="{{ option.position }}"
+                    >
+                      {% for value in option.values %}
+                        {% if value != blank and value != 'Default Title' %}
+                          {% liquid
+                            assign value_handle = value | handleize
+                            assign swatch_style = ''
+                            case value_handle
+                              when 'white-marble'
+                                assign swatch_style = 'background: linear-gradient(135deg, #f5f5f0 0%, #e8e6dd 100%);'
+                              when 'dark-marble'
+                                assign swatch_style = 'background: linear-gradient(135deg, #2d2d2d 0%, #4a4a4a 100%);'
+                              when 'charcoal'
+                                assign swatch_style = 'background: #36454f;'
+                              when 'black'
+                                assign swatch_style = 'background: #111827;'
+                              when 'white'
+                                assign swatch_style = 'background: #ffffff;'
+                              else
+                                assign swatch_style = 'background: #d1d5db;'
+                            endcase
+                          %}
+                          <button
+                            type="button"
+                            class="pp-variant-pill{% if value == option.selected_value %} is-selected{% endif %}"
+                            data-option-position="{{ option.position }}"
+                            data-variant-value="{{ value | escape }}"
+                            title="{{ value | escape }}"
+                            aria-pressed="{% if value == option.selected_value %}true{% else %}false{% endif %}"
+                          >
+                            {% if is_swatch_option %}
+                              <span class="pp-variant-swatch" style="{{ swatch_style }}"></span>
+                            {% endif %}
+                            <span class="pp-variant-pill__label">{{ value }}</span>
+                          </button>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endunless %}
+
+            {% if selected_option_summary != blank %}
+              <div class="pp-selection-line">
+                Selection: <strong id="selection-text">{{ selected_option_summary }}</strong>
+              </div>
+            {% endif %}
+          </div>
+
+          <aside class="pp-cart-panel" id="buybox">
+            <div class="pp-price-block">
+              <div class="pp-price-row">
+                <span class="pp-price-current" id="pp-price-current">{{ current_variant.price | money }}</span>
+                {%- if on_sale -%}
+                  <span class="pp-price-compare" id="pp-price-compare">{{ compare_at_price | money }}</span>
+                  {%- assign savings = compare_at_price | minus: current_variant.price -%}
+                  <span class="pp-save-pill" id="pp-save-pill">Save {{ savings | money }}</span>
+                {%- else -%}
+                  <span class="pp-price-compare" id="pp-price-compare" hidden></span>
+                  <span class="pp-save-pill" id="pp-save-pill" hidden></span>
+                {%- endif -%}
+              </div>
+              <p class="pp-price-note">
+                <span class="pp-tax-line">{{ product_tax_note | strip }}</span>
+                <span aria-hidden="true"> · </span>
+                <span class="pp-installments" id="pp-installments">Or 4 payments of {{ installment_money }}</span>
+              </p>
+            </div>
+
+            <p class="pp-stock is-in" id="pp-stock-line">
+              In stock, ready to ship
+            </p>
+
+            <div class="pp-purchase-stack">
+              <div class="pp-qty" role="group" aria-label="Quantity">
+                <label for="qty-input" class="sr-only">Quantity</label>
+                <button type="button" class="pp-qty-btn" id="qty-minus" aria-label="Decrease quantity">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <span class="pp-qty-value" id="qty-input" aria-live="polite">1</span>
+                <button type="button" class="pp-qty-btn" id="qty-plus" aria-label="Increase quantity">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+              <button type="submit" class="pp-atc{% unless current_variant.available %} pp-atc--soldout{% endunless %}" id="add-to-cart" name="add">
+                {% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}
+              </button>
+              <div class="pp-buy-now-wrap pp-buy-now-wrap--navy">
+                {{ form | payment_button }}
+              </div>
+            </div>
+
+            <div class="pp-cart-trust">
+              <p>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                Australia wide shipping
+              </p>
+              <p>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                30 day returns
+              </p>
+              <p>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                Secure checkout
+              </p>
+            </div>
+
+            <div class="pp-delivery" data-pp-delivery>
+              <p class="pp-delivery__label">Estimate delivery</p>
+              <div class="pp-delivery__row">
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="4"
+                  placeholder="e.g. 2000"
+                  autocomplete="postal-code"
+                  aria-label="Australian postcode"
+                  data-pp-postcode
+                >
+                <button type="button" data-pp-postcode-check>Check</button>
+              </div>
+              <div class="pp-delivery__result" data-pp-postcode-result hidden role="status" aria-live="polite"></div>
+            </div>
+          </aside>
+        {%- endform -%}
+
+        <div id="toast" class="pp-toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pp-lightbox" id="pp-lightbox" hidden>
+    <div class="pp-lightbox__backdrop" data-pp-lightbox-close></div>
+    <div class="pp-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Product image gallery">
+      <button type="button" class="pp-lightbox__close" data-pp-lightbox-close aria-label="Close gallery">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+
+      <div class="pp-lightbox__layout">
+        <div class="pp-lightbox__main">
+          <div class="pp-lightbox__stage" id="pp-lightbox-stage">
+            <img class="pp-lightbox__image" id="pp-lightbox-image" alt="" decoding="async">
+          </div>
+          <button type="button" class="pp-lightbox__nav pp-lightbox__nav--prev" id="pp-lightbox-prev" aria-label="Previous image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button type="button" class="pp-lightbox__nav pp-lightbox__nav--next" id="pp-lightbox-next" aria-label="Next image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <aside class="pp-lightbox__side">
+          <h2 class="pp-lightbox__title" id="pp-lightbox-title">{{ product.title | escape }}</h2>
+          <p class="pp-lightbox__meta" id="pp-lightbox-counter"></p>
+          <div class="pp-lightbox__thumbs" id="pp-lightbox-thumbs" role="tablist" aria-label="Product images"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <section class="pp-details-section" aria-labelledby="details-heading">
+    <div class="pp-wrap">
+      <h2 id="details-heading" class="sr-only">Product details</h2>
+
+      <div class="pp-assurance-bar">
+        {% render 'pp-product-assurance', product: product %}
+      </div>
+
+      {%- capture pp_accordion_chevron -%}
+        <svg class="pp-accordion__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      {%- endcapture -%}
+
+      <div class="pp-accordions">
+        <details class="pp-accordion" open>
+          <summary class="pp-accordion__summary">
+            Description
+            {{ pp_accordion_chevron }}
+          </summary>
+          <div class="pp-accordion__body">
+            {% if desc_intro_markup != blank or desc_detail_count > 0 or package_count > 0 %}
+              <div class="pp-description-text">
+                {{ desc_intro_markup }}
+                {% if desc_detail_count > 0 %}
+                  <p class="pp-desc-kicker">Details</p>
+                  <ul class="pp-desc-features">
+                    {{ desc_detail_items }}
+                  </ul>
+                {% endif %}
+                {% if package_count > 0 %}
+                  <p class="pp-desc-kicker">In the box</p>
+                  <ul class="pp-desc-pack">
+                    {{ package_items }}
+                  </ul>
+                {% endif %}
+              </div>
+            {% else %}
+              <p class="pp-empty-copy">Full product details will be added soon.</p>
+            {% endif %}
+          </div>
+        </details>
+
+        <details class="pp-accordion">
+          <summary class="pp-accordion__summary">
+            Specifications
+            {{ pp_accordion_chevron }}
+          </summary>
+          <div class="pp-accordion__body">
+            <dl class="pp-specs">
+              {% if spec_material != blank %}
+                <dt>Material</dt><dd>{{ spec_material | escape }}</dd>
+              {% endif %}
+              {% if spec_colour != blank %}
+                <dt>Colour</dt><dd>{{ spec_colour | escape }}</dd>
+              {% endif %}
+              {% if spec_use != blank %}
+                <dt>Use</dt><dd>{{ spec_use | escape }}</dd>
+              {% endif %}
+              {% if spec_assembly != blank %}
+                <dt>Assembly</dt><dd>{{ spec_assembly | escape }}</dd>
+              {% else %}
+                <dt>Assembly</dt><dd>Simple setup</dd>
+              {% endif %}
+              {% if spec_care != blank %}
+                <dt>Care</dt><dd>{{ spec_care | escape }}</dd>
+              {% else %}
+                <dt>Care</dt><dd>Wipe clean with a damp cloth</dd>
+              {% endif %}
+              <dt>Warranty</dt>
+              <dd>{% if product.metafields.custom.warranty.value != blank %}{{ product.metafields.custom.warranty.value | escape }}{% else %}12 months{% endif %}</dd>
+              <dt>Delivery</dt>
+              <dd>Australia wide</dd>
+            </dl>
+          </div>
+        </details>
+      </div>
+
+      <div class="pp-accordions">
+        <details class="pp-accordion">
+          <summary class="pp-accordion__summary">
+            Shipping &amp; Returns
+            {{ pp_accordion_chevron }}
+          </summary>
+          <div class="pp-accordion__body pp-shipping-content">
+            <p>
+              {% if free_shipping_threshold_enabled %}
+                <strong>Free delivery on orders over {{ free_shipping_threshold_money }}</strong> — Shipping costs and delivery options are shown at checkout.
+              {% else %}
+                <strong>Australia wide shipping</strong> — Shipping costs and delivery options are shown at checkout.
+              {% endif %}
+              {% if shipping_policy_url != blank %}
+                <a href="{{ shipping_policy_url }}" class="pp-link-primary">View shipping policy</a>.
+              {% endif %}
+            </p>
+            <p>
+              <strong>Returns</strong> —
+              {% if refund_policy_url != blank %}
+                Easy 30 day returns on unused items in original packaging. <a href="{{ refund_policy_url }}" class="pp-link-primary">View returns policy</a>.
+              {% else %}
+                Easy 30 day returns on unused items in original packaging. Contact us if you need help with a return.
+              {% endif %}
+            </p>
+          </div>
+        </details>
+
+        <details class="pp-accordion">
+          <summary class="pp-accordion__summary">
+            Care Guide
+            {{ pp_accordion_chevron }}
+          </summary>
+          <div class="pp-accordion__body">
+            {% if care_content != blank %}
+              {{ care_content }}
+            {% else %}
+              <p>Wipe with a soft damp cloth and dry thoroughly. Avoid harsh cleaners or abrasive pads. For outdoor use, rinse off dust and debris occasionally and allow to dry fully.</p>
+            {% endif %}
+          </div>
+        </details>
+
+        <details class="pp-accordion">
+          <summary class="pp-accordion__summary">
+            FAQs
+            {{ pp_accordion_chevron }}
+          </summary>
+          <div class="pp-accordion__body">
+            {% if faq_content != blank %}
+              {{ faq_content }}
+            {% else %}
+              <div class="pp-faq-item">
+                <p><span class="pp-faq-q">Is assembly required?</span> Most stands assemble in minutes with the simple hardware included.</p>
+              </div>
+              <div class="pp-faq-item">
+                <p><span class="pp-faq-q">Can I use this outdoors?</span> Yes — designed for indoor and covered outdoor spaces. Protect from prolonged heavy weather when possible.</p>
+              </div>
+              <div class="pp-faq-item">
+                <p><span class="pp-faq-q">Need help?</span> Our team responds within one business day. <a href="/pages/contact" class="pp-link-primary">Contact us</a>.</p>
+              </div>
+            {% endif %}
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  {%- liquid
+    assign rec_collection = product.collections.first
+    assign rec_products_count = 0
+    if rec_collection != blank
+      for p in rec_collection.products
+        if p.id != product.id
+          assign rec_products_count = rec_products_count | plus: 1
+        endif
+        if rec_products_count >= 4
+          break
+        endif
+      endfor
+    endif
+  -%}
+  {% if rec_collection != blank and rec_products_count > 0 %}
+    <section class="pp-recommended" aria-labelledby="recommended-heading">
+      <div class="pp-wrap">
+        <div class="pp-recommended__head">
+          <h2 id="recommended-heading">You May Also Like</h2>
+          <a href="{{ rec_collection.url }}" class="pp-view-all">
+            View all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="pp-recommended__grid">
+          {% assign rec_shown = 0 %}
+          {% for rec_product in rec_collection.products %}
+            {% if rec_product.id != product.id and rec_shown < 4 %}
+              {%- liquid
+                assign rec_image = rec_product.featured_media.preview_image | default: rec_product.featured_image
+                assign rec_on_sale = false
+                capture rec_promo
+                  render 'pp-product-promo', product: rec_product, price: rec_product.price, compare_at: rec_product.compare_at_price_max
+                endcapture
+                assign rec_promo = rec_promo | strip
+                if rec_promo contains '|sale'
+                  assign rec_on_sale = true
+                endif
+                assign rec_shown = rec_shown | plus: 1
+              -%}
+              <a href="{{ rec_product.url }}" class="pp-rec-card">
+                <div class="pp-rec-card__image">
+                  {% if rec_on_sale %}
+                    <span class="pp-rec-card__badge">Sale</span>
+                  {% endif %}
+                  {% if rec_image != blank %}
+                    {{ rec_image | image_url: width: 600 | image_tag: class: 'pp-rec-card__img', loading: 'lazy', widths: '300,400,600', sizes: '(min-width: 990px) 25vw, 50vw', alt: rec_product.title | escape }}
+                  {% else %}
+                    <div class="pp-placeholder" aria-hidden="true"></div>
+                  {% endif %}
+                </div>
+                <div class="pp-rec-card__info">
+                  <h3 class="pp-rec-card__title">{{ rec_product.title }}</h3>
+                  <div class="pp-rec-card__price">
+                    {% if rec_on_sale %}
+                      <span class="pp-rec-card__price--sale">{{ rec_product.price | money }}</span>
+                      <span class="pp-rec-card__price--was">{{ rec_product.compare_at_price_max | money }}</span>
+                    {% else %}
+                      <span>{{ rec_product.price | money }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  <div class="pp-sticky-bar" id="sticky-bar" aria-label="Quick purchase bar">
+    <div class="pp-sticky-inner">
+      <div class="pp-sticky-thumb" aria-hidden="true">
+        {% if product.featured_image %}
+          {{
+            product.featured_image
+            | image_url: width: 120
+            | image_tag:
+              class: 'pp-sticky-thumb-image',
+              loading: 'lazy',
+              widths: '60, 90, 120',
+              sizes: '44px',
+              alt: product.title | escape
+          }}
+        {% else %}
+          <div class="pp-placeholder" aria-hidden="true"></div>
+        {% endif %}
+      </div>
+      <div class="pp-sticky-info">
+        <span class="pp-sticky-title">{{ product.title }}</span>
+        <span class="pp-sticky-price" id="sticky-price">{{ current_variant.price | money }}</span>
+      </div>
+      <button class="pp-sticky-atc{% unless current_variant.available %} pp-atc--soldout{% endunless %}" id="sticky-atc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span id="sticky-atc-label">{% if current_variant.available %}Add to Cart{% else %}Sold out{% endif %}</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Product Information",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": []
+}
+{% endschema %}

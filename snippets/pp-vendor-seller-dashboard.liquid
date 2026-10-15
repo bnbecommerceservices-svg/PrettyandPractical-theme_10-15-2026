@@ -1,0 +1,19 @@
+{% liquid
+  assign nexus_login = nexus_login | default: settings.nexus_seller_login_url | strip
+  if nexus_login == blank
+    assign nexus_login = 'https://nexus.marmeto.org/login'
+  endif
+  assign nexus_apply_href = nexus_apply_href | default: settings.nexus_seller_register_url | strip
+  if nexus_apply_href == blank
+    assign nexus_apply_href = 'https://nexus.marmeto.org/registration-page/794354c4-2f85-48ca-8d3f-aefb28129aca'
+  endif
+%}
+<meta http-equiv="refresh" content="0;url={{ nexus_login }}">
+<div class="pp-vendor-card pp-nexus-gateway" id="pp-app">
+  <p>Taking you to the Nexus seller login…</p>
+  <a class="pp-vendor-btn" href="{{ nexus_login }}">Log in as a seller</a>
+  <p class="pp-sell-login">New seller? <a href="{{ nexus_apply_href }}">Apply to sell</a>.</p>
+  <script>
+    window.location.replace({{ nexus_login | json }});
+  </script>
+</div>

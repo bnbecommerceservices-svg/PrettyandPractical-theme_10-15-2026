@@ -1,0 +1,412 @@
+.pp-shipping-policy {
+  --pp-primary: #e8532a;
+  --pp-primary-dark: #c73e18;
+  --pp-primary-light: #fff1ec;
+  --pp-navy: #111827;
+  --pp-white: #ffffff;
+  --pp-bg: #ffffff;
+  --pp-bg-subtle: #f7f8fa;
+  --pp-border: #e5e7eb;
+  --pp-border-light: #f3f4f6;
+  --pp-text: #111827;
+  --pp-text-secondary: #4b5563;
+  --pp-text-muted: #9ca3af;
+  --pp-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.07);
+  --pp-radius-md: 12px;
+  --pp-radius-lg: 16px;
+  --pp-radius-pill: 999px;
+  --pp-font-heading: 'Sora', sans-serif;
+  --pp-font-body: 'DM Sans', sans-serif;
+  --pp-wrap-max: 1600px;
+  --pp-wrap-pad: 24px;
+  font-family: var(--pp-font-body);
+  background: var(--pp-bg);
+  color: var(--pp-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.pp-shipping-policy,
+.pp-shipping-policy *,
+.pp-shipping-policy *::before,
+.pp-shipping-policy *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.pp-shipping-policy .pp-wrap {
+  width: min(100%, var(--pp-wrap-max));
+  margin-inline: auto;
+  padding-inline: var(--pp-wrap-pad);
+}
+
+@media (max-width: 768px) {
+  .pp-shipping-policy {
+    --pp-wrap-pad: 16px;
+  }
+}
+
+.pp-shipping-policy .page-header {
+  padding: 48px 0 32px;
+}
+
+.pp-shipping-policy .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--pp-text-muted);
+  margin-bottom: 16px;
+}
+
+.pp-shipping-policy .breadcrumb a {
+  color: var(--pp-text-muted);
+  text-decoration: none;
+}
+
+.pp-shipping-policy .breadcrumb a:hover {
+  color: var(--pp-primary);
+}
+
+.pp-shipping-policy .breadcrumb svg {
+  flex-shrink: 0;
+}
+
+.pp-shipping-policy .page-header h1 {
+  font-family: var(--pp-font-heading);
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--pp-navy);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.pp-shipping-policy .page-header .updated {
+  font-size: 14px;
+  color: var(--pp-text-muted);
+  margin-bottom: 14px;
+}
+
+.pp-shipping-policy .page-header .lead {
+  font-size: 16px;
+  color: var(--pp-text-secondary);
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+.pp-shipping-policy .header-divider {
+  border: none;
+  border-top: 1px solid var(--pp-border-light);
+  margin-top: 32px;
+}
+
+.pp-shipping-policy .jump-nav {
+  display: none;
+  margin: 24px 0;
+}
+
+.pp-shipping-policy .jump-nav details {
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-md);
+  overflow: hidden;
+}
+
+.pp-shipping-policy .jump-nav summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  font-family: var(--pp-font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--pp-navy);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  background: var(--pp-bg-subtle);
+}
+
+.pp-shipping-policy .jump-nav summary::-webkit-details-marker {
+  display: none;
+}
+
+.pp-shipping-policy .jump-nav summary svg {
+  transition: transform 0.2s;
+}
+
+.pp-shipping-policy .jump-nav details[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.pp-shipping-policy .jump-nav ul {
+  list-style: none;
+  padding: 12px 0;
+  background: var(--pp-white);
+}
+
+.pp-shipping-policy .jump-nav ul li a {
+  display: block;
+  padding: 9px 18px;
+  font-size: 14px;
+  color: var(--pp-text-secondary);
+  text-decoration: none;
+}
+
+.pp-shipping-policy .jump-nav ul li a:hover {
+  color: var(--pp-navy);
+  background: #f3f4f6;
+}
+
+.pp-shipping-policy .page-body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 64px;
+  align-items: start;
+  padding-bottom: 80px;
+}
+
+.pp-shipping-policy .sidebar {
+  position: sticky;
+  top: 32px;
+}
+
+.pp-shipping-policy .toc-label {
+  font-family: var(--pp-font-heading);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pp-text-muted);
+  margin-bottom: 14px;
+}
+
+.pp-shipping-policy .toc-list {
+  list-style: none;
+}
+
+.pp-shipping-policy .toc-list li a {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--pp-text-secondary);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  border-radius: 0 8px 8px 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.pp-shipping-policy .toc-list li a:hover {
+  color: var(--pp-navy);
+  background: #f3f4f6;
+}
+
+.pp-shipping-policy .toc-list li a.active,
+.pp-shipping-policy .toc-list li a.is-active {
+  color: var(--pp-primary);
+  border-left-color: var(--pp-primary);
+  background: var(--pp-primary-light);
+  font-weight: 600;
+}
+
+.pp-shipping-policy .content {
+  max-width: 720px;
+  padding-top: 48px;
+}
+
+.pp-shipping-policy .content section {
+  margin-bottom: 52px;
+}
+
+.pp-shipping-policy .content section,
+.pp-shipping-policy .content h2 {
+  scroll-margin-top: 110px;
+}
+
+.pp-shipping-policy .content h2 {
+  font-family: var(--pp-font-heading);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--pp-navy);
+  margin-bottom: 18px;
+}
+
+.pp-shipping-policy .content p {
+  font-size: 16px;
+  color: var(--pp-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.pp-shipping-policy .content p:last-child {
+  margin-bottom: 0;
+}
+
+.pp-shipping-policy .content ul {
+  list-style: none;
+  margin: 14px 0;
+  padding: 0;
+}
+
+.pp-shipping-policy .content ul li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 16px;
+  color: var(--pp-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.pp-shipping-policy .content ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pp-primary);
+}
+
+.pp-shipping-policy .callout {
+  display: flex;
+  gap: 14px;
+  background: var(--pp-primary-light);
+  border: 1px solid #f5cbb9;
+  border-radius: var(--pp-radius-md);
+  padding: 18px 20px;
+  margin: 20px 0;
+}
+
+.pp-shipping-policy .callout-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  color: var(--pp-primary);
+}
+
+.pp-shipping-policy .callout-body {
+  font-size: 15px;
+  color: var(--pp-text);
+  line-height: 1.65;
+}
+
+.pp-shipping-policy .callout-body strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--pp-navy);
+}
+
+.pp-shipping-policy .callout-info {
+  background: var(--pp-bg-subtle);
+  border-color: var(--pp-border);
+}
+
+.pp-shipping-policy .callout-info .callout-icon {
+  color: var(--pp-text-muted);
+}
+
+.pp-shipping-policy .section-divider {
+  border: none;
+  border-top: 1px solid var(--pp-border-light);
+  margin-bottom: 52px;
+}
+
+.pp-shipping-policy .page-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 24px 0 48px;
+  border-top: 1px solid var(--pp-border-light);
+}
+
+.pp-shipping-policy .page-footer-row .updated-note {
+  font-size: 13px;
+  color: var(--pp-text-muted);
+}
+
+.pp-shipping-policy .page-footer-row .contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pp-primary);
+  text-decoration: none;
+}
+
+.pp-shipping-policy .page-footer-row .contact-link:hover {
+  color: var(--pp-primary-dark);
+}
+
+.pp-shipping-policy .page-footer-row .contact-link svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .pp-shipping-policy .page-header h1 {
+    font-size: 26px;
+  }
+
+  .pp-shipping-policy .page-body {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .pp-shipping-policy .sidebar {
+    display: none;
+  }
+
+  .pp-shipping-policy .jump-nav {
+    display: block;
+  }
+
+  .pp-shipping-policy .content {
+    padding-top: 0;
+    max-width: min(720px, 100%);
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-shipping-policy .page-header {
+    padding: 32px 0 24px;
+  }
+
+  .pp-shipping-policy .page-header h1 {
+    font-size: 26px;
+  }
+
+  .pp-shipping-policy .page-header .lead {
+    font-size: 15px;
+  }
+
+  .pp-shipping-policy .content h2 {
+    font-size: 20px;
+  }
+
+  .pp-shipping-policy .content p,
+  .pp-shipping-policy .content ul li {
+    font-size: 15px;
+  }
+}
+
+.pp-shipping-policy .toc-list {
+  position: relative;
+}
+
+.pp-shipping-policy .pp-toc-indicator {
+  position: absolute;
+  left: 0;
+  width: 3px;
+  background: var(--pp-primary);
+  border-radius: 999px;
+  transition: top 220ms ease, height 220ms ease;
+  pointer-events: none;
+}
+
+.pp-shipping-policy .sidebar {
+  top: 96px;
+}

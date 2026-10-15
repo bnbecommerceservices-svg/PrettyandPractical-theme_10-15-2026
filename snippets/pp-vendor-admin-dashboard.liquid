@@ -1,0 +1,19 @@
+{% liquid
+  assign nexus_admin = nexus_admin | strip
+  if nexus_admin == blank
+    assign shop_handle = shop.permanent_domain | split: '.' | first
+    assign nexus_admin = 'https://admin.shopify.com/store/' | append: shop_handle | append: '/apps'
+  endif
+  assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard'
+%}
+
+<div class="pp-vendor-card pp-nexus-gateway" id="pp-app">
+  <p>Seller applications, product approvals, commissions and payouts are managed in the <strong>Nexus</strong> app — not on this page.</p>
+  <ol class="pp-nexus-steps">
+    <li>Open Shopify Admin → <strong>Apps</strong> → <strong>Nexus</strong>.</li>
+    <li>Review <strong>Sellers</strong>, then <strong>Products</strong>.</li>
+    <li>Activate at least one seller so orders can route.</li>
+  </ol>
+  <a class="pp-vendor-btn" href="{{ nexus_admin }}" target="_blank" rel="noopener">Open Nexus admin</a>
+  <p class="pp-sell-login">You must be logged into Shopify Admin. Sellers use the <a href="{{ nexus_seller_href }}">Seller Dashboard</a> instead.</p>
+</div>

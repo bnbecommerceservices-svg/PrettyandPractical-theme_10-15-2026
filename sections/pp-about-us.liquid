@@ -1,0 +1,444 @@
+{{ 'pp-about-us.css' | asset_url | stylesheet_tag }}
+
+{% capture pp_about_story_1 %}Welcome to Pretty and Practical – your destination for stylish, functional, and high-quality home and lifestyle products. We believe that the perfect balance of beauty and utility can transform everyday living into something truly special.{% endcapture %}
+{% capture pp_about_story_2 %}At Pretty and Practical, our carefully curated collections are designed to enhance your spaces and simplify your routines. From elegant home décor to versatile furniture and unique accessories, we bring you products that are not only aesthetically pleasing but also serve a purpose.{% endcapture %}
+{% capture pp_about_story_3 %}We are committed to quality, sustainability, and innovation, ensuring that every item in our store is thoughtfully sourced and designed to fit seamlessly into your lifestyle. Whether you're revamping your home or looking for a thoughtful gift, Pretty and Practical is here to inspire and support your choices.{% endcapture %}
+{% capture pp_about_story_4 %}Thank you for choosing us to be part of your journey in creating spaces that reflect your style and values. Explore our range and discover the art of blending beauty with practicality.{% endcapture %}
+{% capture pp_about_split_1 %}At Pretty and Practical, we specialize in furniture that combines style with function. Our curated collections are designed to spark creativity and inspire you to create living spaces that are uniquely yours. From timeless classics to modern essentials, our furniture pieces are crafted to enhance your home while providing unmatched comfort and practicality.{% endcapture %}
+{% capture pp_about_split_1b %}We look for pieces that earn their place every day: dining tables that host weeknights and weekends, storage that stays handsome with the doors closed, and seating that feels as good as it looks. Each range is chosen so rooms can evolve without needing a full redesign.{% endcapture %}
+{% capture pp_about_split_1c %}Delivery is available across Australia, with sizing, materials and care details listed on every product page so you can shop with confidence. If you are furnishing a first home or refreshing a lived-in space, our team is here to help you choose pieces that last.{% endcapture %}
+{% capture pp_about_split_2 %}Add life and charm to your interiors with our exquisite range of plant stands. Designed to elevate your greenery, our stands are both stylish and durable, perfect for showcasing your favorite plants. Whether you're a seasoned plant enthusiast or just starting your green journey, our plant stands are the perfect addition to any room.{% endcapture %}
+{% capture pp_about_split_2b %}Choose a compact stand for a kitchen herb pot, a tiered design for a bright corner, or a taller piece that lets trailing plants frame a window. Finishes are selected to sit comfortably with timber, metal and upholstered furniture already in the range.{% endcapture %}
+{% capture pp_about_split_2c %}Stands are easy to style indoors or on a sheltered balcony, and they make a thoughtful gift for anyone building a greener home. Pair them with our décor and storage pieces to keep plants looking considered rather than cluttered.{% endcapture %}
+
+{% liquid
+  assign hero_img = section.settings.hero_image
+  assign split_img = section.settings.split_image
+  assign page_title = section.settings.page_title | default: 'About Us'
+  assign page_subtitle = section.settings.page_subtitle | default: 'Your destination for stylish, functional, and high-quality home and lifestyle products across Australia.'
+  assign story_heading = section.settings.story_heading | default: 'What We Are'
+  assign story_text_1 = section.settings.story_text_1 | default: pp_about_story_1
+  assign story_text_2 = section.settings.story_text_2 | default: pp_about_story_2
+  assign story_text_3 = section.settings.story_text_3 | default: pp_about_story_3
+  assign story_text_4 = section.settings.story_text_4 | default: pp_about_story_4
+  assign split_heading_1 = section.settings.split_heading_1 | default: 'Furniture inspiration'
+  assign split_text_1 = section.settings.split_body_1 | default: pp_about_split_1
+  assign split_text_1b = section.settings.split_body_1b | default: pp_about_split_1b
+  assign split_text_1c = section.settings.split_body_1c | default: pp_about_split_1c
+  assign split_heading_2 = section.settings.split_heading_2 | default: 'Plant stands for every space'
+  assign split_text_2 = section.settings.split_body_2 | default: pp_about_split_2
+  assign split_text_2b = section.settings.split_body_2b | default: pp_about_split_2b
+  assign split_text_2c = section.settings.split_body_2c | default: pp_about_split_2c
+  assign cta_heading = section.settings.cta_heading | default: 'Explore our range'
+  assign cta_text = section.settings.cta_text | default: 'Discover the art of blending beauty with practicality — furniture, decor, plant stands and home goods made for Australian living.'
+  assign cta_url = section.settings.cta_url | default: routes.all_products_collection_url
+  assign cta_label = section.settings.cta_label | default: 'Browse all products'
+  assign gallery_1_url = '/collections/bedroom-furniture'
+  if section.settings.gallery_1_url != blank
+    assign gallery_1_url = section.settings.gallery_1_url
+  elsif collections['bedroom-furniture'].url != blank
+    assign gallery_1_url = collections['bedroom-furniture'].url
+  endif
+  assign gallery_2_url = '/collections/plant-stands'
+  if section.settings.gallery_2_url != blank
+    assign gallery_2_url = section.settings.gallery_2_url
+  elsif collections['plant-stands'].url != blank
+    assign gallery_2_url = collections['plant-stands'].url
+  endif
+  assign gallery_3_url = '/collections/home-garden'
+  if section.settings.gallery_3_url != blank
+    assign gallery_3_url = section.settings.gallery_3_url
+  elsif collections['garden-outdoor'].url != blank
+    assign gallery_3_url = collections['garden-outdoor'].url
+  elsif collections['home-garden'].url != blank
+    assign gallery_3_url = collections['home-garden'].url
+  endif
+%}
+
+<section class="pp-about-us">
+  <div class="wrap">
+    <header class="page-header">
+      <p class="breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <span>&rsaquo;</span>
+        About
+      </p>
+      <h1>{{ page_title }}</h1>
+      <p class="lead">{{ page_subtitle }}</p>
+    </header>
+  </div>
+  <hr class="header-divider">
+
+  <main class="page-main">
+    <div class="wrap">
+      <div class="pp-about-intro">
+        <section class="our-story">
+          <h2>{{ story_heading }}</h2>
+          <p>{{ story_text_1 }}</p>
+          {% if story_text_2 != blank %}<p>{{ story_text_2 }}</p>{% endif %}
+          {% if story_text_3 != blank %}<p>{{ story_text_3 }}</p>{% endif %}
+          {% if story_text_4 != blank %}<p>{{ story_text_4 }}</p>{% endif %}
+        </section>
+
+        <div class="hero-image hero-image--has-img">
+          {% if hero_img != blank %}
+            {{
+              hero_img
+              | image_url: width: 2400
+              | image_tag:
+                class: 'hero-image__img',
+                widths: '600, 900, 1200, 1800, 2400',
+                sizes: '(max-width: 768px) 100vw, 50vw',
+                loading: 'eager',
+                alt: hero_img.alt | default: page_title
+            }}
+          {% else %}
+            <img class="hero-image__img" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=80" alt="Pretty &amp; Practical home interiors" width="1800" height="770" loading="eager">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <section class="split-section">
+        <div class="split-inner">
+          <div class="split-image split-image--has-img">
+            {% if split_img != blank %}
+              {{
+                split_img
+                | image_url: width: 1200
+                | image_tag:
+                  class: 'split-image__img',
+                  widths: '400, 600, 800, 1200',
+                  sizes: '(max-width: 768px) 100vw, 50vw',
+                  loading: 'lazy',
+                  alt: split_img.alt | default: 'Furniture and plant stands'
+              }}
+            {% else %}
+              <img class="split-image__img" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80" alt="Furniture inspiration" width="1200" height="900" loading="lazy">
+            {% endif %}
+          </div>
+          <div class="split-text">
+            <h2>{{ split_heading_1 }}</h2>
+            <p>{{ split_text_1 }}</p>
+            {% if split_text_1b != blank %}<p>{{ split_text_1b }}</p>{% endif %}
+            {% if split_text_1c != blank %}<p>{{ split_text_1c }}</p>{% endif %}
+            <h2>{{ split_heading_2 }}</h2>
+            <p>{{ split_text_2 }}</p>
+            {% if split_text_2b != blank %}<p>{{ split_text_2b }}</p>{% endif %}
+            {% if split_text_2c != blank %}<p>{{ split_text_2c }}</p>{% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="wrap">
+      <section class="pp-about-gallery" aria-label="Our spaces">
+        <h2>Spaces we style</h2>
+        <div class="pp-about-gallery__grid">
+          <a class="pp-about-gallery__link" href="{{ gallery_1_url }}" aria-label="Shop Bedroom furniture">
+            <figure>
+              <img src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=900&q=80" alt="" width="900" height="640" loading="lazy">
+              <figcaption>Bedroom furniture</figcaption>
+            </figure>
+          </a>
+          <a class="pp-about-gallery__link" href="{{ gallery_2_url }}" aria-label="Shop Plant stands">
+            <figure>
+              <img src="https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=900&q=80" alt="" width="900" height="640" loading="lazy">
+              <figcaption>Plant stands</figcaption>
+            </figure>
+          </a>
+          <a class="pp-about-gallery__link" href="{{ gallery_3_url }}" aria-label="Shop Outdoor living">
+            <figure>
+              <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80" alt="" width="900" height="640" loading="lazy">
+              <figcaption>Outdoor living</figcaption>
+            </figure>
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <div class="wrap">
+      <section class="values-section">
+        <div class="values-grid">
+          {% for block in section.blocks %}
+            <div class="value-card" {{ block.shopify_attributes }}>
+              {% if block.settings.icon == 'info' %}
+                <svg class="value-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path>
+                </svg>
+              {% elsif block.settings.icon == 'shield' %}
+                <svg class="value-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"></path>
+                </svg>
+              {% elsif block.settings.icon == 'location' %}
+                <svg class="value-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path>
+                </svg>
+              {% elsif block.settings.icon == 'heart' %}
+                <svg class="value-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                </svg>
+              {% elsif block.settings.icon == 'star' %}
+                <svg class="value-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+              {% else %}
+                <svg class="value-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+                </svg>
+              {% endif %}
+              <h3>{{ block.settings.heading }}</h3>
+              <p>{{ block.settings.body }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <div class="wrap">
+      <div class="cta-block">
+        <div class="cta-inner">
+          <h2>{{ cta_heading }}</h2>
+          <p>{{ cta_text }}</p>
+          <a href="{{ cta_url }}" class="cta-btn">{{ cta_label }}</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+{% schema %}
+{
+  "name": "PP About Us",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Page header"
+    },
+    {
+      "type": "text",
+      "id": "page_title",
+      "label": "Page title",
+      "default": "About Pretty & Practical"
+    },
+    {
+      "type": "textarea",
+      "id": "page_subtitle",
+      "label": "Subtitle",
+      "default": "Your destination for stylish, functional, and high-quality home and lifestyle products across Australia."
+    },
+    {
+      "type": "header",
+      "content": "Hero image"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero banner image"
+    },
+    {
+      "type": "header",
+      "content": "Our story"
+    },
+    {
+      "type": "text",
+      "id": "story_heading",
+      "label": "Story heading",
+      "default": "What We Are"
+    },
+    {
+      "type": "textarea",
+      "id": "story_text_1",
+      "label": "Paragraph 1",
+      "default": "Welcome to Pretty and Practical – your destination for stylish, functional, and high-quality home and lifestyle products. We believe that the perfect balance of beauty and utility can transform everyday living into something truly special."
+    },
+    {
+      "type": "textarea",
+      "id": "story_text_2",
+      "label": "Paragraph 2",
+      "default": "At Pretty and Practical, our carefully curated collections are designed to enhance your spaces and simplify your routines. From elegant home décor to versatile furniture and unique accessories, we bring you products that are not only aesthetically pleasing but also serve a purpose."
+    },
+    {
+      "type": "textarea",
+      "id": "story_text_3",
+      "label": "Paragraph 3",
+      "default": "We are committed to quality, sustainability, and innovation, ensuring that every item in our store is thoughtfully sourced and designed to fit seamlessly into your lifestyle. Whether you are revamping your home or looking for a thoughtful gift, Pretty and Practical is here to inspire and support your choices."
+    },
+    {
+      "type": "textarea",
+      "id": "story_text_4",
+      "label": "Paragraph 4",
+      "default": "Thank you for choosing us to be part of your journey in creating spaces that reflect your style and values. Explore our range and discover the art of blending beauty with practicality."
+    },
+    {
+      "type": "header",
+      "content": "Split section"
+    },
+    {
+      "type": "image_picker",
+      "id": "split_image",
+      "label": "Split section image"
+    },
+    {
+      "type": "text",
+      "id": "split_heading_1",
+      "label": "Heading 1",
+      "default": "Furniture inspiration"
+    },
+    {
+      "type": "textarea",
+      "id": "split_body_1",
+      "label": "Body 1",
+      "default": "At Pretty and Practical, we specialize in furniture that combines style with function. Our curated collections are designed to spark creativity and inspire you to create living spaces that are uniquely yours. From timeless classics to modern essentials, our furniture pieces are crafted to enhance your home while providing unmatched comfort and practicality."
+    },
+    {
+      "type": "textarea",
+      "id": "split_body_1b",
+      "label": "Body 1 extra paragraph",
+      "default": "We look for pieces that earn their place every day: dining tables that host weeknights and weekends, storage that stays handsome with the doors closed, and seating that feels as good as it looks. Each range is chosen so rooms can evolve without needing a full redesign."
+    },
+    {
+      "type": "textarea",
+      "id": "split_body_1c",
+      "label": "Body 1 extra paragraph 2",
+      "default": "Delivery is available across Australia, with sizing, materials and care details listed on every product page so you can shop with confidence. If you are furnishing a first home or refreshing a lived-in space, our team is here to help you choose pieces that last."
+    },
+    {
+      "type": "text",
+      "id": "split_heading_2",
+      "label": "Heading 2",
+      "default": "Plant stands for every space"
+    },
+    {
+      "type": "textarea",
+      "id": "split_body_2",
+      "label": "Body 2",
+      "default": "Add life and charm to your interiors with our exquisite range of plant stands. Designed to elevate your greenery, our stands are both stylish and durable, perfect for showcasing your favorite plants. Whether you are a seasoned plant enthusiast or just starting your green journey, our plant stands are the perfect addition to any room."
+    },
+    {
+      "type": "textarea",
+      "id": "split_body_2b",
+      "label": "Body 2 extra paragraph",
+      "default": "Choose a compact stand for a kitchen herb pot, a tiered design for a bright corner, or a taller piece that lets trailing plants frame a window. Finishes are selected to sit comfortably with timber, metal and upholstered furniture already in the range."
+    },
+    {
+      "type": "textarea",
+      "id": "split_body_2c",
+      "label": "Body 2 extra paragraph 2",
+      "default": "Stands are easy to style indoors or on a sheltered balcony, and they make a thoughtful gift for anyone building a greener home. Pair them with our décor and storage pieces to keep plants looking considered rather than cluttered."
+    },
+    {
+      "type": "header",
+      "content": "Spaces we style"
+    },
+    {
+      "type": "url",
+      "id": "gallery_1_url",
+      "label": "Bedroom furniture link"
+    },
+    {
+      "type": "url",
+      "id": "gallery_2_url",
+      "label": "Plant stands link"
+    },
+    {
+      "type": "url",
+      "id": "gallery_3_url",
+      "label": "Outdoor living link"
+    },
+    {
+      "type": "header",
+      "content": "Call to action"
+    },
+    {
+      "type": "text",
+      "id": "cta_heading",
+      "label": "CTA heading",
+      "default": "Shop the collection"
+    },
+    {
+      "type": "textarea",
+      "id": "cta_text",
+      "label": "CTA text",
+      "default": "Browse furniture, decor, and home goods made for Australian living."
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "CTA link"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA button text",
+      "default": "Browse all products →"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "value_card",
+      "name": "Value card",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "info", "label": "Info" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "location", "label": "Location" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star" },
+            { "value": "check", "label": "Checkmark" }
+          ],
+          "default": "info"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Our value"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Description",
+          "default": "Describe this value proposition for your customers."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "PP About Us",
+      "blocks": [
+        {
+          "type": "value_card",
+          "settings": {
+            "icon": "info",
+            "heading": "Honest pricing",
+            "body": "We are committed to quality, sustainability, and innovation, ensuring that every item in our store is thoughtfully sourced and designed to fit seamlessly into your lifestyle."
+          }
+        },
+        {
+          "type": "value_card",
+          "settings": {
+            "icon": "shield",
+            "heading": "Thoughtfully sourced",
+            "body": "From timeless classics to modern essentials, our furniture pieces are crafted to enhance your home while providing unmatched comfort and practicality that stands the test of time."
+          }
+        },
+        {
+          "type": "value_card",
+          "settings": {
+            "icon": "location",
+            "heading": "Australian service",
+            "body": "Pretty and Practical is here to inspire and support your choices. Thank you for choosing us to be part of your journey in creating spaces that reflect your style and values."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

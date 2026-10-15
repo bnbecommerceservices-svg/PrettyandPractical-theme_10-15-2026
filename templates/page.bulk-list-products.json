@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "pp-vendor-portal",
+      "settings": {
+        "portal_page": "bulk_list"
+      }
+    }
+  },
+  "order": ["main"]
+}

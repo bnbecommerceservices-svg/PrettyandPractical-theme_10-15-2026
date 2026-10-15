@@ -1,0 +1,104 @@
+{% comment %}Live Pretty & Practical vendor widget, restyled by pp-vendor-portal.css{% endcomment %}
+<div class="pp-bulk-upload" id="pp-bulk-app">
+  <style>
+    .pp-bulk-upload { max-width: 720px; margin: 0 auto; font-family: inherit; color: #2b2620; }
+    .pp-bulk-upload * { box-sizing: border-box; }
+    .pp-bulk-upload .pp-lead { color: #6b6255; line-height: 1.6; margin-bottom: 24px; }
+    .pp-bulk-upload .pp-template-link { font-weight: 600; }
+    .pp-bulk-upload .pp-guidelines { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e8e4de; }
+
+    .pp-bulk-upload label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px 0; }
+    .pp-bulk-upload input[type=email],
+    .pp-bulk-upload input[type=file] {
+      width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e8e4de;
+      border-radius: 6px; background-color: #f8f6f3; color: #2b2620; font-family: inherit;
+    }
+    .pp-bulk-upload input:focus { outline: 2px solid #2b2620; outline-offset: 1px; }
+    .pp-bulk-upload button {
+      margin-top: 20px; background-color: #2b2620; color: #ffffff; font-size: 14px;
+      font-weight: 600; border: none; padding: 12px 28px; border-radius: 6px; cursor: pointer;
+    }
+    .pp-bulk-upload button:hover { opacity: 0.92; }
+    .pp-bulk-upload button:disabled { opacity: 0.5; cursor: default; }
+
+    .pp-bulk-upload .pp-msg {
+      border-radius: 6px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px;
+    }
+    .pp-bulk-upload .pp-msg-error { background-color: #fbeceb; color: #a13c34; }
+    .pp-bulk-upload .pp-msg-info { background-color: #f8f6f3; color: #6b6255; }
+    .pp-bulk-upload .pp-hidden { display: none !important; }
+
+    .pp-bulk-upload .pp-columns {
+      background: #f8f6f3; border: 1px solid #e8e4de; border-radius: 8px;
+      padding: 16px 20px; margin: 24px 0; font-size: 13px; line-height: 1.7;
+    }
+    .pp-bulk-upload .pp-columns code {
+      background: #efece5; padding: 1px 6px; border-radius: 4px; font-size: 12px;
+    }
+    .pp-bulk-upload .pp-columns .pp-required { color: #a13c34; font-size: 11px; font-weight: 600; }
+    .pp-bulk-upload .pp-columns .pp-optional { color: #9a9284; font-size: 11px; }
+  </style>
+
+  <p class="pp-lead">
+    Upload a CSV to list several products at once. All uploaded products are submitted for admin review and remain off sale until approved.
+  </p>
+
+  <p>
+    <a class="pp-template-link" id="pp-template" href="#">Download a CSV template ↓</a>
+    — contains all required and optional columns. Add your product rows, save as CSV, then upload.
+  </p>
+
+  <div class="pp-columns">
+    <strong>CSV columns</strong> (first row must be a header row with these names):<br><br>
+    <code>title</code> <span class="pp-required">required</span><br>
+    <code>description</code> <span class="pp-required">required</span><br>
+    <code>cost_price</code> <span class="pp-required">required</span> — what you're paid per unit; retail pricing is set during review<br>
+    <code>quantity</code> <span class="pp-required">required</span> — whole number<br>
+    <code>sku</code> <span class="pp-required">required</span><br>
+    <code>image_url</code> <span class="pp-required">required</span> — one or more image URLs, separated by commas
+    (e.g. <code>https://example.com/a.jpg,https://example.com/b.jpg</code>). If you're editing the CSV in
+    Excel or Google Sheets, just type both URLs into the one cell separated by a comma — the spreadsheet
+    handles the quoting for you automatically. If you're writing the CSV by hand in a plain text editor,
+    wrap that whole cell in double quotes since it contains a comma, e.g.
+    <code>"https://example.com/a.jpg,https://example.com/b.jpg"</code>.<br>
+    <code>category</code> <span class="pp-required">required</span> — Furniture, Storage, Textiles, Home &amp; Garden, Garden &amp; Outdoor, Pets<br>
+    <code>shipping_cost</code> <span class="pp-optional">optional</span> — for your and our own reference; it
+    isn't sent to Shopify, since Shopify calculates customer-facing shipping from its own shipping
+    settings rather than a per-product field<br>
+    <code>gtin</code> <span class="pp-optional">optional</span> — barcode / GTIN, if the product has one<br>
+    <code>keywords</code> <span class="pp-optional">optional</span> — comma-separated search keywords for
+    the product (e.g. <code>"oak, side table, handmade"</code>)<br><br>
+    Up to 500 rows per file. Larger catalogs should be split into multiple uploads.
+
+    <div class="pp-guidelines">
+      <strong>Image guidelines</strong><br>
+      • Square images, at least 1000×1000px, JPG or PNG<br>
+      • Plain white background, no watermarks, borders, or text overlays<br>
+      • No other brand names or logos visible in the shot<br>
+      • Product titles: capitalised, no ALL CAPS, and please don't include your business name in the title
+    </div>
+  </div>
+
+  <div class="pp-msg pp-msg-error pp-hidden" id="pp-bulk-error"></div>
+
+  <p>Categories: Furniture, Storage, Textiles, Home &amp; Garden, Garden &amp; Outdoor, Pets. Enter one exact category in every row.</p>
+<p>Additional CSV columns: <strong>weight_kg</strong> (positive kilograms), <strong>size</strong> (dimensions), <strong>colour</strong>. These are optional. No email or selling-price column is needed.</p>
+<p id="pp-bulk-account">Checking your seller account…</p>
+<form id="pp-bulk-form" style="display:none">
+<label for="pp-bulk-file">CSV file</label><input type="file" id="pp-bulk-file" name="csv_file" accept=".csv,text/csv" required><button id="pp-bulk-submit" type="submit">Upload products for review</button>
+</form>
+<div id="pp-bulk-result" role="status"></div>
+<p><a href="/pages/seller-dashboard?section=products">Back to Products</a></p>
+</div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script>
+(function(){
+ /* hostname lock removed so this theme storefront can host the portal */
+  var remember=function(){try{return localStorage.getItem('pp-seller-remember')!=='0';}catch(e){return true;}};
+  var storage={getItem:function(k){try{return (remember()?localStorage:sessionStorage).getItem(k);}catch(e){return null;}},setItem:function(k,v){try{(remember()?localStorage:sessionStorage).setItem(k,v);(remember()?sessionStorage:localStorage).removeItem(k);}catch(e){}},removeItem:function(k){try{localStorage.removeItem(k);sessionStorage.removeItem(k);}catch(e){}}};
+  var client=window.supabase.createClient('https://ehorwahtrfuekejjxodi.supabase.co','sb_publishable_zxzv6GlrSrTXhtoHUWsOIg_kujSxxYn',{auth:{storage:storage}});
+
+var form=document.getElementById("pp-bulk-form"), status=document.getElementById("pp-bulk-account"), result=document.getElementById("pp-bulk-result"),button=document.getElementById("pp-bulk-submit");
+var csv="title,description,cost_price,quantity,sku,image_url,category,weight_kg,size,colour,shipping_cost,gtin,keywords\r\n"; var template=document.getElementById("pp-template");template.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));template.download="pretty-practical-products.csv";
+client.auth.getUser().then(function(auth){if(auth.error||!auth.data.user){status.innerHTML='Please <a href="/pages/seller-dashboard">log in</a> before uploading.';return;}status.textContent="Signed in as "+auth.data.user.email;form.style.display="block";});
+form.addEventListener("submit",async function(e){e.preventDefault();button.disabled=true;result.textContent="Uploading…";try{var session=(await client.auth.getSession()).data.session;if(!session)throw new Error("Please log in again.");var file=form.elements.csv_file.files[0];if(!file||file.size>5*1024*1024)throw new Error("Choose a CSV file up to 5 MB.");var res=await fetch("https://ehorwahtrfuekejjxodi.supabase.co/functions/v1/seller-bulk-product-request",{method:"POST",headers:{Authorization:"Bearer "+session.access_token},body:new FormData(form)});var data=await res.json();if(!res.ok)throw new Error(data.error||"Upload failed.");result.textContent=data.validCount+" rows queued for review; "+data.invalidCount+" rows skipped. ";(data.invalidRows||[]).forEach(function(r){var p=document.createElement("p");p.textContent="Row "+r.rowNumber+": "+r.error;result.append(p);});var link=document.createElement("a");link.href="/pages/bulk-upload-status?job="+new URL(data.statusUrl).searchParams.get("job");link.textContent="View upload progress";result.append(link);}catch(err){result.textContent=err.message;}finally{button.disabled=false;}});
+})();
+</script>

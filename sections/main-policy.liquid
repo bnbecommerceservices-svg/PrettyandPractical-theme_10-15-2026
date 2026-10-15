@@ -1,0 +1,26 @@
+{% liquid
+  assign pp_policy_path = policy.url | default: request.path | downcase
+  assign pp_known_policy = false
+  if pp_policy_path contains 'privacy' or pp_policy_path contains 'refund' or pp_policy_path contains 'return' or pp_policy_path contains 'shipping' or pp_policy_path contains 'terms' or pp_policy_path contains 'contact'
+    assign pp_known_policy = true
+  endif
+%}
+
+{% unless pp_known_policy %}
+  <section class="shopify-policy" style="max-width:720px;margin:48px auto;padding:0 24px;">
+    <h1>{{ policy.title }}</h1>
+    <div class="rte">{{ policy.body }}</div>
+  </section>
+{% endunless %}
+
+{% schema %}
+{
+  "name": "Legal policy",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Legal policy"
+    }
+  ]
+}
+{% endschema %}

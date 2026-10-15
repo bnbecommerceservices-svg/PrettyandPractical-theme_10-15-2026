@@ -1,0 +1,32 @@
+{%- liquid
+  assign pp_tv_handle = 'tv-stands'
+  assign pp_tv_url = '/collections/tv-stands'
+  assign pp_tv_candidates = 'tv-stands,tv-trolley-stand,tv-brackets-stands' | split: ','
+  assign pp_tv_found = false
+  for tv_handle in pp_tv_candidates
+    assign tv_col = collections[tv_handle]
+    if tv_col != blank and tv_col.all_products_count > 0
+      assign pp_tv_handle = tv_handle
+      assign pp_tv_url = tv_col.url
+      assign pp_tv_found = true
+      break
+    endif
+  endfor
+  unless pp_tv_found
+    for tv_handle in pp_tv_candidates
+      assign tv_col = collections[tv_handle]
+      if tv_col != blank
+        assign pp_tv_handle = tv_handle
+        assign pp_tv_url = tv_col.url
+        break
+      endif
+    endfor
+  endunless
+
+  assign pp_outdoor_handle = 'garden-outdoor'
+  assign pp_outdoor_url = collections['garden-outdoor'].url | default: '/collections/garden-outdoor'
+  if collections['outdoor'] != blank and collections['outdoor'].all_products_count > 0
+    assign pp_outdoor_handle = 'outdoor'
+    assign pp_outdoor_url = collections['outdoor'].url
+  endif
+-%}

@@ -1,0 +1,7 @@
+{% assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard' %}
+
+<div class="pp-status-card">
+  <h2>Shipment recorded</h2>
+  <p>Tracking is saved in Nexus and passed through to the Shopify order.</p>
+  <a class="pp-vendor-btn" href="{{ nexus_seller_href }}">Open seller portal</a>
+</div>

@@ -1,0 +1,147 @@
+{% comment %}Live Pretty & Practical vendor widget, restyled by pp-vendor-portal.css{% endcomment %}
+<div class="pp-bulk-status" id="pp-status-app">
+  <style>
+    .pp-bulk-status { max-width: 800px; margin: 0 auto; font-family: inherit; color: #2b2620; }
+    .pp-bulk-status * { box-sizing: border-box; }
+    .pp-bulk-status h1 { font-size: 20px; margin: 0 0 4px; }
+    .pp-bulk-status .pp-summary {
+      background: #f8f6f3; border: 1px solid #e8e4de; border-radius: 8px;
+      padding: 16px 20px; margin: 20px 0; font-size: 14px;
+    }
+    .pp-bulk-status .pp-pill {
+      display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+    }
+    .pp-bulk-status .pp-pill-processing { background: #fdf3e0; color: #a1701c; }
+    .pp-bulk-status .pp-pill-done { background: #eaf4ea; color: #2f6b34; }
+    .pp-bulk-status table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
+    .pp-bulk-status th {
+      text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+      color: #9a9284; padding: 8px 10px; border-bottom: 1px solid #e8e4de;
+    }
+    .pp-bulk-status td { padding: 10px; border-bottom: 1px solid #f0ede8; }
+    .pp-bulk-status .pp-err {
+      background: #fbeceb; color: #a13c34; border-radius: 8px; padding: 16px 20px;
+    }
+    .pp-bulk-status .pp-loading { color: #6b6255; font-size: 14px; }
+    .pp-bulk-status a { color: #2b2620; }
+    .pp-bulk-status .pp-hidden { display: none !important; }
+  </style>
+
+  <div id="pp-status-loading" class="pp-loading">Loading upload status…</div>
+  <div id="pp-status-error" class="pp-err pp-hidden"></div>
+  <div id="pp-status-content" class="pp-hidden"></div>
+</div>
+
+<script>
+(function () {
+  var STATUS_FUNCTION_URL = 'https://ehorwahtrfuekejjxodi.supabase.co/functions/v1/seller-bulk-upload-status';
+  var FORM_PATH = '/pages/bulk-list-products';
+  var REFRESH_MS = 8000;
+
+  var params = new URLSearchParams(window.location.search);
+  var jobId = params.get('job');
+
+  var loadingEl = document.getElementById('pp-status-loading');
+  var errorEl = document.getElementById('pp-status-error');
+  var contentEl = document.getElementById('pp-status-content');
+  var pollTimer = null;
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function showError(message) {
+    loadingEl.classList.add('pp-hidden');
+    contentEl.classList.add('pp-hidden');
+    errorEl.textContent = message;
+    errorEl.classList.remove('pp-hidden');
+  }
+
+  function statusLabel(status) {
+    if (status === 'done') return 'Created';
+    if (status === 'failed') return 'Failed';
+    if (status === 'processing') return 'Processing';
+    return 'Queued';
+  }
+  function statusColor(status) {
+    if (status === 'done') return '#2f6b34';
+    if (status === 'failed') return '#a13c34';
+    return '#6b6255';
+  }
+  function statusBg(status) {
+    if (status === 'done') return '#eaf4ea';
+    if (status === 'failed') return '#fbeceb';
+    return '#f8f6f3';
+  }
+
+  function render(data) {
+    var job = data.job;
+    var rows = data.rows || [];
+    var isDone = job.status === 'done';
+    var remaining = job.total_rows - job.processed_rows;
+
+    var rowsHtml = rows.map(function (r) {
+      return '' +
+        '<tr>' +
+          '<td>' + escapeHtml(r.row_number) + '</td>' +
+          '<td>' + escapeHtml(r.title || '—') + '</td>' +
+          '<td><span class="pp-pill" style="background:' + statusBg(r.status) + ';color:' + statusColor(r.status) + ';">' + statusLabel(r.status) + '</span></td>' +
+          '<td style="color:#6b6255;">' + escapeHtml(r.error || '—') + '</td>' +
+        '</tr>';
+    }).join('');
+
+    contentEl.innerHTML =
+      '<h1>Bulk upload status</h1>' +
+      '<div class="pp-summary">' +
+        '<strong>' + escapeHtml(job.seller_email) + '</strong> &mdash; ' +
+        '<span class="pp-pill ' + (isDone ? 'pp-pill-done' : 'pp-pill-processing') + '">' + (isDone ? 'Done' : 'Processing') + '</span>' +
+        '<p>' +
+          job.processed_rows + ' of ' + job.total_rows + ' rows processed ' +
+          '(<strong style="color:#2f6b34;">' + job.success_rows + ' created</strong>, ' +
+          '<strong style="color:' + (job.failed_rows > 0 ? '#a13c34' : '#6b6255') + ';">' + job.failed_rows + ' failed</strong>)' +
+          (isDone ? '.' : (', ' + remaining + ' still queued — this page refreshes automatically.')) +
+        '</p>' +
+        (job.success_rows > 0 ? '<p>Created products are drafts and won\'t appear on the storefront or your seller dashboard until they\'re reviewed and activated.</p>' : '') +
+      '</div>' +
+      '<table>' +
+        '<thead><tr><th>Row</th><th>Title</th><th>Status</th><th>Detail</th></tr></thead>' +
+        '<tbody>' + rowsHtml + '</tbody>' +
+      '</table>' +
+      '<p style="margin-top:32px;"><a href="' + FORM_PATH + '">&larr; Upload another file</a></p>';
+
+    loadingEl.classList.add('pp-hidden');
+    errorEl.classList.add('pp-hidden');
+    contentEl.classList.remove('pp-hidden');
+
+    if (!isDone) {
+      pollTimer = window.setTimeout(load, REFRESH_MS);
+    }
+  }
+
+  function load() {
+    fetch(STATUS_FUNCTION_URL + '?job=' + encodeURIComponent(jobId))
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) throw new Error(data.error || 'Something went wrong loading this upload.');
+          return data;
+        });
+      })
+      .then(render)
+      .catch(function (err) {
+        showError(err.message || 'Something went wrong loading this upload.');
+      });
+  }
+
+  if (!jobId) {
+    showError('Missing job id.');
+  } else {
+    load();
+  }
+
+  window.addEventListener('beforeunload', function () {
+    if (pollTimer) window.clearTimeout(pollTimer);
+  });
+})();
+</script>

@@ -1,0 +1,9 @@
+{%- doc -%}
+  Alias for link featured images used by mega menu docs / callers.
+
+  @param {object} link - The link to render
+  @param {string} [class] - The class to apply to the image
+  @param {string} [sizes] - The sizes to apply to the image
+{%- enddoc -%}
+
+{% render 'link-featured-image', link: link, class: class, sizes: sizes %}

@@ -1,0 +1,2117 @@
+{{ 'pp-header-footer.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pp-wishlist.js' | asset_url }}" defer></script>
+{% render 'predictive-search-styles' %}
+
+{% # theme-check-disable RemoteAsset %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet">
+{% # theme-check-enable RemoteAsset %}
+
+{% liquid
+  assign header_section = header_section | default: section
+  assign header_container_class = container_class | default: 'pp-wrap'
+  assign cart_discount_progress_enabled = settings.cart_discount_progress_enabled | default: true, allow_false: true
+  assign cart_discount_threshold = settings.cart_discount_threshold | plus: 0
+  assign cart_discount_percentage = settings.cart_discount_percentage | plus: 0
+  assign cart_discount_progress_message = settings.cart_discount_progress_message | default: "You're {{ amount }} away from {{ percentage }}% off"
+  assign cart_discount_unlocked_message = settings.cart_discount_unlocked_message | default: '{{ percentage }}% off unlocked'
+  assign cart_discount_applied_message = settings.cart_discount_applied_message | default: '{{ percentage }}% off applied'
+
+  assign utility_menu_handle = utility_menu | default: header_section.settings.utility_menu
+  assign category_block_items = category_blocks
+  assign category_menu_links = blank
+  assign sticky_mode = header_section.settings.enable_sticky_header | default: 'always'
+  assign header_is_sticky = true
+  if sticky_mode == 'none'
+    assign header_is_sticky = false
+  endif
+  assign canonical_category_labels = 'New Arrival|Home & Garden|Garden & Outdoor|Furniture|TV Trolley / Stand|Pets|Under $50|Shop All' | split: '|'
+  assign canonical_category_handles = 'new-arrival|home-garden|garden-outdoor|furniture|tv-stands|pets|under-50|all' | split: '|'
+  assign fallback_search_placeholder = search_placeholder | default: header_section.settings.search_placeholder | default: 'Search furniture, home decor, plant stands, pets & more...'
+  assign fallback_category_nav_label = category_nav_label | default: header_section.settings.category_nav_label | default: 'Category navigation'
+  assign fallback_announcement_label = announcement_label | default: header_section.settings.announcements_label | default: header_section.settings.announcement_label | default: 'Store announcements'
+  assign default_announcement_text = 'Get $10 off on your first order'
+  assign fallback_announcement_text = announcement_fallback | default: header_section.settings.announcement_fallback | default: default_announcement_text
+  if fallback_announcement_text == blank or fallback_announcement_text contains 'translation missing' or fallback_announcement_text == 'content.shipping_policy'
+    assign fallback_announcement_text = default_announcement_text
+  endif
+  if template.name != 'index'
+    assign fallback_announcement_label = 'Store announcements'
+  endif
+  assign rendered_show_search = show_search
+  if rendered_show_search == blank
+    assign rendered_show_search = header_section.settings.show_search
+  endif
+
+  assign alerts_link = header_section.settings.alerts_link
+  assign alerts_label = header_section.settings.alerts_label | default: 'Alerts'
+  assign alerts_badge_text = header_section.settings.alerts_badge_text
+
+  assign wishlist_link = wishlist_link | default: header_section.settings.wishlist_link
+  if wishlist_link == blank
+    assign wishlist_link = '/pages/wishlist'
+  endif
+  assign wishlist_label = wishlist_label | default: header_section.settings.wishlist_label | default: 'Wishlist'
+
+  assign account_url = routes.account_url
+  if customer == blank
+    assign account_url = routes.account_login_url
+  endif
+  if account_url == blank
+    assign account_url = '/account'
+  endif
+
+  assign account_help_url = pages['contact-us'].url | default: pages['contact'].url | default: '/pages/contact-us'
+  assign account_track_order_url = pages['track-order'].url | default: routes.account_login_url
+  assign customer_display_name = blank
+  assign customer_avatar_initials = blank
+  if customer
+    assign customer_display_name = customer.name
+    if customer_display_name == blank
+      assign customer_display_name = customer.first_name
+      if customer.last_name != blank
+        if customer_display_name != blank
+          assign customer_display_name = customer_display_name | append: ' '
+        endif
+        assign customer_display_name = customer_display_name | append: customer.last_name
+      endif
+    endif
+    if customer_display_name == blank
+      assign customer_display_name = customer.email
+    endif
+
+    if customer.first_name != blank
+      assign customer_avatar_initials = customer.first_name | slice: 0, 1 | upcase
+    endif
+    if customer.last_name != blank
+      assign customer_avatar_initials_last = customer.last_name | slice: 0, 1 | upcase
+      assign customer_avatar_initials = customer_avatar_initials | append: customer_avatar_initials_last
+    endif
+    if customer_avatar_initials == blank and customer.email != blank
+      assign customer_avatar_initials = customer.email | slice: 0, 1 | upcase
+    endif
+  endif
+
+  assign cart_count = cart.item_count | default: 0
+
+  assign pp_menu_has_tv = false
+  assign pp_use_menu_mega = false
+  assign pp_tv_url = '/collections/tv-stands'
+  if collections['tv-stands'].url != blank
+    assign pp_tv_url = collections['tv-stands'].url
+  elsif collections['tv-trolley-stand'].url != blank
+    assign pp_tv_url = collections['tv-trolley-stand'].url
+  endif
+  assign pp_garden_url = blank
+  assign pp_garden_try = 'garden-outdoor,garden-and-outdoor,outdoor-garden,garden,home-garden,home-and-garden' | split: ','
+  for h in pp_garden_try
+    if pp_garden_url == blank and collections[h].url != blank
+      assign pp_garden_url = collections[h].url
+    endif
+  endfor
+  if pp_garden_url == blank
+    for c in collections
+      assign ct = c.title | downcase
+      if pp_garden_url == blank and ct == 'garden & outdoor'
+        assign pp_garden_url = c.url
+      endif
+    endfor
+  endif
+  if pp_garden_url == blank
+    for c in collections
+      assign ct = c.title | downcase
+      if pp_garden_url == blank and ct == 'home & garden'
+        assign pp_garden_url = c.url
+      endif
+    endfor
+  endif
+  if pp_garden_url == blank
+    assign pp_garden_url = routes.all_products_collection_url
+  endif
+  assign pp_outdoor_url = pp_garden_url
+  if collections['outdoor'].products_count > 0
+    assign pp_outdoor_url = collections['outdoor'].url
+  endif
+
+  if category_blocks == blank or category_blocks.size == 0
+    if category_menu != blank and category_menu.links != blank and category_menu.links.size > 0
+      assign category_menu_links = category_menu.links
+    elsif category_menu_handle != blank and linklists[category_menu_handle].links != blank and linklists[category_menu_handle].links.size > 0
+      assign category_menu_links = linklists[category_menu_handle].links
+    endif
+  endif
+
+  if category_menu_links != blank and category_menu_links.size > 0
+    for link in category_menu_links
+      assign link_handle = link.title | handleize
+      if link_handle == 'tv-trolley-stand' or link_handle == 'tv-stands'
+        assign pp_menu_has_tv = true
+      endif
+      if link.links != blank and link.links.size > 0
+        assign pp_use_menu_mega = true
+      endif
+    endfor
+  endif
+%}
+
+{% capture rendered_utility_links %}
+  {% if utility_menu_handle != blank and linklists[utility_menu_handle].links.size > 0 %}
+    {% for link in linklists[utility_menu_handle].links %}
+      <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+    {% endfor %}
+  {% elsif utility_links_markup != blank %}
+    {{ utility_links_markup }}
+  {% endif %}
+{% endcapture %}
+{% assign rendered_utility_links = rendered_utility_links | strip %}
+
+{% capture rendered_category_links %}
+  {% if category_block_items != blank and category_block_items.size > 0 %}
+    {% for block in category_block_items %}
+      {% liquid
+        assign category_url = block.settings.link
+        if block.settings.collection != blank
+          assign category_url = block.settings.collection.url
+        endif
+        assign nav_path = category_url | split: '?' | first
+        assign nav_is_active = false
+        if nav_path != blank and request.path == nav_path
+          assign nav_is_active = true
+        endif
+        assign item_title = block.settings.label | downcase
+        assign item_icon = block.settings.icon
+        if item_title contains 'furniture'
+          assign item_icon = '&#x1FA91;'
+        elsif item_title contains 'tv'
+          assign item_icon = '&#x1F4FA;'
+        elsif item_title contains 'garden'
+          assign item_icon = '&#x1F333;'
+        elsif item_title contains 'outdoor'
+          assign item_icon = '&#x26F0;&#xFE0F;'
+        elsif item_title contains 'decor'
+          assign item_icon = '&#x1F3E0;'
+        elsif item_title contains 'hobby' or item_title contains 'hobbies'
+          assign item_icon = '&#x1F9F5;'
+        endif
+        if item_icon == blank
+          if item_title contains 'furniture'
+            assign item_icon = '&#x1FA91;'
+          elsif item_title contains 'tv'
+            assign item_icon = '&#x1F4FA;'
+          elsif item_title contains 'garden'
+            assign item_icon = '&#x1F333;'
+          elsif item_title contains 'outdoor'
+            assign item_icon = '&#x26F0;&#xFE0F;'
+          elsif item_title contains 'kitchen' or item_title contains 'dining'
+            assign item_icon = '&#x1F373;'
+          elsif item_title contains 'decor'
+            assign item_icon = '&#x1F3E0;'
+          elsif item_title contains 'storage' or item_title contains 'organ'
+            assign item_icon = '&#x1F5C3;&#xFE0F;'
+          elsif item_title contains 'bath'
+            assign item_icon = '&#x1F6C1;'
+          elsif item_title contains 'baby' or item_title contains 'kids'
+            assign item_icon = '&#x1F37C;'
+          elsif item_title contains 'toy' or item_title contains 'game'
+            assign item_icon = '&#x1F3AE;'
+          elsif item_title contains 'hobby' or item_title contains 'hobbies'
+            assign item_icon = '&#x1F9F5;'
+          elsif item_title contains 'sport'
+            assign item_icon = '&#x26BD;'
+          elsif item_title contains 'pet'
+            assign item_icon = '&#x1F43E;'
+          elsif item_title contains 'lighting' or item_title contains 'light'
+            assign item_icon = '&#x1F4A1;'
+          elsif item_title contains 'bedding' or item_title contains 'bed'
+            assign item_icon = '&#x1F6CF;&#xFE0F;'
+          elsif item_title contains 'sale' or item_title contains 'clearance'
+            assign item_icon = '&#x1F3F7;&#xFE0F;'
+          else
+            assign item_icon = '&#x2726;'
+          endif
+        endif
+      %}
+      {% liquid
+        assign block_is_sale = false
+        if item_title contains 'sale' or item_title contains 'clearance'
+          assign block_is_sale = true
+        endif
+        assign block_handle = block.settings.label | handleize
+        assign block_mega_id = 'ppMegaMenu-' | append: header_section.id | append: '-' | append: block.id
+        assign block_attrs = block.shopify_attributes
+      %}
+      {% unless block_handle == 'outdoor' %}
+      {% if category_url != blank %}
+        {% render 'pp-nav-mega-item',
+          category_label: block.settings.label,
+          category_url: category_url,
+          item_icon: item_icon,
+          item_handle: block_handle,
+          menu_id: block_mega_id,
+          is_active: nav_is_active,
+          is_sale: block_is_sale,
+          shopify_attributes: block_attrs
+        %}
+      {% else %}
+        <span
+          class="pp-nav-link{% if nav_is_active %} is-active{% endif %}{% if block_is_sale %} pp-nav-link--sale{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          {{ block.settings.label | escape }}
+        </span>
+      {% endif %}
+      {% endunless %}
+    {% endfor %}
+  {% elsif category_menu_links != blank and category_menu_links.size > 0 %}
+    {% for link in category_menu_links %}
+      {% liquid
+        assign loop_handle = link.title | handleize
+      %}
+      {% unless loop_handle == 'outdoor' %}
+        {% if link.url != blank or link.links != blank %}
+          {% render 'pp-nav-shop-item', link: link %}
+        {% endif %}
+      {% endunless %}
+      {% if loop_handle == 'furniture' and pp_menu_has_tv == false %}
+        <a href="{{ pp_tv_url }}" class="pp-nav-link">TV Trolley / Stand</a>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {% for label in canonical_category_labels %}
+      {% liquid
+        assign canonical_handle = canonical_category_handles[forloop.index0]
+        assign canonical_url = collections[canonical_handle].url
+        if canonical_url == blank
+          assign canonical_url = '/collections/' | append: canonical_handle
+        endif
+        if canonical_handle == 'tv-trolley-stand' or canonical_handle == 'tv-stands'
+          assign canonical_url = pp_tv_url
+        elsif canonical_handle == 'outdoor'
+          assign canonical_url = pp_outdoor_url
+        elsif canonical_handle == 'garden-outdoor'
+          assign canonical_url = pp_garden_url
+        endif
+        assign item_title = label | downcase
+        if item_title contains 'furniture'
+          assign item_icon = '&#x1FA91;'
+        elsif item_title contains 'tv'
+          assign item_icon = '&#x1F4FA;'
+        elsif item_title contains 'garden'
+          assign item_icon = '&#x1F333;'
+        elsif item_title contains 'outdoor'
+          assign item_icon = '&#x26F0;&#xFE0F;'
+        elsif item_title contains 'kitchen' or item_title contains 'dining'
+          assign item_icon = '&#x1F373;'
+        elsif item_title contains 'decor'
+          assign item_icon = '&#x1F3E0;'
+        elsif item_title contains 'storage' or item_title contains 'organ'
+          assign item_icon = '&#x1F5C3;&#xFE0F;'
+        elsif item_title contains 'bath'
+          assign item_icon = '&#x1F6C1;'
+        elsif item_title contains 'baby' or item_title contains 'kids'
+          assign item_icon = '&#x1F37C;'
+        elsif item_title contains 'toy' or item_title contains 'game'
+          assign item_icon = '&#x1F3AE;'
+        elsif item_title contains 'hobby' or item_title contains 'hobbies'
+          assign item_icon = '&#x1F9F5;'
+        elsif item_title contains 'sport'
+          assign item_icon = '&#x26BD;'
+        elsif item_title contains 'pet'
+          assign item_icon = '&#x1F43E;'
+        elsif item_title contains 'lighting' or item_title contains 'light'
+          assign item_icon = '&#x1F4A1;'
+        elsif item_title contains 'bedding' or item_title contains 'bed'
+          assign item_icon = '&#x1F6CF;&#xFE0F;'
+        elsif item_title contains 'sale' or item_title contains 'clearance'
+          assign item_icon = '&#x1F3F7;&#xFE0F;'
+        else
+          assign item_icon = '&#x2726;'
+        endif
+        assign mega_is_active = false
+        if request.path == canonical_url
+          assign mega_is_active = true
+        endif
+        assign mega_is_sale = false
+        if item_title contains 'sale' or item_title contains 'clearance'
+          assign mega_is_sale = true
+        endif
+        assign mega_menu_id = 'ppMegaMenu-' | append: header_section.id | append: '-' | append: canonical_handle | append: '-' | append: forloop.index0
+      %}
+      {% render 'pp-nav-mega-item',
+        category_label: label,
+        category_url: canonical_url,
+        item_icon: item_icon,
+        item_handle: canonical_handle,
+        menu_id: mega_menu_id,
+        is_active: mega_is_active,
+        is_sale: mega_is_sale
+      %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+{% assign rendered_category_links = rendered_category_links | strip %}
+
+{% capture rendered_search_dropdown_categories %}
+  {% assign preferred_search_dropdown_labels = 'Furniture|Home Decor|Lighting|Plant Stands' | split: '|' %}
+  {% for preferred_label in preferred_search_dropdown_labels %}
+    {% assign category_url = blank %}
+    {% if category_block_items != blank and category_block_items.size > 0 %}
+      {% for block in category_block_items %}
+        {% liquid
+          assign block_label = block.settings.label | strip
+          assign block_url = block.settings.link
+          if block.settings.collection != blank
+            assign block_url = block.settings.collection.url
+          endif
+        %}
+        {% if category_url == blank and block_url != blank and block_label == preferred_label %}
+          {% assign category_url = block_url %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if category_url == blank and category_menu_links != blank and category_menu_links.size > 0 %}
+      {% for link in category_menu_links %}
+        {% if category_url == blank and link.url != blank and link.title != blank and link.title == preferred_label %}
+          {% liquid
+            assign preferred_key = preferred_label | handleize
+            if preferred_key == 'tv-trolley-stand' or preferred_key == 'tv-stands'
+              assign category_url = pp_tv_url
+            elsif preferred_key == 'outdoor'
+              assign category_url = pp_outdoor_url
+            elsif preferred_key == 'garden-outdoor'
+              assign category_url = pp_garden_url
+            else
+              assign category_url = link.url
+            endif
+          %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if category_url == blank %}
+      {% for label in canonical_category_labels %}
+        {% if category_url == blank and label == preferred_label %}
+          {% liquid
+            assign canonical_handle = canonical_category_handles[forloop.index0]
+            assign canonical_collection = collections[canonical_handle]
+            if canonical_handle == 'tv-trolley-stand' or canonical_handle == 'tv-stands'
+              assign category_url = pp_tv_url
+            elsif canonical_handle == 'outdoor'
+              assign category_url = pp_outdoor_url
+            elsif canonical_handle == 'garden-outdoor'
+              assign category_url = pp_garden_url
+            elsif canonical_collection != blank
+              assign category_url = canonical_collection.url
+            else
+              assign category_url = '/collections/' | append: canonical_handle
+            endif
+          %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if category_url == blank %}
+      {% liquid
+        assign preferred_handle = preferred_label | handleize
+        if preferred_handle == 'tv-trolley-stand' or preferred_handle == 'tv-stands'
+          assign category_url = pp_tv_url
+        elsif preferred_handle == 'outdoor'
+          assign category_url = pp_outdoor_url
+        elsif preferred_handle == 'garden-outdoor'
+          assign category_url = pp_garden_url
+        else
+          assign preferred_collection = collections[preferred_handle]
+          if preferred_collection != blank
+            assign category_url = preferred_collection.url
+          else
+            assign category_url = '/collections/' | append: preferred_handle
+          endif
+        endif
+      %}
+    {% endif %}
+    {% if category_url != blank %}
+      <a href="{{ category_url }}" class="pp-pill pp-pill--cat">{{ preferred_label | escape }}</a>
+    {% endif %}
+  {% endfor %}
+{% endcapture %}
+{% assign rendered_search_dropdown_categories = rendered_search_dropdown_categories | strip %}
+
+{% assign drawer_subpanel_count = 0 %}
+{% capture drawer_subpanel_data_json %}
+  [
+    {% if category_menu_links != blank and category_menu_links.size > 0 %}
+      {% for link in category_menu_links %}
+        {% liquid
+          assign drawer_json_key = link.title | handleize
+        %}
+        {% if drawer_json_key != 'outdoor' and link.links != blank and link.links.size > 0 %}
+          {% if drawer_subpanel_count > 0 %},{% endif %}
+          {
+            "key": {{ link.title | handleize | json }},
+            "name": {{ link.title | json }},
+            "url": {{ link.url | json }},
+            "items": [
+              {% for child_link in link.links %}
+                {% if forloop.index0 > 0 %},{% endif %}
+                {
+                  "name": {{ child_link.title | json }},
+                  "url": {{ child_link.url | json }}
+                }
+              {% endfor %}
+            ]
+          }
+          {% assign drawer_subpanel_count = drawer_subpanel_count | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  ]
+{% endcapture %}
+{% assign drawer_subpanel_data_json = drawer_subpanel_data_json | strip %}
+
+{% capture rendered_drawer_category_links %}
+  {% if category_block_items != blank and category_block_items.size > 0 %}
+    {% for block in category_block_items %}
+      {% liquid
+        assign category_url = block.settings.link
+        if block.settings.collection != blank
+          assign category_url = block.settings.collection.url
+        endif
+        assign nav_path = category_url | split: '?' | first
+        assign nav_is_active = false
+        if nav_path != blank and request.path == nav_path
+          assign nav_is_active = true
+        endif
+        assign item_title = block.settings.label | downcase
+        assign item_icon = block.settings.icon
+        if item_title contains 'furniture'
+          assign item_icon = '&#x1FA91;'
+        elsif item_title contains 'tv'
+          assign item_icon = '&#x1F4FA;'
+        elsif item_title contains 'garden'
+          assign item_icon = '&#x1F333;'
+        elsif item_title contains 'outdoor'
+          assign item_icon = '&#x26F0;&#xFE0F;'
+        elsif item_title contains 'decor'
+          assign item_icon = '&#x1F3E0;'
+        elsif item_title contains 'hobby' or item_title contains 'hobbies'
+          assign item_icon = '&#x1F9F5;'
+        endif
+        if item_icon == blank
+          if item_title contains 'furniture'
+            assign item_icon = '&#x1FA91;'
+          elsif item_title contains 'tv'
+            assign item_icon = '&#x1F4FA;'
+          elsif item_title contains 'garden'
+            assign item_icon = '&#x1F333;'
+          elsif item_title contains 'outdoor'
+            assign item_icon = '&#x26F0;&#xFE0F;'
+          elsif item_title contains 'kitchen' or item_title contains 'dining'
+            assign item_icon = '&#x1F373;'
+          elsif item_title contains 'decor'
+            assign item_icon = '&#x1F3E0;'
+          elsif item_title contains 'storage' or item_title contains 'organ'
+            assign item_icon = '&#x1F5C3;&#xFE0F;'
+          elsif item_title contains 'bath'
+            assign item_icon = '&#x1F6C1;'
+          elsif item_title contains 'baby' or item_title contains 'kids'
+            assign item_icon = '&#x1F37C;'
+          elsif item_title contains 'toy' or item_title contains 'game'
+            assign item_icon = '&#x1F3AE;'
+          elsif item_title contains 'hobby' or item_title contains 'hobbies'
+            assign item_icon = '&#x1F9F5;'
+          elsif item_title contains 'sport'
+            assign item_icon = '&#x26BD;'
+          elsif item_title contains 'pet'
+            assign item_icon = '&#x1F43E;'
+          elsif item_title contains 'lighting' or item_title contains 'light'
+            assign item_icon = '&#x1F4A1;'
+          elsif item_title contains 'bedding' or item_title contains 'bed'
+            assign item_icon = '&#x1F6CF;&#xFE0F;'
+          elsif item_title contains 'sale' or item_title contains 'clearance'
+            assign item_icon = '&#x1F3F7;&#xFE0F;'
+          else
+            assign item_icon = '&#x2726;'
+          endif
+        endif
+        assign drawer_block_handle = block.settings.label | handleize
+      %}
+      {% unless drawer_block_handle == 'outdoor' %}
+      <div class="pp-drawer__nav-item" role="listitem">
+        {% if item_title contains 'sale' or item_title contains 'clearance' %}
+          <a href="{{ category_url | default: '/collections/sale' }}" class="pp-drawer__nav-link pp-drawer-link pp-drawer-link--sale" {{ block.shopify_attributes }}>
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ block.settings.label | escape }}</span>
+            </span>
+          </a>
+        {% else %}
+          <a href="{{ category_url | default: routes.all_products_collection_url }}" class="pp-drawer__nav-link pp-drawer-link" {{ block.shopify_attributes }}>
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ block.settings.label | escape }}</span>
+            </span>
+            <svg class="pp-drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+      {% endunless %}
+    {% endfor %}
+  {% elsif category_menu_links != blank and category_menu_links.size > 0 %}
+    {% for link in category_menu_links %}
+      {% liquid
+        assign item_title = link.title | downcase
+        if item_title contains 'furniture'
+          assign item_icon = '&#x1FA91;'
+        elsif item_title contains 'tv'
+          assign item_icon = '&#x1F4FA;'
+        elsif item_title contains 'garden'
+          assign item_icon = '&#x1F333;'
+        elsif item_title contains 'outdoor'
+          assign item_icon = '&#x26F0;&#xFE0F;'
+        elsif item_title contains 'kitchen' or item_title contains 'dining'
+          assign item_icon = '&#x1F373;'
+        elsif item_title contains 'decor'
+          assign item_icon = '&#x1F3E0;'
+        elsif item_title contains 'storage' or item_title contains 'organ'
+          assign item_icon = '&#x1F5C3;&#xFE0F;'
+        elsif item_title contains 'bath'
+          assign item_icon = '&#x1F6C1;'
+        elsif item_title contains 'baby' or item_title contains 'kids'
+          assign item_icon = '&#x1F37C;'
+        elsif item_title contains 'toy' or item_title contains 'game'
+          assign item_icon = '&#x1F3AE;'
+        elsif item_title contains 'hobby' or item_title contains 'hobbies'
+          assign item_icon = '&#x1F9F5;'
+        elsif item_title contains 'sport'
+          assign item_icon = '&#x26BD;'
+        elsif item_title contains 'pet'
+          assign item_icon = '&#x1F43E;'
+        elsif item_title contains 'lighting' or item_title contains 'light'
+          assign item_icon = '&#x1F4A1;'
+        elsif item_title contains 'bedding' or item_title contains 'bed'
+          assign item_icon = '&#x1F6CF;&#xFE0F;'
+        elsif item_title contains 'sale' or item_title contains 'clearance'
+          assign item_icon = '&#x1F3F7;&#xFE0F;'
+        else
+          assign item_icon = '&#x2726;'
+        endif
+        assign drawer_url = link.url | default: routes.all_products_collection_url
+        assign drawer_key = link.title | handleize
+        if drawer_key == 'tv-trolley-stand' or drawer_key == 'tv-stands' or drawer_url contains '/tv-trolley-stand'
+          assign drawer_url = pp_tv_url
+        elsif drawer_key == 'outdoor'
+          assign drawer_url = pp_outdoor_url
+        elsif drawer_key == 'garden-outdoor' or drawer_url contains '/garden-outdoor'
+          assign drawer_url = pp_garden_url
+        endif
+      %}
+      {% unless drawer_key == 'outdoor' %}
+      <div class="pp-drawer__nav-item" role="listitem">
+        {% if item_title contains 'sale' or item_title contains 'clearance' %}
+          <a href="{{ drawer_url | default: '/collections/sale' }}" class="pp-drawer__nav-link pp-drawer-link pp-drawer-link--sale">
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ link.title | escape }}</span>
+            </span>
+          </a>
+        {% elsif link.links != blank and link.links.size > 0 %}
+          <button type="button" class="pp-drawer__nav-link pp-drawer-link" data-category="{{ link.title | handleize | escape }}">
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ link.title | escape }}</span>
+            </span>
+            <svg class="pp-drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        {% else %}
+          <a href="{{ drawer_url }}" class="pp-drawer__nav-link pp-drawer-link">
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ link.title | escape }}</span>
+            </span>
+            <svg class="pp-drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+      {% endunless %}
+    {% endfor %}
+  {% else %}
+    {% for label in canonical_category_labels %}
+      {% liquid
+        assign canonical_handle = canonical_category_handles[forloop.index0]
+        assign canonical_url = collections[canonical_handle].url
+        if canonical_url == blank
+          assign canonical_url = '/collections/' | append: canonical_handle
+        endif
+        if canonical_handle == 'tv-trolley-stand' or canonical_handle == 'tv-stands'
+          assign canonical_url = pp_tv_url
+        elsif canonical_handle == 'outdoor'
+          assign canonical_url = pp_outdoor_url
+        elsif canonical_handle == 'garden-outdoor'
+          assign canonical_url = pp_garden_url
+        endif
+        assign item_title = label | downcase
+        if item_title contains 'furniture'
+          assign item_icon = '&#x1FA91;'
+        elsif item_title contains 'tv'
+          assign item_icon = '&#x1F4FA;'
+        elsif item_title contains 'garden'
+          assign item_icon = '&#x1F333;'
+        elsif item_title contains 'outdoor'
+          assign item_icon = '&#x26F0;&#xFE0F;'
+        elsif item_title contains 'kitchen' or item_title contains 'dining'
+          assign item_icon = '&#x1F373;'
+        elsif item_title contains 'decor'
+          assign item_icon = '&#x1F3E0;'
+        elsif item_title contains 'storage' or item_title contains 'organ'
+          assign item_icon = '&#x1F5C3;&#xFE0F;'
+        elsif item_title contains 'bath'
+          assign item_icon = '&#x1F6C1;'
+        elsif item_title contains 'baby' or item_title contains 'kids'
+          assign item_icon = '&#x1F37C;'
+        elsif item_title contains 'toy' or item_title contains 'game'
+          assign item_icon = '&#x1F3AE;'
+        elsif item_title contains 'hobby' or item_title contains 'hobbies'
+          assign item_icon = '&#x1F9F5;'
+        elsif item_title contains 'sport'
+          assign item_icon = '&#x26BD;'
+        elsif item_title contains 'pet'
+          assign item_icon = '&#x1F43E;'
+        elsif item_title contains 'lighting' or item_title contains 'light'
+          assign item_icon = '&#x1F4A1;'
+        elsif item_title contains 'bedding' or item_title contains 'bed'
+          assign item_icon = '&#x1F6CF;&#xFE0F;'
+        elsif item_title contains 'sale' or item_title contains 'clearance'
+          assign item_icon = '&#x1F3F7;&#xFE0F;'
+        else
+          assign item_icon = '&#x2726;'
+        endif
+      %}
+      <div class="pp-drawer__nav-item" role="listitem">
+        {% if item_title contains 'sale' or item_title contains 'clearance' %}
+          <a href="{{ canonical_url }}" class="pp-drawer__nav-link pp-drawer-link pp-drawer-link--sale">
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ label | escape }}</span>
+            </span>
+          </a>
+        {% else %}
+          <a href="{{ canonical_url }}" class="pp-drawer__nav-link pp-drawer-link">
+            <span class="pp-drawer-link-content">
+              <span class="pp-drawer-link-name">{{ label | escape }}</span>
+            </span>
+            <svg class="pp-drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+{% assign rendered_drawer_category_links = rendered_drawer_category_links | strip %}
+
+<div class="pp-overlay" id="ppOverlay" aria-hidden="true" role="presentation"></div>
+<div class="pp-sheet-overlay" id="ppSheetOverlay" aria-hidden="true" role="presentation"></div>
+
+<header
+  class="pp-site-header{% if header_is_sticky %} pp-site-header--sticky{% endif %}"
+  id="ppSiteHeader"
+  role="banner"
+  data-sticky-mode="{{ sticky_mode | escape }}"
+>
+  <div class="pp-announcement" id="ppAnnouncementTicker" role="complementary" aria-label="Store highlights">
+    <div class="pp-announcement__ticker">
+      <div class="pp-ticker__track">
+        {% for i in (1..6) %}
+          <span class="pp-ticker__group"{% if i > 1 %} aria-hidden="true"{% endif %}>
+            <span class="pp-ticker__item"><strong>Free delivery</strong> on orders over $120*</span>
+            <span class="pp-ticker__dot" aria-hidden="true"></span>
+            <span class="pp-ticker__item">Get $10 off on your first order</span>
+            <span class="pp-ticker__dot" aria-hidden="true"></span>
+            <span class="pp-ticker__item">30 day hassle free returns</span>
+            <span class="pp-ticker__dot" aria-hidden="true"></span>
+            <span class="pp-ticker__item">Australia wide shipping</span>
+            <span class="pp-ticker__dot" aria-hidden="true"></span>
+          </span>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="button" class="pp-announcement__close" id="ppTickerClose" aria-label="Hide announcements">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="pp-header">
+    <div class="{{ header_container_class }}">
+      <div class="pp-header__inner">
+        <button class="pp-mobile-menu-btn" id="ppMobileMenuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="ppMobileDrawer" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+
+        <a href="{{ routes.root_url }}" class="pp-logo" aria-label="Pretty & Practical home">
+          {% if settings.logo != blank %}
+            {{
+              settings.logo
+              | image_url: width: 420
+              | image_tag:
+                class: 'pp-logo__image',
+                alt: 'Pretty & Practical',
+                widths: '160,220,320,420',
+                loading: 'lazy'
+            }}
+          {% else %}
+            <span class="pp-logo__mark pp-logo-text">pretty<span class="pp-amp">&amp;</span>practical</span>
+          {% endif %}
+          <span class="pp-logo__sub pp-logo-subtitle">{{ logo_tagline | default: header_section.settings.logo_tagline | default: "AUSTRALIA'S HOME STORE" | escape }}</span>
+        </a>
+
+        {% if rendered_show_search %}
+          <predictive-search-component
+            class="predictive-search predictive-search--pp-inline"
+            data-inline-search
+            data-section-id="pp-predictive-search"
+            data-results-id="pp-predictive-search-results-{{ header_section.id }}"
+            role="search"
+            aria-label="{{ 'content.search_input_label' | t }}"
+          >
+            <form class="predictive-search-form pp-search-wrap" role="search" action="{{ routes.search_url }}" method="get" ref="form" on:keydown="/onSearchKeyDown">
+              <label for="ppSearchInput-{{ header_section.id }}" class="sr-only">Search products</label>
+              <div class="pp-search-bar">
+                <span class="pp-search-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </span>
+                <input
+                  class="pp-search-input search-input"
+                  id="ppSearchInput-{{ header_section.id }}"
+                  type="search"
+                  name="q"
+                  placeholder="{{ fallback_search_placeholder | escape }}"
+                  autocomplete="off"
+                  autocorrect="off"
+                  spellcheck="false"
+                  role="combobox"
+                  aria-expanded="false"
+                  aria-owns="pp-predictive-search-results-{{ header_section.id }}"
+                  aria-controls="pp-predictive-search-results-{{ header_section.id }}"
+                  aria-haspopup="listbox"
+                  aria-autocomplete="list"
+                  ref="searchInput"
+                  on:input="/search"
+                  on:focus="/openInlinePanel"
+                  on:click="/openInlinePanel"
+                >
+                <input
+                  name="options[prefix]"
+                  type="hidden"
+                  value="last"
+                >
+                <button
+                  type="button"
+                  class="pp-search-clear"
+                  ref="resetButton"
+                  hidden
+                  on:click="/resetSearch"
+                  aria-label="{{ 'actions.clear' | t }}"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+                <button class="pp-search-submit" type="submit" aria-label="{{ search_button_label | default: 'Search' | escape }}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <span>{{ search_button_label | default: 'Search' | escape }}</span>
+                </button>
+              </div>
+              <div class="pp-search-dropdown" role="listbox" aria-hidden="true" hidden>
+                <div data-predictive-default-panel hidden>
+                  <div class="pp-dropdown-section">
+                    <p class="pp-dropdown-label">Suggested searches</p>
+                    <div class="pp-pill-grid">
+                      <button type="button" class="pp-pill" data-term="Linen sofa">Linen sofa</button>
+                      <button type="button" class="pp-pill" data-term="Coffee table">Coffee table</button>
+                      <button type="button" class="pp-pill" data-term="Outdoor furniture">Outdoor furniture</button>
+                      <button type="button" class="pp-pill" data-term="Bedside table">Bedside table</button>
+                      <button type="button" class="pp-pill" data-term="Pendant lamp">Pendant lamp</button>
+                      <button type="button" class="pp-pill" data-term="Cushions">Cushions</button>
+                    </div>
+                  </div>
+                  {% if rendered_search_dropdown_categories != blank %}
+                    <div class="pp-dropdown-divider"></div>
+                    <div class="pp-dropdown-section">
+                      <p class="pp-dropdown-label">Browse categories</p>
+                      <div class="pp-pill-grid">
+                        {{ rendered_search_dropdown_categories }}
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+                <div
+                  class="predictive-search-form__content"
+                  ref="predictiveSearchResults"
+                  hidden
+                ></div>
+                <div class="predictive-search-form__footer" hidden>
+                  <button
+                    class="pp-view-all"
+                    ref="viewAllButton"
+                    type="submit"
+                    data-default-label="View all results"
+                  >
+                    <span>
+                      <span data-view-all-label>View all results</span>
+                      <strong data-view-all-query hidden></strong>
+                    </span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </predictive-search-component>
+        {% else %}
+          <div class="pp-header__search--empty"></div>
+        {% endif %}
+
+        <div class="pp-header__actions" role="navigation" aria-label="Account and cart">
+          <button class="pp-mobile-search-btn" id="ppMobileSearchToggle" aria-label="Search" aria-expanded="false" aria-controls="ppMobileSearchPanel" type="button">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+
+          {% if alerts_link != blank %}
+            <a href="{{ alerts_link }}" class="pp-action-btn pp-action-btn--desktop" aria-label="{{ alerts_label | escape }}">
+              <span aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+              </span>
+              {% if alerts_badge_text != blank %}
+                <span class="pp-badge-dot" aria-hidden="true">{{ alerts_badge_text }}</span>
+              {% endif %}
+              <span>{{ alerts_label | escape }}</span>
+            </a>
+          {% endif %}
+
+          <div class="pp-header__account-wrap pp-trigger-wrap" data-account-dropdown>
+            <button
+              type="button"
+              class="pp-action-btn pp-action-btn--desktop pp-header__account pp-account-trigger"
+              aria-label="Account menu"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls="ppAccountDropdown"
+              data-account-dropdown-trigger
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span class="pp-account-label">Account</span>
+            </button>
+
+            <div
+              id="ppAccountDropdown"
+              class="pp-account-dropdown"
+              role="menu"
+              aria-label="Account options"
+              aria-hidden="true"
+              hidden
+              data-account-dropdown-panel
+            >
+              {% if customer %}
+                <div class="pp-dropdown-user">
+                  <div class="pp-user-avatar" aria-hidden="true">{{ customer_avatar_initials | escape }}</div>
+                  <div class="pp-user-info">
+                    <span class="pp-user-name">{{ customer_display_name | escape }}</span>
+                    <span class="pp-user-email">{{ customer.email | escape }}</span>
+                  </div>
+                </div>
+
+                <div class="pp-dropdown-divider"></div>
+
+                <nav class="pp-dropdown-links" role="none" aria-label="Account">
+                  <a href="{{ routes.account_url }}" class="pp-dropdown-link" role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M16.5 9.4 7.55 4.24"/>
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                      <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    My orders
+                  </a>
+                  <a href="{{ routes.account_addresses_url }}" class="pp-dropdown-link" role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Addresses
+                  </a>
+                  <a href="{{ account_help_url }}" class="pp-dropdown-link" role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                    Help &amp; contact
+                  </a>
+                </nav>
+
+                <div class="pp-dropdown-divider"></div>
+
+                <a href="{{ routes.account_logout_url }}" class="pp-dropdown-link pp-dropdown-link--danger" role="menuitem">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Sign out
+                </a>
+              {% else %}
+                <div class="pp-dropdown-head">
+                  <h3 class="pp-dropdown-title">Welcome</h3>
+                  <p class="pp-dropdown-subtext">Sign in for faster checkout and to track your orders.</p>
+                </div>
+
+                <div class="pp-dropdown-cta">
+                  <a href="{{ routes.account_login_url }}" class="pp-btn-primary" role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                      <polyline points="10 17 15 12 10 7"/>
+                      <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    Sign in
+                  </a>
+                  <p class="pp-cta-helper">Sign in with a 6-digit code sent to your email.</p>
+                </div>
+
+                <div class="pp-dropdown-divider"></div>
+
+                <nav class="pp-dropdown-links" role="none" aria-label="Quick links">
+                  <a href="{{ account_track_order_url }}" class="pp-dropdown-link" role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="1" y="3" width="15" height="13"/>
+                      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                      <circle cx="5.5" cy="18.5" r="2.5"/>
+                      <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    Track an order
+                  </a>
+                  <a href="{{ account_help_url }}" class="pp-dropdown-link" role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                    Help &amp; contact
+                  </a>
+                </nav>
+              {% endif %}
+            </div>
+          </div>
+
+          <a href="{{ wishlist_link }}" class="pp-action-btn pp-action-btn--desktop pp-header__wishlist" data-pp-wishlist-link data-count="0" aria-label="{{ wishlist_label | escape }}">
+            {{ 'icon-wishlist.svg' | inline_asset_content }}
+            <span class="pp-header__wishlist-label">{{ wishlist_label | escape }}</span>
+            <span class="pp-wishlist-count" data-pp-wishlist-count hidden>0</span>
+          </a>
+
+          <a
+            href="{{ routes.cart_url }}"
+            class="pp-cart-btn pp-header__cart pp-header-cart"
+            data-count="{{ cart_count }}"
+            aria-label="Cart - {{ cart_count }} items"
+            {% if settings.cart_type == 'drawer' and template.name != 'cart' %}
+              aria-haspopup="dialog"
+              aria-controls="cart-drawer-dialog"
+              data-cart-drawer-trigger
+            {% endif %}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/>
+            </svg>
+            <span class="pp-header-cart-text">Cart</span>
+            <span class="pp-cart-count pp-header-cart-count" aria-label="{{ cart_count }} items in cart">{{ cart_count }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% if settings.cart_type == 'drawer' and template.name != 'cart' %}
+  {{ 'pp-cart-drawer.css' | asset_url | stylesheet_tag }}
+  <script
+    src="{{ 'cart-drawer.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+
+  {% liquid
+    assign cart_discount_threshold_cents = cart_discount_threshold | times: 100
+    assign cart_subtotal = cart.items_subtotal_price
+    assign cart_discount_remaining = 0
+    assign cart_discount_progress = 0
+    assign show_cart_discount_progress = false
+    assign cart_discount_progress_copy = blank
+    assign cart_discount_display_percentage = cart_discount_percentage
+    assign cart_discount_remaining_money = blank
+    assign cart_discount_remaining_markup = blank
+
+    if cart_discount_display_percentage <= 0 and cart.total_discount > 0 and cart_subtotal > 0
+      assign cart_discount_display_percentage = cart.total_discount | times: 100.0 | divided_by: cart_subtotal | round
+    endif
+
+    if cart_discount_progress_enabled and cart.total_discount > 0 and cart_subtotal > 0 and cart_discount_display_percentage > 0
+      assign show_cart_discount_progress = true
+      assign cart_discount_progress = 100
+      assign cart_discount_progress_copy = cart_discount_applied_message | replace: '{{ percentage }}', cart_discount_display_percentage
+    elsif cart_discount_progress_enabled and cart_discount_threshold_cents > 0 and cart_discount_percentage > 0
+      assign show_cart_discount_progress = true
+      assign cart_discount_remaining = cart_discount_threshold_cents | minus: cart_subtotal
+      if cart_discount_remaining < 0
+        assign cart_discount_remaining = 0
+      endif
+      assign cart_discount_progress = cart_subtotal | times: 100 | divided_by: cart_discount_threshold_cents
+      if cart_discount_progress > 100
+        assign cart_discount_progress = 100
+      endif
+      assign cart_discount_remaining_money = cart_discount_remaining | money
+      assign cart_discount_remaining_markup = '<span class="pp-cart-drawer__progress-amount">' | append: cart_discount_remaining_money | append: '</span>'
+      if cart_subtotal >= cart_discount_threshold_cents
+        assign cart_discount_progress_copy = cart_discount_unlocked_message | replace: '{{ percentage }}', cart_discount_percentage
+      else
+        assign cart_discount_progress_copy = cart_discount_progress_message | replace: '{{ amount }}', cart_discount_remaining_markup | replace: '{{ percentage }}', cart_discount_percentage
+      endif
+    endif
+
+    capture cart_ship_icon_truck
+      echo '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h13v10H1zM14 11h5l3 3v3h-8z"/><circle cx="6" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>'
+    endcapture
+
+    capture cart_ship_icon_spark
+      echo '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>'
+    endcapture
+
+    assign cart_ship_label_markup = blank
+    if cart_discount_progress_enabled and cart.total_discount > 0 and cart_subtotal > 0 and cart_discount_display_percentage > 0
+      assign cart_ship_label_markup = cart_ship_icon_spark | append: '<span>' | append: cart_discount_progress_copy | append: '</span>'
+    elsif cart_subtotal >= cart_discount_threshold_cents and cart_discount_threshold_cents > 0
+      assign cart_ship_label_markup = cart_ship_icon_spark | append: '<span>You&#39;ve unlocked <strong>FREE delivery</strong>!</span>'
+    elsif cart_discount_threshold_cents > 0
+      assign cart_ship_label_markup = cart_ship_icon_truck | append: '<span>You&#39;re <strong>' | append: cart_discount_remaining_money | append: '</strong> away from <strong>FREE delivery</strong></span>'
+    endif
+  %}
+
+  {% capture empty_cart_drawer_content %}
+    <header class="pp-cart-header">
+      <h2 class="pp-cart-title" id="cart-drawer-heading-empty">Your Cart</h2>
+      <span class="pp-cart-count">{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</span>
+      <button
+        ref="closeButton"
+        on:click="cart-drawer-component/close"
+        class="pp-cart-close button close-button button-unstyled"
+        aria-label="{{ 'actions.close_dialog' | t }}"
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </header>
+
+    {% if show_cart_discount_progress %}
+      <div class="pp-ship-strip">
+        <div class="pp-ship-label">{{ cart_ship_label_markup }}</div>
+        <div class="pp-ship-track" aria-hidden="true">
+          <div
+            class="pp-ship-fill"
+            style="width: {{ cart_discount_progress }}%;"
+          ></div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="pp-cart-body" aria-label="{{ 'accessibility.cart' | t }}">
+      {% render 'cart-products', force_empty: true, is_drawer: true %}
+    </div>
+  {% endcapture %}
+
+  <cart-drawer-component
+    class="cart-drawer pp-cart-drawer"
+    auto-open
+  >
+    <template id="empty-cart-template">
+      {{ empty_cart_drawer_content }}
+    </template>
+
+    <div class="pp-cart-overlay" on:click="cart-drawer-component/close" aria-hidden="true"></div>
+
+    <dialog
+      ref="dialog"
+      id="cart-drawer-dialog"
+      class="dialog-modal dialog-drawer pp-cart-drawer__dialog"
+      data-testid="cart-drawer-dialog"
+      data-scroll-lock-strategy="overlay"
+      data-scroll-lock-body-class="pp-cart-drawer-open"
+      data-scroll-lock-header-selector="#header-group"
+      aria-labelledby="{% if cart.empty? %}cart-drawer-heading-empty{% else %}cart-drawer-heading{% endif %}"
+      scroll-lock
+      cart-summary-sticky="false"
+    >
+      <span ref="liveRegion" class="visually-hidden" role="status"></span>
+      <div class="pp-cart-shell" data-hydration-key="cart-drawer-inner">
+        {% capture cart_items_children %}
+          {% if cart.empty? %}
+            {{ empty_cart_drawer_content }}
+          {% else %}
+            <header class="pp-cart-header">
+              <h2 class="pp-cart-title" id="cart-drawer-heading">Your Cart</h2>
+              <span class="pp-cart-count">{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</span>
+              <button
+                ref="closeButton"
+                on:click="cart-drawer-component/close"
+                class="pp-cart-close button close-button button-unstyled"
+                aria-label="{{ 'actions.close_dialog' | t }}"
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </header>
+
+            {% if show_cart_discount_progress %}
+              <div class="pp-ship-strip">
+                <div class="pp-ship-label">{{ cart_ship_label_markup }}</div>
+                <div class="pp-ship-track" aria-hidden="true">
+                  <div
+                    class="pp-ship-fill"
+                    style="width: {{ cart_discount_progress }}%;"
+                  ></div>
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="pp-cart-body" aria-label="{{ 'accessibility.cart' | t }}">
+              {% render 'cart-products', is_drawer: true %}
+            </div>
+
+            <div class="pp-cart-footer">
+              {% render 'cart-summary', section_id: header_section.id, is_drawer: true %}
+            </div>
+          {% endif %}
+        {% endcapture %}
+
+        {% render 'cart-items-component', children: cart_items_children, is_drawer: true, section_id: header_section.id %}
+      </div>
+    </dialog>
+  </cart-drawer-component>
+{% endif %}
+
+  <div class="pp-mobile-search-panel" id="ppMobileSearchPanel" aria-hidden="true">
+    <div class="{{ header_container_class }}">
+      <form class="pp-search-form" role="search" action="{{ routes.search_url }}" method="get">
+        <label for="ppMobileSearchInput-{{ header_section.id }}" class="sr-only">Search products</label>
+        <input
+          class="pp-search-form__input"
+          id="ppMobileSearchInput-{{ header_section.id }}"
+          type="search"
+          name="q"
+          placeholder="{{ fallback_search_placeholder | escape }}"
+          autocomplete="off"
+        >
+        <button class="pp-search-form__btn" type="submit" aria-label="{{ search_button_label | default: 'Search' | escape }}">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+          </svg>
+          <span>{{ search_button_label | default: 'Search' | escape }}</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="pp-category-nav" role="navigation" aria-label="{{ fallback_category_nav_label | escape }}" data-pp-category-nav>
+    <div class="{{ header_container_class }} pp-category-nav-wrapper">
+      <div class="pp-category-nav__inner">
+        {% unless pp_use_menu_mega %}
+          <button type="button" class="pp-catmega-trigger" data-catmega-trigger aria-expanded="false" aria-controls="ppCategoryMega">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <line x1="4" y1="7" x2="20" y2="7"></line>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+            <span>Shop by category</span>
+            <svg class="pp-catmega-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        {% endunless %}
+        {{ rendered_category_links }}
+      </div>
+      {% unless pp_use_menu_mega %}
+        {% render 'pp-category-mega' %}
+      {% endunless %}
+    </div>
+  </div>
+</header>
+
+<div
+  class="pp-welcome"
+  id="ppWelcomePopup"
+  hidden
+  aria-hidden="true"
+  {% if customer and customer.accepts_marketing %}data-welcome-subscribed="true"{% endif %}
+>
+  <div class="pp-welcome__backdrop" data-welcome-close tabindex="-1"></div>
+  <div class="pp-welcome__dialog" role="dialog" aria-modal="true" aria-labelledby="ppWelcomeTitle">
+    <button type="button" class="pp-welcome__close" data-welcome-close aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <div class="pp-welcome__hero" aria-hidden="true">
+      <svg class="pp-welcome__bloom" viewBox="0 0 280 160" fill="none">
+        <circle cx="42" cy="118" r="46" fill="#e8532a" opacity=".22"/>
+        <circle cx="248" cy="28" r="38" fill="#fff" opacity=".08"/>
+        <path d="M168 148c0-28 18-46 18-70 0 24 20 42 20 70" stroke="#f4b183" stroke-width="3" stroke-linecap="round"/>
+        <path d="M186 92c-16-6-28 4-32 16 12-2 24 6 32 16 2-12 12-26 0-32Z" fill="#f4b183"/>
+        <path d="M186 92c16-6 28 4 32 16-12-2-24 6-32 16-2-12-12-26 0-32Z" fill="#e8532a"/>
+        <rect x="28" y="96" width="52" height="36" rx="6" fill="#fff" opacity=".12"/>
+        <rect x="36" y="104" width="16" height="12" rx="2" fill="#f4b183"/>
+        <rect x="56" y="104" width="16" height="12" rx="2" fill="#f4b183"/>
+      </svg>
+      <p class="pp-welcome__eyebrow">Welcome offer</p>
+      <p class="pp-welcome__brand">Pretty &amp; Practical</p>
+    </div>
+
+    <div class="pp-welcome__offer" data-welcome-offer>
+      <div class="pp-welcome__stamp" aria-hidden="true">
+        <span>$10</span>
+        <small>OFF</small>
+      </div>
+      <h2 id="ppWelcomeTitle">A little something for your first order</h2>
+      <p class="pp-welcome__text">Join the list and get $10 off on your first order.</p>
+      <ul class="pp-welcome__perks">
+        <li>Free delivery on orders over $120*</li>
+        <li>30 day returns</li>
+        <li>Secure checkout with Shop Pay and major cards</li>
+      </ul>
+
+      {% form 'customer', class: 'pp-welcome__form', id: 'ppWelcomeForm' %}
+        <input type="hidden" name="contact[tags]" value="newsletter, first-order-offer">
+        <label class="sr-only" for="ppWelcomeEmail">Email address</label>
+        <input
+          id="ppWelcomeEmail"
+          class="pp-welcome__input"
+          type="email"
+          name="contact[email]"
+          value="{{ form.email }}"
+          autocomplete="email"
+          placeholder="Enter your email"
+          required
+        >
+        <button class="pp-welcome__submit" type="submit">Get my $10 off</button>
+        {% if form.posted_successfully? %}
+          <span data-welcome-posted hidden></span>
+        {% endif %}
+        {% if form.errors %}
+          <p class="pp-welcome__status" role="alert">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+        {% endif %}
+      {% endform %}
+      <p class="pp-welcome__fine">No spam. Unsubscribe anytime.</p>
+      <button type="button" class="pp-welcome__skip" data-welcome-close>No thanks</button>
+    </div>
+
+    <div class="pp-welcome__done" data-welcome-done hidden>
+      <div class="pp-welcome__stamp" aria-hidden="true">
+        <span>$10</span>
+        <small>OFF</small>
+      </div>
+      <h2>You’re on the list</h2>
+      <p class="pp-welcome__text">Thanks for joining. Check your inbox for your first-order offer from Pretty &amp; Practical.</p>
+      <a class="pp-welcome__shop" href="{{ routes.all_products_collection_url }}">Start shopping</a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'pp-account-dropdown.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'pp-welcome-popup.js' | asset_url }}" defer></script>
+<script>
+  (function () {
+    var bar = document.getElementById('ppAnnouncementTicker');
+    var btn = document.getElementById('ppTickerClose');
+    if (!bar || !btn) return;
+    try { window.localStorage.removeItem('pp-ticker-hidden'); } catch (error) {}
+    btn.addEventListener('click', function () {
+      bar.hidden = true;
+    });
+
+    var track = bar.querySelector('.pp-ticker__track');
+    var tickerViewport = bar.querySelector('.pp-announcement__ticker');
+    if (track && tickerViewport) {
+      var firstGroup = track.querySelector('.pp-ticker__group');
+      if (firstGroup) {
+        var fillTicker = function () {
+          var safety = 0;
+          while (track.scrollWidth < tickerViewport.offsetWidth * 2 && safety < 24) {
+            var clone = firstGroup.cloneNode(true);
+            clone.setAttribute('aria-hidden', 'true');
+            track.appendChild(clone);
+            safety += 1;
+          }
+          if (track.querySelectorAll('.pp-ticker__group').length % 2 === 1) {
+            var extra = firstGroup.cloneNode(true);
+            extra.setAttribute('aria-hidden', 'true');
+            track.appendChild(extra);
+          }
+          var distance = track.scrollWidth / 2;
+          if (distance > 0) {
+            track.style.animationDuration = Math.max(40, Math.round(distance / 18)) + 's';
+          }
+        };
+        fillTicker();
+        window.addEventListener('resize', fillTicker);
+      }
+    }
+  })();
+</script>
+
+<nav class="pp-drawer" id="ppMobileDrawer" aria-label="Mobile navigation" aria-hidden="true" role="dialog">
+  <div class="pp-drawer__header pp-drawer-header">
+    <span class="pp-drawer-header__title">Shop categories</span>
+    <button class="pp-drawer__close" id="ppDrawerClose" aria-label="Close menu" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="pp-drawer-main" data-drawer-main>
+    <div class="pp-drawer__nav pp-drawer-categories" role="list" data-drawer-categories>
+      {{ rendered_drawer_category_links }}
+    </div>
+
+    <div class="pp-drawer-subpanel" data-subpanel hidden>
+      <div class="pp-subpanel-header">
+        <button type="button" class="pp-subpanel-back" aria-label="Back to all categories">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+        </button>
+        <span class="pp-subpanel-title" data-subpanel-title>Furniture</span>
+      </div>
+
+      <div class="pp-subpanel-list" data-subpanel-list></div>
+
+      <a href="#" class="pp-subpanel-viewall" data-subpanel-viewall>
+        <span>View all Furniture</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="pp-drawer-footer">
+    <a href="{{ account_url }}" class="pp-drawer-footer-link">
+      <span class="pp-drawer-footer-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </span>
+      <span class="pp-drawer-footer-text">Account</span>
+      <svg class="pp-drawer-footer-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </a>
+
+    <a href="{{ wishlist_link }}" class="pp-drawer-footer-link" data-pp-wishlist-link>
+      <span class="pp-drawer-footer-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </span>
+      <span class="pp-drawer-footer-text">Wishlist</span>
+      <svg class="pp-drawer-footer-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </a>
+
+    <a href="{{ routes.account_url }}" class="pp-drawer-footer-link">
+      <span class="pp-drawer-footer-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+      </span>
+      <span class="pp-drawer-footer-text">My Orders</span>
+      <svg class="pp-drawer-footer-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </a>
+
+    <a href="{{ account_help_url | default: '/pages/contact-us' }}" class="pp-drawer-footer-link">
+      <span class="pp-drawer-footer-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+      <span class="pp-drawer-footer-text">Contact Us</span>
+      <svg class="pp-drawer-footer-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </a>
+  </div>
+</nav>
+<script id="ppDrawerSubpanelData" type="application/json">{{ drawer_subpanel_data_json }}</script>
+
+<aside class="pp-sheet pp-account-sheet" id="ppAccountSheet" role="dialog" aria-modal="true" aria-label="Account menu" aria-hidden="true">
+  <div class="pp-sheet-handle"></div>
+  <button class="pp-sheet-close" id="ppAccountSheetClose" aria-label="Close" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+
+  <div class="pp-sheet-content">
+    {% if customer %}
+      <div class="pp-sheet-state" data-state="logged-in">
+        <div class="pp-sheet-user">
+          <div class="pp-sheet-avatar">{{ customer_avatar_initials | escape }}</div>
+          <div class="pp-sheet-user-info">
+            <span class="pp-sheet-user-name">{{ customer_display_name | escape }}</span>
+            <span class="pp-sheet-user-email">{{ customer.email | escape }}</span>
+          </div>
+        </div>
+
+        <div class="pp-sheet-divider"></div>
+
+        <nav class="pp-sheet-links" aria-label="Account">
+          <a href="{{ routes.account_url }}" class="pp-sheet-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span>My orders</span>
+            <svg class="pp-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+          <a href="{{ routes.account_addresses_url }}" class="pp-sheet-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Addresses</span>
+            <svg class="pp-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+          <a href="{{ account_help_url }}" class="pp-sheet-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+            <span>Help &amp; contact</span>
+            <svg class="pp-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        </nav>
+
+        <div class="pp-sheet-divider"></div>
+
+        <a href="{{ routes.account_logout_url }}" class="pp-sheet-link pp-sheet-link--danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Sign out</span>
+        </a>
+      </div>
+    {% else %}
+      <div class="pp-sheet-state" data-state="logged-out">
+        <div class="pp-sheet-head">
+          <h2 class="pp-sheet-title">Welcome</h2>
+          <p class="pp-sheet-subtitle">Sign in for faster checkout and to track your orders.</p>
+        </div>
+
+        <a href="{{ routes.account_login_url }}" class="pp-sheet-cta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Sign in
+        </a>
+        <p class="pp-sheet-cta-helper">Sign in with a 6-digit code sent to your email.</p>
+
+        <div class="pp-sheet-divider"></div>
+
+        <nav class="pp-sheet-links" aria-label="Quick links">
+          <a href="{{ account_track_order_url }}" class="pp-sheet-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <rect x="1" y="3" width="15" height="13"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            <span>Track an order</span>
+            <svg class="pp-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+          <a href="{{ account_help_url }}" class="pp-sheet-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+            <span>Help &amp; contact</span>
+            <svg class="pp-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        </nav>
+      </div>
+    {% endif %}
+  </div>
+</aside>
+
+<script>
+  (function () {
+    'use strict';
+
+    const headerGroup = document.getElementById('header-group');
+    const overlay = document.getElementById('ppOverlay');
+    const sheetOverlay = document.getElementById('ppSheetOverlay');
+    const drawer = document.getElementById('ppMobileDrawer');
+    const drawerClose = document.getElementById('ppDrawerClose');
+    const menuToggle = document.getElementById('ppMobileMenuToggle');
+    const mobileSearchToggle = document.getElementById('ppMobileSearchToggle');
+    const mobileSearchPanel = document.getElementById('ppMobileSearchPanel');
+    const mobileSearchInput = document.getElementById('ppMobileSearchPanel')?.querySelector('input[type="search"]');
+    const accountTrigger = document.querySelector('.pp-account-trigger');
+    const accountDropdownPanel = document.getElementById('ppAccountDropdown');
+    const accountSheet = document.getElementById('ppAccountSheet');
+    const accountSheetClose = document.getElementById('ppAccountSheetClose');
+    const siteHeader = document.getElementById('ppSiteHeader');
+    const drawerCategories = drawer?.querySelector('[data-drawer-categories]');
+    const drawerSubpanel = drawer?.querySelector('[data-subpanel]');
+    const drawerSubpanelTitle = drawer?.querySelector('[data-subpanel-title]');
+    const drawerSubpanelList = drawer?.querySelector('[data-subpanel-list]');
+    const drawerSubpanelViewAll = drawer?.querySelector('[data-subpanel-viewall]');
+    const drawerSubpanelBack = drawer?.querySelector('.pp-subpanel-back');
+    const drawerSubpanelDataElement = document.getElementById('ppDrawerSubpanelData');
+    const categoryNav = document.querySelector('[data-pp-category-nav]');
+    const categoryMega = document.querySelector('[data-pp-catmega]');
+    const categoryMegaTrigger = document.querySelector('[data-catmega-trigger]');
+    const stickyMode = siteHeader?.getAttribute('data-sticky-mode') || 'always';
+    let accountSheetTouchStartY = 0;
+    let accountSheetTouchCurrentY = 0;
+    let isDraggingAccountSheet = false;
+    let drawerSubpanelData = [];
+    if (drawerSubpanelDataElement) {
+      try {
+        drawerSubpanelData = JSON.parse(drawerSubpanelDataElement.textContent || '[]');
+      } catch (error) {
+        drawerSubpanelData = [];
+      }
+    }
+    const drawerSubpanelMap = drawerSubpanelData.reduce(function (accumulator, item) {
+      if (item && item.key) {
+        accumulator[item.key] = item;
+      }
+      return accumulator;
+    }, {});
+
+    function isMobileViewport() {
+      return window.innerWidth < 768;
+    }
+
+    function updateLockedHeaderHeight() {
+      if (!(headerGroup instanceof HTMLElement)) return;
+      document.documentElement.style.setProperty('--pp-header-group-height', Math.round(headerGroup.offsetHeight) + 'px');
+    }
+
+    if (stickyMode !== 'none' && headerGroup instanceof HTMLElement) {
+      headerGroup.classList.add('pp-header-group--locked');
+      document.body.classList.add('pp-header-locked');
+      updateLockedHeaderHeight();
+
+      if (typeof ResizeObserver === 'function') {
+        const headerGroupResizeObserver = new ResizeObserver(function () {
+          updateLockedHeaderHeight();
+        });
+        headerGroupResizeObserver.observe(headerGroup);
+      }
+
+      window.addEventListener('resize', updateLockedHeaderHeight);
+      window.addEventListener('load', updateLockedHeaderHeight);
+    }
+
+    let megaCloseTimer = 0;
+
+    function setCategoryPanel(key) {
+      if (!(categoryMega instanceof HTMLElement) || !key) return;
+      categoryMega.querySelectorAll('[data-catmega-tab]').forEach(function (tab) {
+        tab.classList.toggle('is-active', tab.getAttribute('data-catmega-tab') === key);
+      });
+      categoryMega.querySelectorAll('[data-catmega-panel]').forEach(function (panel) {
+        const isActive = panel.getAttribute('data-catmega-panel') === key;
+        panel.classList.toggle('is-active', isActive);
+        if (isActive) panel.removeAttribute('hidden');
+        else panel.setAttribute('hidden', '');
+      });
+      if (categoryNav instanceof HTMLElement) {
+        categoryNav.querySelectorAll('[data-catmega-open]').forEach(function (link) {
+          link.classList.toggle('is-mega-current', link.getAttribute('data-catmega-open') === key);
+        });
+      }
+    }
+
+    function openCategoryMega(key) {
+      if (window.innerWidth < 769 || !(categoryMega instanceof HTMLElement) || !(categoryNav instanceof HTMLElement)) return;
+      window.clearTimeout(megaCloseTimer);
+      categoryMega.hidden = false;
+      categoryNav.classList.add('is-mega-open');
+      if (categoryMegaTrigger instanceof HTMLElement) {
+        categoryMegaTrigger.setAttribute('aria-expanded', 'true');
+      }
+      if (key) setCategoryPanel(key);
+    }
+
+    function closeCategoryMega() {
+      if (!(categoryMega instanceof HTMLElement) || !(categoryNav instanceof HTMLElement)) return;
+      categoryMega.hidden = true;
+      categoryNav.classList.remove('is-mega-open');
+      if (categoryMegaTrigger instanceof HTMLElement) {
+        categoryMegaTrigger.setAttribute('aria-expanded', 'false');
+      }
+      categoryNav.querySelectorAll('[data-catmega-open]').forEach(function (link) {
+        link.classList.remove('is-mega-current');
+      });
+    }
+
+    function scheduleCategoryMegaClose() {
+      window.clearTimeout(megaCloseTimer);
+      megaCloseTimer = window.setTimeout(closeCategoryMega, 160);
+    }
+
+    if (categoryNav instanceof HTMLElement && categoryMega instanceof HTMLElement) {
+      categoryNav.addEventListener('mouseenter', function () {
+        if (window.innerWidth < 769) return;
+        window.clearTimeout(megaCloseTimer);
+      });
+      categoryNav.addEventListener('mouseleave', function () {
+        scheduleCategoryMegaClose();
+      });
+
+      if (categoryMegaTrigger instanceof HTMLElement) {
+        categoryMegaTrigger.addEventListener('mouseenter', function () {
+          openCategoryMega('new-arrival');
+        });
+        categoryMegaTrigger.addEventListener('click', function (event) {
+          event.preventDefault();
+          if (categoryNav.classList.contains('is-mega-open')) closeCategoryMega();
+          else openCategoryMega('new-arrival');
+        });
+      }
+
+      categoryNav.querySelectorAll('[data-catmega-open]').forEach(function (link) {
+        link.addEventListener('mouseenter', function () {
+          openCategoryMega(link.getAttribute('data-catmega-open'));
+        });
+      });
+
+      categoryMega.querySelectorAll('[data-catmega-tab]').forEach(function (tab) {
+        tab.addEventListener('mouseenter', function () {
+          openCategoryMega(tab.getAttribute('data-catmega-tab'));
+        });
+      });
+
+      categoryNav.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeCategoryMega();
+      });
+    }
+
+    document.querySelectorAll('.pp-mega-group').forEach(function (group) {
+      const menu = group.querySelector('.pp-mega-menu');
+      if (!(menu instanceof HTMLElement)) return;
+
+      function placeDropdown() {
+        menu.style.left = '0px';
+        const edge = 16;
+        const rect = menu.getBoundingClientRect();
+        const overflowRight = rect.right - (window.innerWidth - edge);
+        if (overflowRight > 0) {
+          menu.style.left = -Math.ceil(overflowRight) + 'px';
+        }
+        const left = menu.getBoundingClientRect().left;
+        if (left < edge) {
+          menu.style.left = Math.round(edge - group.getBoundingClientRect().left) + 'px';
+        }
+      }
+
+      group.addEventListener('mouseenter', placeDropdown);
+      group.addEventListener('focusin', placeDropdown);
+    });
+
+    function openDrawer() {
+      if (!drawer || !overlay || !menuToggle) return;
+      drawer.classList.add('is-open');
+      drawer.setAttribute('aria-hidden', 'false');
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      menuToggle.setAttribute('aria-expanded', 'true');
+      document.documentElement.style.overflow = 'hidden';
+      setTimeout(() => drawerClose && drawerClose.focus(), 50);
+    }
+
+    function closeDrawer() {
+      if (!drawer || !overlay || !menuToggle) return;
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      document.documentElement.style.overflow = '';
+      document.dispatchEvent(new CustomEvent('drawer:close'));
+      menuToggle.focus();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function openDrawerSubpanel(catKey) {
+      const data = drawerSubpanelMap[catKey];
+      if (!data || !(drawerCategories instanceof HTMLElement) || !(drawerSubpanel instanceof HTMLElement) || !(drawerSubpanelTitle instanceof HTMLElement) || !(drawerSubpanelList instanceof HTMLElement) || !(drawerSubpanelViewAll instanceof HTMLAnchorElement)) return;
+      drawerSubpanelTitle.textContent = data.name;
+      drawerSubpanelViewAll.href = data.url || '#';
+      const viewAllText = drawerSubpanelViewAll.querySelector('span');
+      if (viewAllText) {
+        viewAllText.textContent = 'View all ' + data.name;
+      }
+      drawerSubpanelList.innerHTML = data.items.map(function (item) {
+        return '<a href="' + escapeHtml(item.url || '#') + '" class="pp-subpanel-item"><span>' + escapeHtml(item.name || '') + '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></a>';
+      }).join('');
+      drawerSubpanel.removeAttribute('hidden');
+      requestAnimationFrame(function () {
+        drawerCategories.classList.add('is-pushed');
+        drawerSubpanel.classList.add('is-open');
+      });
+    }
+
+    function closeDrawerSubpanel() {
+      if (!(drawerCategories instanceof HTMLElement) || !(drawerSubpanel instanceof HTMLElement)) return;
+      drawerCategories.classList.remove('is-pushed');
+      drawerSubpanel.classList.remove('is-open');
+      setTimeout(function () {
+        drawerSubpanel.setAttribute('hidden', '');
+      }, 280);
+    }
+
+    function closeDesktopAccountDropdown() {
+      if (!(accountTrigger instanceof HTMLElement) || !(accountDropdownPanel instanceof HTMLElement)) return;
+      accountDropdownPanel.classList.remove('is-open');
+      accountDropdownPanel.setAttribute('aria-hidden', 'true');
+      accountDropdownPanel.setAttribute('hidden', '');
+      accountTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function openAccountSheet() {
+      if (!(accountSheet instanceof HTMLElement) || !(sheetOverlay instanceof HTMLElement)) return;
+      closeDesktopAccountDropdown();
+      accountSheet.removeAttribute('aria-hidden');
+      sheetOverlay.removeAttribute('aria-hidden');
+      requestAnimationFrame(function () {
+        accountSheet.classList.add('is-open');
+        sheetOverlay.classList.add('is-open');
+      });
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAccountSheet() {
+      if (!(accountSheet instanceof HTMLElement) || !(sheetOverlay instanceof HTMLElement)) return;
+      accountSheet.classList.remove('is-open');
+      sheetOverlay.classList.remove('is-open');
+      accountSheet.style.transform = '';
+      accountSheet.setAttribute('aria-hidden', 'true');
+      sheetOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    function openMobileSearch() {
+      if (!mobileSearchPanel || !mobileSearchToggle) return;
+      mobileSearchPanel.classList.add('is-open');
+      mobileSearchPanel.setAttribute('aria-hidden', 'false');
+      mobileSearchToggle.setAttribute('aria-expanded', 'true');
+      setTimeout(() => mobileSearchInput && mobileSearchInput.focus(), 60);
+    }
+
+    function closeMobileSearch() {
+      if (!mobileSearchPanel || !mobileSearchToggle) return;
+      mobileSearchPanel.classList.remove('is-open');
+      mobileSearchPanel.setAttribute('aria-hidden', 'true');
+      mobileSearchToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    if (menuToggle) menuToggle.addEventListener('click', openDrawer);
+    if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+    if (mobileSearchToggle) {
+      mobileSearchToggle.addEventListener('click', function () {
+        if (mobileSearchPanel && mobileSearchPanel.classList.contains('is-open')) {
+          closeMobileSearch();
+        } else {
+          openMobileSearch();
+        }
+      });
+    }
+
+    if (accountTrigger) {
+      accountTrigger.addEventListener('click', function (event) {
+        if (!isMobileViewport()) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (accountSheet && accountSheet.classList.contains('is-open')) {
+          closeAccountSheet();
+        } else {
+          openAccountSheet();
+        }
+      }, true);
+    }
+
+    if (accountSheetClose) {
+      accountSheetClose.addEventListener('click', closeAccountSheet);
+    }
+
+    if (sheetOverlay) {
+      sheetOverlay.addEventListener('click', closeAccountSheet);
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeMegaGroups();
+        if (drawer && drawer.classList.contains('is-open')) closeDrawer();
+        if (mobileSearchPanel && mobileSearchPanel.classList.contains('is-open')) closeMobileSearch();
+        if (accountSheet && accountSheet.classList.contains('is-open')) closeAccountSheet();
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (window.innerWidth < 990) closeMegaGroups();
+      if (!isMobileViewport()) closeAccountSheet();
+    });
+
+    if (drawer) {
+      drawer.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        const focusable = drawer.querySelectorAll('a, button, input, [tabindex]:not([tabindex="-1"])');
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!first || !last) return;
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+    }
+
+    document.querySelectorAll('.pp-drawer__nav-toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const targetId = btn.getAttribute('data-target');
+        const sub = document.getElementById(targetId);
+        if (!sub) return;
+        const isOpen = sub.classList.toggle('is-open');
+        btn.classList.toggle('is-open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    });
+
+    if (drawer) {
+      drawer.querySelectorAll('.pp-drawer-link[data-category]').forEach(function (btn) {
+        btn.addEventListener('click', function (event) {
+          event.preventDefault();
+          const catKey = btn.getAttribute('data-category');
+          if (catKey) {
+            openDrawerSubpanel(catKey);
+          }
+        });
+      });
+    }
+
+    if (drawerSubpanelBack) {
+      drawerSubpanelBack.addEventListener('click', closeDrawerSubpanel);
+    }
+
+    document.addEventListener('drawer:close', closeDrawerSubpanel);
+
+    if (accountSheet instanceof HTMLElement) {
+      accountSheet.addEventListener('touchstart', function (event) {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest('.pp-sheet-handle')) return;
+        accountSheetTouchStartY = event.touches[0].clientY;
+        accountSheetTouchCurrentY = accountSheetTouchStartY;
+        isDraggingAccountSheet = true;
+      }, { passive: true });
+
+      accountSheet.addEventListener('touchmove', function (event) {
+        if (!isDraggingAccountSheet) return;
+        accountSheetTouchCurrentY = event.touches[0].clientY;
+        const diff = accountSheetTouchCurrentY - accountSheetTouchStartY;
+        if (diff > 0) {
+          accountSheet.style.transform = 'translateY(' + diff + 'px)';
+        }
+      }, { passive: true });
+
+      accountSheet.addEventListener('touchend', function () {
+        if (!isDraggingAccountSheet) return;
+        const diff = accountSheetTouchCurrentY - accountSheetTouchStartY;
+        accountSheet.style.transform = '';
+        if (diff > 80) {
+          closeAccountSheet();
+        }
+        isDraggingAccountSheet = false;
+      });
+    }
+
+    function updatePrettyCartCount(count) {
+      const safeCount = Number.isFinite(Number(count)) ? Number(count) : 0;
+      document.querySelectorAll('.pp-header-cart-count').forEach(function (cartCount) {
+        cartCount.textContent = safeCount;
+        cartCount.setAttribute('aria-label', safeCount + ' item' + (safeCount === 1 ? '' : 's') + ' in cart');
+      });
+      document.querySelectorAll('.pp-cart-btn').forEach(function (cartButton) {
+        cartButton.setAttribute('aria-label', 'Cart - ' + safeCount + ' item' + (safeCount === 1 ? '' : 's'));
+        if (cartButton.classList.contains('pp-header__cart')) {
+          cartButton.setAttribute('data-count', String(safeCount));
+        }
+      });
+    }
+
+    function unlockPageAfterCart() {
+      document.documentElement.style.overflow = '';
+      document.documentElement.removeAttribute('scroll-lock');
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.paddingRight = '';
+      document.body.classList.remove('pp-cart-drawer-open');
+      const headerGroup = document.querySelector('#header-group');
+      if (headerGroup) headerGroup.style.paddingRight = '';
+    }
+
+    document.addEventListener('dialog:close', unlockPageAfterCart);
+    document.addEventListener('click', function (event) {
+      if (event.target.closest('[data-pp-lightbox-close], .pp-cart-overlay, .pp-cart-close')) {
+        window.setTimeout(unlockPageAfterCart, 50);
+        window.setTimeout(unlockPageAfterCart, 400);
+      }
+    });
+
+    const cartDrawer = document.querySelector('cart-drawer-component');
+    const cartDrawerTrigger = document.querySelector('[data-cart-drawer-trigger]');
+    if (cartDrawer instanceof HTMLElement && cartDrawerTrigger instanceof HTMLAnchorElement) {
+      cartDrawerTrigger.addEventListener('click', function (event) {
+        if (
+          event.defaultPrevented ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey ||
+          event.button !== 0
+        ) {
+          return;
+        }
+
+        if (typeof cartDrawer.open !== 'function') {
+          return;
+        }
+
+        event.preventDefault();
+        cartDrawer.open();
+      });
+    }
+
+    function refreshPrettyCartCount() {
+      fetch('{{ routes.cart_url }}.js', { credentials: 'same-origin' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Cart count refresh failed');
+          return response.json();
+        })
+        .then(function (cart) {
+          if (cart && cart.item_count !== undefined) updatePrettyCartCount(cart.item_count);
+        })
+        .catch(function () {});
+    }
+
+    document.addEventListener('cart:update', function (event) {
+      const cartCount = event.detail?.resource?.item_count;
+      if (cartCount !== undefined) {
+        updatePrettyCartCount(cartCount);
+      } else {
+        refreshPrettyCartCount();
+      }
+    });
+
+    document.addEventListener('submit', function (event) {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      const action = form.getAttribute('action') || '';
+      if (!action.includes('/cart/add')) return;
+      window.setTimeout(refreshPrettyCartCount, 350);
+      window.setTimeout(refreshPrettyCartCount, 1000);
+    }, true);
+
+    refreshPrettyCartCount();
+
+    if (siteHeader) {
+      let ticking = false;
+      window.addEventListener('scroll', function () {
+        if (ticking) return;
+        requestAnimationFrame(function () {
+          if (window.scrollY > 4) {
+            siteHeader.style.boxShadow = '0 4px 18px rgb(0 0 0 / .1)';
+          } else {
+            siteHeader.style.boxShadow = '';
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }, { passive: true });
+    }
+  })();
+</script>

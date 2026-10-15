@@ -1,0 +1,379 @@
+{%- comment -%}
+  Collection sidebar / drawer filters.
+  Native Shopify facets when present; fallback URL params for type, rating, pre-order.
+
+  @param {string} source - desktop | drawer
+  @param {string} section_id
+{%- endcomment -%}
+
+{% liquid
+  assign price_filter = nil
+  assign avail_filter = nil
+  assign rating_filter = nil
+  assign type_filter = nil
+  assign auto_submit = false
+  if source == 'desktop'
+    assign auto_submit = true
+  endif
+
+  for filter in collection.filters
+    assign lab = filter.label | strip | downcase
+    assign param = filter.param_name | default: '' | downcase
+    if filter.type == 'price_range' or param contains 'price'
+      assign price_filter = filter
+    elsif lab == 'availability' or param contains 'availability'
+      assign avail_filter = filter
+    elsif lab contains 'rating' or param contains 'rating'
+      assign rating_filter = filter
+    elsif lab == 'product type' or lab == 'type' or param contains 'product_type'
+      assign type_filter = filter
+    endif
+  endfor
+
+  assign price_min_val = price_min | default: blank
+  assign price_max_val = price_max | default: blank
+  assign price_range_max = 1000
+  if price_filter != nil and price_filter.range_max != null
+    assign price_range_max = price_filter.range_max | money_without_currency | replace: ',', '' | plus: 0
+  endif
+
+  assign price_min_num = 0
+  assign price_max_num = 0
+  if price_min_val != blank
+    assign price_min_num = price_min_val | plus: 0
+  endif
+  if price_max_val != blank
+    assign price_max_num = price_max_val | plus: 0
+  endif
+
+  assign band_active = 'all'
+  if price_min_val == blank and price_max_val == blank
+    assign band_active = 'all'
+  elsif price_min_val == blank and price_max_num > 0 and price_max_num <= 50
+    assign band_active = 'under-50'
+  elsif price_min_num >= 50 and price_min_num < 51 and price_max_num > 0 and price_max_num <= 100
+    assign band_active = '50-100'
+  elsif price_min_num >= 100 and price_min_num < 101 and price_max_num > 0 and price_max_num <= 200
+    assign band_active = '100-200'
+  elsif price_min_num >= 200 and price_min_num < 201 and price_max_num > 0 and price_max_num <= 300
+    assign band_active = '200-300'
+  elsif price_min_num >= 300 and price_max_val == blank
+    assign band_active = '300-plus'
+  else
+    assign band_active = 'custom'
+  endif
+
+  assign fallback_types = 'Shelves,Tables,TV stands & mounts,Plant stands,Storage,Lighting,Outdoor,Pet products,Kitchen,Mirrors & decor,Clothing storage' | split: ','
+  assign query_s = request.query_string | default: '' | url_decode
+-%}
+
+<section class="pp-filtergroup" data-filter-group data-filter-group-section="price">
+  <button type="button" class="pp-filtergroup__head" data-group-toggle data-filter-toggle aria-expanded="true">
+    <span>Price</span>
+    <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div class="pp-filtergroup__body">
+    <div class="pp-fprice pp-fprice--go">
+      <div class="pp-fprice__field pp-fprice__field--bare">
+        <span class="pp-fprice__prefix" aria-hidden="true">$</span>
+        <input
+          id="{{ source }}Min-{{ section_id }}"
+          type="number"
+          inputmode="decimal"
+          name="pp_min"
+          value="{{ price_min_val }}"
+          placeholder="0"
+          min="0"
+          max="{{ price_range_max }}"
+          data-pp-filter-input
+          data-price-input
+          data-price-min
+          autocomplete="off"
+        >
+      </div>
+      <div class="pp-fprice__field pp-fprice__field--bare">
+        <span class="pp-fprice__prefix" aria-hidden="true">$</span>
+        <input
+          id="{{ source }}Max-{{ section_id }}"
+          type="number"
+          inputmode="decimal"
+          name="pp_max"
+          value="{{ price_max_val }}"
+          placeholder="{{ price_range_max }}"
+          min="0"
+          max="{{ price_range_max }}"
+          data-pp-filter-input
+          data-price-input
+          data-price-max
+          autocomplete="off"
+        >
+      </div>
+      <button type="submit" class="pp-fprice__go">Go</button>
+    </div>
+
+    <ul class="pp-fopts pp-fopts--radio" data-price-bands>
+      <li>
+        <label class="pp-fopt">
+          <input type="radio" name="pp-price-band-{{ source }}" value="all" data-price-band="all" data-band-min="" data-band-max=""{% if band_active == 'all' %} checked{% endif %}>
+          <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+          <span class="pp-fopt__label">All prices</span>
+        </label>
+      </li>
+      <li>
+        <label class="pp-fopt">
+          <input type="radio" name="pp-price-band-{{ source }}" value="under-50" data-price-band="under-50" data-band-min="" data-band-max="50" data-band-exclusive-max{% if band_active == 'under-50' %} checked{% endif %}>
+          <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+          <span class="pp-fopt__label">Under $50</span>
+        </label>
+      </li>
+      <li>
+        <label class="pp-fopt">
+          <input type="radio" name="pp-price-band-{{ source }}" value="50-100" data-price-band="50-100" data-band-min="50" data-band-max="100"{% if band_active == '50-100' %} checked{% endif %}>
+          <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+          <span class="pp-fopt__label">$50 – $100</span>
+        </label>
+      </li>
+      <li>
+        <label class="pp-fopt">
+          <input type="radio" name="pp-price-band-{{ source }}" value="100-200" data-price-band="100-200" data-band-min="100" data-band-max="200"{% if band_active == '100-200' %} checked{% endif %}>
+          <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+          <span class="pp-fopt__label">$100 – $200</span>
+        </label>
+      </li>
+      <li>
+        <label class="pp-fopt">
+          <input type="radio" name="pp-price-band-{{ source }}" value="200-300" data-price-band="200-300" data-band-min="200" data-band-max="300"{% if band_active == '200-300' %} checked{% endif %}>
+          <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+          <span class="pp-fopt__label">$200 – $300</span>
+        </label>
+      </li>
+      <li>
+        <label class="pp-fopt">
+          <input type="radio" name="pp-price-band-{{ source }}" value="300-plus" data-price-band="300-plus" data-band-min="300" data-band-max=""{% if band_active == '300-plus' %} checked{% endif %}>
+          <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+          <span class="pp-fopt__label">$300+</span>
+        </label>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="pp-filtergroup" data-filter-group data-filter-group-section="availability">
+  <button type="button" class="pp-filtergroup__head" data-group-toggle data-filter-toggle aria-expanded="true">
+    <span>Availability</span>
+    <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div class="pp-filtergroup__body">
+    <ul class="pp-fopts">
+      {% if avail_filter != nil %}
+        {% for value in avail_filter.values %}
+          {% assign vlab = value.label | strip | downcase %}
+          {% unless vlab contains 'out of stock' or vlab contains 'unavailable' %}
+            <li>
+              <label class="pp-fopt">
+                <input
+                  type="checkbox"
+                  name="pp_avail"
+                  value="1"
+                  {% if query_s contains 'pp_avail=1' %}checked{% endif %}
+                  data-pp-filter-input
+                  {% if auto_submit %}data-auto-submit-desktop{% endif %}
+                >
+                <span class="pp-fopt__box" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span class="pp-fopt__label">{% if vlab contains 'in stock' %}In stock{% else %}{{ value.label }}{% endif %}</span>
+              </label>
+            </li>
+          {% endunless %}
+        {% endfor %}
+      {% else %}
+        <li>
+          <label class="pp-fopt">
+            <input type="checkbox" name="pp_avail" value="1" {% if query_s contains 'pp_avail=1' or query_s contains 'filter.v.availability=1' %}checked{% endif %} data-pp-filter-input {% if auto_submit %}data-auto-submit-desktop{% endif %}>
+            <span class="pp-fopt__box" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <span class="pp-fopt__label">In stock</span>
+          </label>
+        </li>
+      {% endif %}
+      <li>
+        <label class="pp-fopt">
+          <input
+            type="checkbox"
+            name="pp_preorder"
+            value="1"
+            {% if query_s contains 'pp_preorder=1' or query_s contains 'filter.p.tag=pre-order' %}checked{% endif %}
+            data-pp-filter-input
+            {% if auto_submit %}data-auto-submit-desktop{% endif %}
+          >
+          <span class="pp-fopt__box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </span>
+          <span class="pp-fopt__label">Pre-order</span>
+        </label>
+      </li>
+    </ul>
+  </div>
+</section>
+
+{% if rating_filter != nil %}
+<section class="pp-filtergroup" data-filter-group data-filter-group-section="rating">
+  <button type="button" class="pp-filtergroup__head" data-group-toggle data-filter-toggle aria-expanded="true">
+    <span>Customer rating</span>
+    <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div class="pp-filtergroup__body">
+    <ul class="pp-fopts pp-fopts--radio">
+      {% for value in rating_filter.values %}
+        {% assign rating_n = value.label | plus: 0 %}
+        {% if rating_n < 4 %}{% continue %}{% endif %}
+        <li>
+          <label class="pp-fopt">
+            <input
+              type="radio"
+              name="{{ value.param_name }}"
+              value="{{ value.value }}"
+              {% if value.active %}checked{% endif %}
+              {% if value.count == 0 and value.active == false %}disabled{% endif %}
+              data-pp-filter-input
+              {% if auto_submit %}data-auto-submit-desktop{% endif %}
+            >
+            <span class="pp-fopt__box pp-fopt__box--radio" aria-hidden="true"></span>
+            <span class="pp-fopt__label">
+              <span class="pp-frating-stars" aria-hidden="true">
+                {% for star_index in (1..5) %}
+                  <svg{% if star_index > rating_n %} class="dim"{% endif %} viewBox="0 0 20 20"><path d="M10.4552 0.846855C10.3119 0.384382 9.68806 0.384382 9.54477 0.846855L7.63027 7.02616C7.56619 7.23298 7.38241 7.37301 7.17504 7.37301H0.979572C0.515888 7.37301 0.323098 7.99527 0.698226 8.28109L5.71047 12.1001C5.87823 12.2279 5.94843 12.4545 5.88435 12.6613L3.96984 18.8406C3.82656 19.3031 4.33129 19.6877 4.70642 19.4019L9.71865 15.5828C9.88642 15.455 10.1136 15.455 10.2813 15.5828L15.2936 19.4019C15.6687 19.6877 16.1734 19.3031 16.0302 18.8406L14.1157 12.6613C14.0516 12.4545 14.1218 12.2279 14.2895 12.1001L19.3018 8.28109C19.6769 7.99527 19.4841 7.37301 19.0204 7.37301H12.825C12.6176 7.37301 12.4338 7.23298 12.3697 7.02616L10.4552 0.846855Z"></path></svg>
+                {% endfor %}
+              </span>
+              <span class="pp-frating-amp">&amp; up</span>
+            </span>
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+<section class="pp-filtergroup" data-filter-group data-filter-group-section="product-type">
+  <button type="button" class="pp-filtergroup__head" data-group-toggle data-filter-toggle aria-expanded="true">
+    <span>Product type</span>
+    <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+  <div class="pp-filtergroup__body">
+    <ul class="pp-fopts">
+      {% if type_filter != nil %}
+        {% for value in type_filter.values %}
+          {% if value.count == 0 and value.active == false %}{% continue %}{% endif %}
+          <li>
+            <label class="pp-fopt">
+              <input
+                type="checkbox"
+                name="pp_type"
+                value="{{ value.label }}"
+                {% if value.active or query_s contains value.label %}checked{% endif %}
+                data-pp-filter-input
+                {% if auto_submit %}data-auto-submit-desktop{% endif %}
+              >
+              <span class="pp-fopt__box" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </span>
+              <span class="pp-fopt__label">{{ value.label }}</span>
+            </label>
+          </li>
+        {% endfor %}
+      {% else %}
+        {% for type_label in fallback_types %}
+          {% assign type_needle = 'pp_type=' | append: type_label %}
+          <li>
+            <label class="pp-fopt">
+              <input
+                type="checkbox"
+                name="pp_type"
+                value="{{ type_label }}"
+                {% if query_s contains type_needle %}checked{% endif %}
+                data-pp-filter-input
+                {% if auto_submit %}data-auto-submit-desktop{% endif %}
+              >
+              <span class="pp-fopt__box" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </span>
+              <span class="pp-fopt__label">{{ type_label }}</span>
+            </label>
+          </li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  </div>
+</section>
+
+{% for filter in collection.filters %}
+  {% liquid
+    assign lab = filter.label | strip | downcase
+    assign param = filter.param_name | default: '' | downcase
+    assign skip = false
+    if filter.type == 'price_range' or param contains 'price'
+      assign skip = true
+    elsif lab == 'availability' or param contains 'availability'
+      assign skip = true
+    elsif lab contains 'rating' or param contains 'rating'
+      assign skip = true
+    elsif lab == 'product type' or lab == 'type' or param contains 'product_type'
+      assign skip = true
+    endif
+  %}
+  {% if skip %}{% continue %}{% endif %}
+  {% assign normalized_filter_label = lab %}
+  <section class="pp-filtergroup is-collapsed" data-filter-group data-filter-group-section="{{ filter.param_name | default: filter.label | handle }}">
+    <button type="button" class="pp-filtergroup__head" data-group-toggle data-filter-toggle aria-expanded="false">
+      <span>{{ filter.label }}</span>
+      <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div class="pp-filtergroup__body">
+      {% if filter.presentation == 'swatch' or normalized_filter_label == 'color' or normalized_filter_label == 'colour' %}
+        <div class="pp-fcolors">
+          {% for value in filter.values %}
+            {% liquid
+              assign swatch_background = blank
+              if value.swatch.image != blank
+                assign swatch_background = value.swatch.image | image_url: width: 64
+              elsif value.swatch.color != blank
+                assign swatch_background = value.swatch.color
+              endif
+            %}
+            <label class="pp-fcolor{% if value.active %} is-active{% endif %}" {% if swatch_background contains 'http' %}style="background-image:url('{{ swatch_background }}'); background-size:cover; background-position:center;"{% elsif swatch_background != blank %}style="background: {{ swatch_background }};"{% endif %}>
+              <span class="pp-fcolor__tip">{{ value.label }}</span>
+              <input type="checkbox" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %} {% if value.count == 0 and value.active == false %}disabled{% endif %} data-pp-filter-input {% if auto_submit %}data-auto-submit-desktop{% endif %}>
+            </label>
+          {% endfor %}
+        </div>
+      {% else %}
+        <ul class="pp-fopts">
+          {% for value in filter.values %}
+            <li>
+              <label class="pp-fopt">
+                <input type="checkbox" name="{{ value.param_name }}" value="{{ value.value }}" {% if value.active %}checked{% endif %} {% if value.count == 0 and value.active == false %}disabled{% endif %} data-pp-filter-input {% if auto_submit %}data-auto-submit-desktop{% endif %}>
+                <span class="pp-fopt__box" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span class="pp-fopt__label">{{ value.label }}</span>
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </section>
+{% endfor %}

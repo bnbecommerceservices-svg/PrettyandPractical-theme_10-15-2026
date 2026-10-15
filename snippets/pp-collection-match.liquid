@@ -1,0 +1,41 @@
+{%- liquid
+  assign pp_match = true
+
+  if pp_types != blank
+    assign pp_type_token = '|' | append: product.type | append: '|'
+    unless pp_types contains pp_type_token
+      assign pp_match = false
+    endunless
+  endif
+
+  if pp_in_stock and product.available == false
+    assign pp_match = false
+  endif
+
+  if pp_preorder
+    assign pp_has_preorder = false
+    for tag in product.tags
+      assign pp_tag = tag | strip | downcase
+      if pp_tag == 'pre-order' or pp_tag == 'preorder' or pp_tag == 'pre order'
+        assign pp_has_preorder = true
+      endif
+    endfor
+    unless pp_has_preorder
+      assign pp_match = false
+    endunless
+  endif
+
+  if pp_price_min != blank and product.price < pp_price_min_cents
+    assign pp_match = false
+  endif
+  if pp_price_max != blank and product.price > pp_price_max_cents
+    assign pp_match = false
+  endif
+
+  if pp_rating > 0
+    assign pp_product_rating = product.metafields.reviews.rating.value.rating | default: 0 | plus: 0
+    if pp_product_rating < pp_rating
+      assign pp_match = false
+    endif
+  endif
+-%}

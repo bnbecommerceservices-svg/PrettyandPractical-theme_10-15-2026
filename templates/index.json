@@ -1,0 +1,405 @@
+{
+  "sections": {
+    "pp_homepage_storefront": {
+      "type": "pp-homepage",
+      "blocks": {
+        "hero_1": {
+          "type": "hero_card",
+          "settings": {
+            "image": "",
+            "badge": "Shop the look",
+            "heading": "Home Decor Items for Wall",
+            "text": "Time to define your wall story with mirrors, canvas art and statement pieces for Australian homes.",
+            "button_label": "Shop home decor",
+            "link": "/collections/home-decor"
+          }
+        },
+        "hero_2": {
+          "type": "hero_card",
+          "settings": {
+            "image": "",
+            "badge": "Furniture",
+            "heading": "Furniture for Every Room",
+            "text": "Bedroom, dining, living and office pieces that blend style with everyday function.",
+            "button_label": "Shop furniture",
+            "link": "/collections/furniture"
+          }
+        },
+        "hero_3": {
+          "type": "hero_card",
+          "settings": {
+            "image": "",
+            "badge": "Garden & Outdoor",
+            "heading": "Plant Stands & Outdoor Living",
+            "text": "Stylish plant stands and outdoor-ready pieces for balconies, patios and gardens.",
+            "button_label": "Shop outdoor",
+            "link": "/collections/plant-stands"
+          }
+        },
+        "value_1": {
+          "type": "value_item",
+          "settings": {
+            "icon": "truck",
+            "heading": "Free Delivery",
+            "text": "Orders Over $120"
+          }
+        },
+        "value_2": {
+          "type": "value_item",
+          "settings": {
+            "icon": "returns",
+            "heading": "Get Refund",
+            "text": "Within 30 Days Returns"
+          }
+        },
+        "value_3": {
+          "type": "value_item",
+          "settings": {
+            "icon": "secure",
+            "heading": "Safe Payment",
+            "text": "100% Secure Payment"
+          }
+        },
+        "value_4": {
+          "type": "value_item",
+          "settings": {
+            "icon": "star",
+            "heading": "Friendly support",
+            "text": "We're here to help"
+          }
+        },
+        "category_1": {
+          "type": "category_card",
+          "settings": {
+            "style": "furniture",
+            "collection": "",
+            "image": "",
+            "heading": "Bedroom Furniture",
+            "count_text": "",
+            "link": "/collections/bedroom-furniture"
+          }
+        },
+        "category_2": {
+          "type": "category_card",
+          "settings": {
+            "style": "decor",
+            "collection": "",
+            "image": "",
+            "heading": "Living Room Furniture",
+            "count_text": "",
+            "link": "/collections/living-room-furniture"
+          }
+        },
+        "category_3": {
+          "type": "category_card",
+          "settings": {
+            "style": "kitchen",
+            "collection": "",
+            "image": "",
+            "heading": "Dining Furniture",
+            "count_text": "",
+            "link": "/collections/dining-furniture"
+          }
+        },
+        "category_4": {
+          "type": "category_card",
+          "settings": {
+            "style": "bath",
+            "collection": "",
+            "image": "",
+            "heading": "Office Furniture",
+            "count_text": "",
+            "link": "/collections/office-furniture"
+          }
+        },
+        "category_5": {
+          "type": "category_card",
+          "settings": {
+            "style": "decor",
+            "collection": "",
+            "image": "",
+            "heading": "Home Decor",
+            "count_text": "",
+            "link": "/collections/home-decor"
+          }
+        },
+        "category_6": {
+          "type": "category_card",
+          "settings": {
+            "style": "kitchen",
+            "collection": "",
+            "image": "",
+            "heading": "Kitchenware",
+            "count_text": "",
+            "link": "/collections/kitchenware"
+          }
+        },
+        "category_7": {
+          "type": "category_card",
+          "settings": {
+            "style": "decor",
+            "collection": "",
+            "image": "",
+            "heading": "Plant Stands",
+            "count_text": "",
+            "link": "/collections/plant-stands"
+          }
+        },
+        "category_8": {
+          "type": "category_card",
+          "settings": {
+            "style": "bath",
+            "collection": "",
+            "image": "",
+            "heading": "Lighting",
+            "count_text": "",
+            "link": "/collections/lighting"
+          }
+        },
+        "category_9": {
+          "type": "category_card",
+          "settings": {
+            "style": "pets",
+            "collection": "",
+            "image": "",
+            "heading": "Pet Accessories",
+            "count_text": "",
+            "link": "/collections/pets"
+          }
+        },
+        "category_10": {
+          "type": "category_card",
+          "settings": {
+            "style": "furniture",
+            "collection": "",
+            "image": "",
+            "heading": "Metal Plant Stands",
+            "count_text": "",
+            "link": "/collections/metal-plant-stand"
+          }
+        },
+        "review_1": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Better than expected",
+            "body": "We needed something practical and this bamboo shoe cabinet does the job. Packaging was careful and it has held up well so far.",
+            "avatar_text": "CN",
+            "author_name": "Charlie N.",
+            "location": "Melbourne, VIC",
+            "purchased_product": "Bamboo shoe cabinet",
+            "show_verified": true
+          }
+        },
+        "review_2": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Handy and well made",
+            "body": "Useful, well priced, and the floating kitchen shelves look better in person than I expected. Would order from Pretty & Practical again.",
+            "avatar_text": "EM",
+            "author_name": "Eva M.",
+            "location": "Sydney, NSW",
+            "purchased_product": "Floating kitchen shelves",
+            "show_verified": true
+          }
+        },
+        "review_3": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Arrived well packed",
+            "body": "The bathroom storage cabinet arrived in good condition, matches the listing, and is getting daily use here already.",
+            "avatar_text": "NC",
+            "author_name": "Noah C.",
+            "location": "Brisbane, QLD",
+            "purchased_product": "Bamboo bathroom cabinet",
+            "show_verified": true
+          }
+        },
+        "review_4": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Good everyday piece",
+            "body": "The tall bamboo bookshelf arrived in good condition and has been in use since the day it turned up. Practical size for our hallway.",
+            "avatar_text": "CN",
+            "author_name": "Charlie N.",
+            "location": "Perth, WA",
+            "purchased_product": "Bamboo bookshelf",
+            "show_verified": true
+          }
+        },
+        "review_5": {
+          "type": "review",
+          "settings": {
+            "rating": 4,
+            "title": "Nice finish and sturdy",
+            "body": "We put the marble console to use straight away. Practical design, decent build, and it has been a good addition at home.",
+            "avatar_text": "OT",
+            "author_name": "Olivia T.",
+            "location": "Adelaide, SA",
+            "purchased_product": "Marble console table",
+            "show_verified": true
+          }
+        },
+        "review_6": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Exactly what we needed",
+            "body": "Took a chance on the industrial bookshelf and it paid off. Feels sturdy, looks clean, and was easier than we thought.",
+            "avatar_text": "AK",
+            "author_name": "Aisha K.",
+            "location": "Hobart, TAS",
+            "purchased_product": "Industrial bookshelf",
+            "show_verified": true
+          }
+        },
+        "review_7": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Looks the part",
+            "body": "Pleased we went with this wooden ladder shelf. It is practical, looks the part, and has been worth it for our household.",
+            "avatar_text": "GT",
+            "author_name": "George T.",
+            "location": "Canberra, ACT",
+            "purchased_product": "Wooden ladder shelf",
+            "show_verified": true
+          }
+        },
+        "review_8": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Arrived well packed",
+            "body": "The metal display shelf fits our space well. Quality is as described and we have had no issues since it turned up.",
+            "avatar_text": "HB",
+            "author_name": "Henry B.",
+            "location": "Gold Coast, QLD",
+            "purchased_product": "Metal display shelf",
+            "show_verified": true
+          }
+        },
+        "review_9": {
+          "type": "review",
+          "settings": {
+            "rating": 4,
+            "title": "Practical and tidy",
+            "body": "The corner wall shelf is a useful piece that fits our space. Assembly was straightforward and the look is simple, which we wanted.",
+            "avatar_text": "MK",
+            "author_name": "Mason K.",
+            "location": "Geelong, VIC",
+            "purchased_product": "Corner wall shelf",
+            "show_verified": true
+          }
+        },
+        "review_10": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "title": "Would order again",
+            "body": "Pretty & Practical has been reliable for us. This plant stand matches the rest of the room and feels sturdy enough for daily use.",
+            "avatar_text": "PN",
+            "author_name": "Priya N.",
+            "location": "Newcastle, NSW",
+            "purchased_product": "Plant stand",
+            "show_verified": true
+          }
+        }
+      },
+      "block_order": [
+        "hero_1",
+        "hero_2",
+        "hero_3",
+        "value_1",
+        "value_2",
+        "value_3",
+        "value_4",
+        "category_1",
+        "category_2",
+        "category_3",
+        "category_4",
+        "category_5",
+        "category_6",
+        "category_7",
+        "category_8",
+        "category_9",
+        "category_10",
+        "review_1",
+        "review_2",
+        "review_3",
+        "review_4",
+        "review_5",
+        "review_6",
+        "review_7",
+        "review_8",
+        "review_9",
+        "review_10"
+      ],
+      "settings": {
+        "values_aria_label": "Why shop with us",
+        "categories_heading": "Top Picks for you",
+        "categories_subheading": "Impressive collection for your dream home.",
+        "show_promos": true,
+        "promo_1_tag": "Just Landed",
+        "promo_1_heading": "New Arrivals",
+        "promo_1_label": "Explore now",
+        "promo_1_link": "/collections/new-arrival",
+        "promo_2_tag": "Outdoor living",
+        "promo_2_heading": "Garden & Outdoor",
+        "promo_2_label": "Shop outdoor",
+        "promo_2_link": "/collections/home-garden",
+        "promo_3_tag": "Pet accessories",
+        "promo_3_heading": "Pet Accessories",
+        "promo_3_label": "Shop accessories",
+        "promo_3_link": "/collections/pets",
+        "bestsellers_collection": "home-decor",
+        "bestsellers_product_1": "1-2m-oversized-luxury-decorative-wall-mirror-crushed-diamond-full-length-mirror",
+        "bestsellers_product_2": "1-2m-wall-led-bathroom-vanity-mirror-smart-backlit-front-lighted-anti-fog",
+        "bestsellers_product_3": "tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg",
+        "bestsellers_product_4": "high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame",
+        "bestsellers_heading": "Browse Our Best Home Decor Sellers",
+        "bestsellers_subheading": "Customer favourites across furniture, mirrors, tables and more.",
+        "bestsellers_link_label": "View all",
+        "products_per_row": 4,
+        "sale_badge_label": "Sale",
+        "new_badge_tag": "new",
+        "new_badge_label": "New",
+        "bestseller_badge_tag": "bestseller",
+        "bestseller_badge_label": "Bestseller",
+        "quick_add_label": "Quick add",
+        "view_product_label": "View product",
+        "show_featured_band": false,
+        "featured_product": "",
+        "featured_floating_label": "Featured pick",
+        "featured_overline": "What We Are",
+        "featured_title": "Pretty & Practical",
+        "featured_description": "Your destination for stylish, functional, and high-quality home and lifestyle products. We believe the perfect balance of beauty and utility can transform everyday living into something truly special.",
+        "feature_tick_1": "Curated home décor & furniture",
+        "feature_tick_2": "Australia wide delivery",
+        "feature_tick_3": "Style that works every day",
+        "featured_save_label": "Save now",
+        "featured_primary_label": "About us",
+        "featured_secondary_label": "Shop bestsellers",
+        "secondary_collection": "furniture",
+        "secondary_product_1": "tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg",
+        "secondary_product_2": "contemporary-wide-square-solid-marble-side-table-storage-center-table-home-decor",
+        "secondary_product_3": "high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame",
+        "secondary_product_4": "acrylic-coffee-table-clear-coffee-table-with-anti-scratch-pvc-cover-sofa-table",
+        "secondary_heading": "New Arrival",
+        "secondary_subheading": "Fresh pieces just in for Australian homes.",
+        "secondary_link_label": "View all",
+        "reviews_heading": "Customer reviews",
+        "reviews_subheading": "What Australian shoppers are saying about Pretty & Practical.",
+        "show_instagram": false,
+        "instagram_heading": "Seen in the wild",
+        "instagram_subheading": "Follow Pretty & Practical for new arrivals and styling ideas."
+      }
+    }
+  },
+  "order": [
+    "pp_homepage_storefront"
+  ]
+}

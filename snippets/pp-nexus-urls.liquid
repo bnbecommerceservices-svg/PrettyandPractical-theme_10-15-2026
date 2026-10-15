@@ -1,0 +1,28 @@
+{% liquid
+  assign nexus_login = settings.nexus_seller_login_url | strip
+  if nexus_login == blank
+    assign nexus_login = 'https://nexus.marmeto.org/login'
+  endif
+  assign nexus_register = settings.nexus_seller_register_url | strip
+  if nexus_register == blank
+    assign nexus_register = 'https://nexus.marmeto.org/registration-page/794354c4-2f85-48ca-8d3f-aefb28129aca'
+  endif
+  assign nexus_embed = settings.nexus_register_embed | strip
+  assign nexus_admin = settings.nexus_admin_url | strip
+  if nexus_admin == blank
+    assign shop_handle = shop.permanent_domain | split: '.' | first
+    assign nexus_admin = 'https://admin.shopify.com/store/' | append: shop_handle | append: '/apps'
+  endif
+  assign nexus_sell_page = pages['sell-with-us'].url | default: '/pages/sell-with-us'
+  assign nexus_seller_page = pages['seller-dashboard'].url | default: '/pages/seller-dashboard'
+  if nexus_login != blank
+    assign nexus_seller_href = nexus_login
+  else
+    assign nexus_seller_href = nexus_seller_page
+  endif
+  if nexus_register != blank
+    assign nexus_apply_href = nexus_register
+  else
+    assign nexus_apply_href = nexus_sell_page
+  endif
+%}

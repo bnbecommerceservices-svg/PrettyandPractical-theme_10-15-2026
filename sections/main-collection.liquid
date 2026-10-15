@@ -1,0 +1,1689 @@
+{{ 'pp-collection.css' | asset_url | stylesheet_tag }}
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+
+{% liquid
+  assign products_per_page = section.settings.products_per_page | default: 16
+  assign current_sort = collection.sort_by | default: collection.default_sort_by
+  assign clear_url = collection.url
+  assign current_sort_key = 'featured'
+  assign sort_featured_value = blank
+  assign sort_best_value = blank
+  assign sort_price_asc_value = blank
+  assign sort_price_desc_value = blank
+  assign sort_newest_value = blank
+  if current_sort != blank and current_sort != collection.default_sort_by
+    assign clear_url = clear_url | append: '?sort_by=' | append: current_sort
+  endif
+
+  assign total_active_values = 0
+  assign current_sort_label = 'Featured'
+
+  for filter in collection.filters
+    case filter.type
+      when 'price_range'
+        if filter.min_value.value != null or filter.max_value.value != null
+          assign total_active_values = total_active_values | plus: 1
+        endif
+      else
+        assign total_active_values = total_active_values | plus: filter.active_values.size
+    endcase
+  endfor
+
+  for option in collection.sort_options
+    case option.value
+      when collection.default_sort_by, 'manual'
+        assign sort_featured_value = option.value
+      when 'best-selling'
+        assign sort_best_value = option.value
+      when 'price-ascending'
+        assign sort_price_asc_value = option.value
+      when 'price-descending'
+        assign sort_price_desc_value = option.value
+      when 'created-descending'
+        assign sort_newest_value = option.value
+    endcase
+
+    if option.value == current_sort
+      case option.value
+        when collection.default_sort_by, 'manual'
+          assign current_sort_key = 'featured'
+        when 'best-selling'
+          assign current_sort_key = 'best'
+        when 'price-ascending'
+          assign current_sort_key = 'price-asc'
+        when 'price-descending'
+          assign current_sort_key = 'price-desc'
+        when 'created-descending'
+          assign current_sort_key = 'newest'
+      endcase
+    endif
+  endfor
+
+  if sort_featured_value == blank
+    assign sort_featured_value = collection.default_sort_by | default: 'manual'
+  endif
+
+  case current_sort_key
+    when 'featured'
+      assign current_sort_label = 'Featured'
+    when 'best'
+      assign current_sort_label = 'Best selling'
+    when 'price-asc'
+      assign current_sort_label = 'Price: Low to high'
+    when 'price-desc'
+      assign current_sort_label = 'Price: High to low'
+    when 'newest'
+      assign current_sort_label = 'Newest'
+  endcase
+%}
+
+{% liquid
+  assign pp_use_manual = true
+  assign pp_types = '|'
+  assign pp_in_stock = false
+  assign pp_preorder = false
+  assign pp_price_min = blank
+  assign pp_price_max = blank
+  assign pp_rating = 0
+  assign pp_page = 1
+  assign pp_active = 0
+  assign pp_query_base = ''
+  assign qs_parts = request.query_string | default: '' | url_decode | split: '&'
+
+  for part in qs_parts
+    if part == blank
+      continue
+    endif
+
+    assign pair = part | split: '='
+    assign key = pair | first
+    assign val = pair | last
+    if pair.size < 2
+      assign val = ''
+    endif
+
+    if key == 'pp_type' or key == 'filter.p.product_type'
+      if val != blank
+        assign pp_types = pp_types | append: val | append: '|'
+        assign pp_active = pp_active | plus: 1
+      endif
+    elsif key == 'pp_avail' or key == 'filter.v.availability'
+      if val == '1'
+        assign pp_in_stock = true
+        assign pp_active = pp_active | plus: 1
+      endif
+    elsif key == 'pp_preorder' or key == 'filter.p.tag'
+      assign tag_val = val | downcase | replace: '+', '-'
+      if tag_val == '1' or tag_val == 'pre-order' or tag_val == 'preorder'
+        assign pp_preorder = true
+        assign pp_active = pp_active | plus: 1
+      endif
+    elsif key == 'pp_min' or key == 'filter.v.price.gte'
+      if val != blank
+        assign pp_price_min = val
+        assign pp_active = pp_active | plus: 1
+      endif
+    elsif key == 'pp_max' or key == 'filter.v.price.lte'
+      if val != blank
+        assign pp_price_max = val
+        assign pp_active = pp_active | plus: 1
+      endif
+    elsif key == 'filter.p.m.reviews.rating' and val != blank
+      assign pp_rating = val | plus: 0
+      assign pp_active = pp_active | plus: 1
+    elsif key == 'pp_page' and val != blank
+      assign pp_page = val | plus: 0
+    endif
+
+    unless key == 'page' or key == 'pp_page'
+      if pp_query_base != blank
+        assign pp_query_base = pp_query_base | append: '&'
+      endif
+      assign pp_query_base = pp_query_base | append: part
+    endunless
+  endfor
+
+  if pp_types == '|'
+    assign pp_types = ''
+  endif
+  if pp_page < 1
+    assign pp_page = 1
+  endif
+
+  assign pp_price_min_cents = 0
+  assign pp_price_max_cents = 0
+  if pp_price_min != blank
+    assign pp_price_min_cents = pp_price_min | times: 100
+  endif
+  if pp_price_max != blank
+    assign pp_price_max_cents = pp_price_max | times: 100
+  endif
+
+  assign pp_page_url_base = collection.url
+  if pp_query_base != blank
+    assign pp_page_url_base = collection.url | append: '?' | append: pp_query_base
+  endif
+
+  assign pp_paginate_size = 250
+  assign total_active_values = pp_active
+  assign pp_grid_source = collection
+  assign pp_empty_map = false
+  assign pp_empty_kind = ''
+  assign pp_live_count = collection.products_count | default: 0 | plus: 0
+  if collection.all_products_count > pp_live_count
+    assign pp_live_count = collection.all_products_count
+  endif
+  if pp_live_count == 0
+    case collection.handle
+      when 'tv-trolley-stand'
+        if collections['tv-stands'] != blank
+          assign pp_grid_source = collections['tv-stands']
+        elsif collections['furniture'] != blank
+          assign pp_grid_source = collections['furniture']
+          assign pp_empty_map = true
+          assign pp_empty_kind = 'tv'
+        endif
+      when 'outdoor'
+        if collections['home-garden'] != blank
+          assign pp_grid_source = collections['home-garden']
+          assign pp_empty_map = true
+          assign pp_empty_kind = 'outdoor'
+        endif
+    endcase
+  endif
+  assign pp_tv_url = '/collections/tv-stands'
+  if collections['tv-stands'].url != blank
+    assign pp_tv_url = collections['tv-stands'].url
+  endif
+  assign pp_outdoor_url = collections['home-garden'].url | default: '/collections/home-garden'
+  assign pp_garden_try = 'garden-outdoor,garden-and-outdoor,outdoor-garden,garden,home-garden,home-and-garden' | split: ','
+  for h in pp_garden_try
+    if collections[h].url != blank
+      assign pp_outdoor_url = collections[h].url
+      break
+    endif
+  endfor
+  if collections['outdoor'].products_count > 0
+    assign pp_outdoor_url = collections['outdoor'].url
+  endif
+%}
+
+{% paginate pp_grid_source.products by pp_paginate_size %}
+  {% liquid
+    assign total_results = paginate.items
+    assign shown_results = paginate.current_offset | plus: pp_grid_source.products.size
+    assign shown_from = paginate.current_offset | plus: 1
+    if pp_grid_source.products.size == 0
+      assign shown_from = 0
+    endif
+    assign shown_to = shown_results
+    assign show_chips = false
+    if total_active_values > 0
+      assign show_chips = true
+    endif
+    assign fallback_handles = ''
+    assign fallback_count = 0
+    assign pp_matched_count = 0
+    assign pp_rendered_count = 0
+    assign pp_total_pages = 1
+    assign pp_skip = 0
+  %}
+  {% if pp_use_manual %}
+    {% for product in pp_grid_source.products %}
+      {% liquid
+        assign pp_match = true
+      %}
+      {% include 'pp-collection-kind-match' %}
+      {% liquid
+        if pp_types != blank
+          assign pp_type_token = '|' | append: product.type | append: '|'
+          unless pp_types contains pp_type_token
+            assign pp_match = false
+          endunless
+        endif
+        if pp_in_stock and product.available == false
+          assign pp_match = false
+        endif
+        if pp_preorder
+          assign pp_has_preorder = false
+          for tag in product.tags
+            assign pp_tag = tag | strip | downcase
+            if pp_tag == 'pre-order' or pp_tag == 'preorder' or pp_tag == 'pre order'
+              assign pp_has_preorder = true
+            endif
+          endfor
+          unless pp_has_preorder
+            assign pp_match = false
+          endunless
+        endif
+        if pp_price_min != blank and product.price < pp_price_min_cents
+          assign pp_match = false
+        endif
+        if pp_price_max != blank and product.price > pp_price_max_cents
+          assign pp_match = false
+        endif
+        if pp_rating > 0
+          assign pp_product_rating = product.metafields.reviews.rating.value.rating | default: 0 | plus: 0
+          if pp_product_rating < pp_rating
+            assign pp_match = false
+          endif
+        endif
+      %}
+      {% if pp_match %}
+        {% assign pp_matched_count = pp_matched_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    {% liquid
+      assign total_results = pp_matched_count
+      assign pp_skip = pp_page | minus: 1 | times: products_per_page
+      if pp_matched_count == 0
+        assign shown_from = 0
+        assign shown_to = 0
+        assign shown_results = 0
+      else
+        assign shown_from = pp_skip | plus: 1
+        assign shown_to = pp_skip | plus: products_per_page
+        if shown_to > pp_matched_count
+          assign shown_to = pp_matched_count
+        endif
+        assign shown_results = shown_to
+      endif
+      assign pp_total_pages = pp_matched_count | plus: products_per_page | minus: 1 | divided_by: products_per_page
+      if pp_total_pages < 1
+        assign pp_total_pages = 1
+      endif
+    %}
+  {% endif %}
+  {% if pp_empty_map and pp_matched_count == 0 and total_active_values == 0 %}
+    {% include 'pp-collection-fallback-handles' %}
+    {% if fallback_count > 0 %}
+      {% assign total_results = fallback_count %}
+      {% assign shown_results = fallback_count %}
+    {% endif %}
+  {% endif %}
+  {% liquid
+    assign show_chips = false
+    if total_active_values > 0
+      assign show_chips = true
+    endif
+  %}
+  {% if pp_grid_source.products.size == 0 and total_active_values == 0 %}
+    {% include 'pp-collection-fallback-handles' %}
+    {% if fallback_count > 0 %}
+      {% assign total_results = fallback_count %}
+      {% assign shown_results = fallback_count %}
+    {% endif %}
+  {% endif %}
+
+  <div
+    class="pp-collection-template"
+    data-pp-collection-page
+    data-pp-manual-filters="true"
+    data-pp-types="{{ pp_types | escape }}"
+    data-pp-active="{{ pp_active }}"
+    data-pp-qs="{{ request.query_string | escape }}"
+    data-section-id="{{ section.id }}"
+    data-total-results="{{ total_results }}"
+    data-clear-url="{{ clear_url }}"
+  >
+    <main id="main">
+      {% render 'pp-collection-banner',
+        collection: collection,
+        fallback_banner: section.settings.fallback_banner,
+        banner_height: section.settings.banner_height,
+        overlay_color: section.settings.banner_overlay_color
+      %}
+
+      <form
+        id="CollectionFiltersForm-{{ section.id }}"
+        class="pp-collection-form"
+        method="get"
+        action="{{ collection.url }}"
+        data-pp-collection-form
+      >
+        <input type="hidden" name="pp_sort" value="{{ current_sort_key }}" data-pp-sort-input>
+
+        <section class="pp-collection-main">
+          <div class="pp-wrap">
+            <div class="pp-collection-layout">
+              <aside class="pp-sidebar" aria-label="Product filters" id="sidebar-filters" data-filter-source="desktop">
+                {% render 'pp-collection-filters', source: 'desktop', section_id: section.id, price_min: pp_price_min, price_max: pp_price_max %}
+              </aside>
+
+              <div class="pp-collection-results">
+                <div class="pp-toolbar" aria-label="Filters and sort">
+                  <div class="pp-toolbar__row">
+                    <div class="pp-toolbar__left">
+                      <button
+                        type="button"
+                        class="pp-filterbtn"
+                        data-open-drawer
+                        aria-label="Open filters"
+                        aria-controls="filter-drawer"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <line x1="4" y1="6" x2="20" y2="6"></line>
+                          <line x1="7" y1="12" x2="17" y2="12"></line>
+                          <line x1="10" y1="18" x2="14" y2="18"></line>
+                        </svg>
+                        Filters
+                        <span
+                          class="pp-filterbtn__count"
+                          data-filterbtn-count
+                          {% if total_active_values == 0 %}hidden{% endif %}
+                        >
+                          {{ total_active_values }}
+                        </span>
+                      </button>
+                      <p class="pp-toolbar__count">
+                        {% if shown_from == 0 %}
+                          Showing 0 of {{ total_results }} results in {{ collection.title }}
+                        {% else %}
+                          Showing {{ shown_from }}–{{ shown_to }} of {{ total_results }} results in {{ collection.title }}
+                        {% endif %}
+                      </p>
+                    </div>
+
+                    <div class="pp-toolbar__right">
+                      <div class="pp-sort" data-sort>
+                        <button type="button" class="pp-sort__btn" data-sort-btn aria-haspopup="listbox" aria-expanded="false">
+                          <span class="pp-sort__label-key">Sort:</span>
+                          <span class="pp-sort__label-val" data-sort-current>{{ current_sort_label }}</span>
+                          <svg class="pp-sort__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </button>
+                        <div class="pp-sort__menu" role="listbox" aria-label="Sort options">
+                          <button type="button" class="pp-sort__option{% if current_sort_key == 'featured' %} is-active{% endif %}" data-sort-key="featured" data-sort-option="{{ sort_featured_value }}" data-sort-label="Featured" role="option" aria-selected="{% if current_sort_key == 'featured' %}true{% else %}false{% endif %}">Featured <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% if sort_best_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'best' %} is-active{% endif %}" data-sort-key="best" data-sort-option="{{ sort_best_value }}" data-sort-label="Best selling" role="option" aria-selected="{% if current_sort_key == 'best' %}true{% else %}false{% endif %}">Best selling <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% endif %}
+                          {% if sort_price_asc_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'price-asc' %} is-active{% endif %}" data-sort-key="price-asc" data-sort-option="{{ sort_price_asc_value }}" data-sort-label="Price: Low to high" role="option" aria-selected="{% if current_sort_key == 'price-asc' %}true{% else %}false{% endif %}">Price: Low to high <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% endif %}
+                          {% if sort_price_desc_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'price-desc' %} is-active{% endif %}" data-sort-key="price-desc" data-sort-option="{{ sort_price_desc_value }}" data-sort-label="Price: High to low" role="option" aria-selected="{% if current_sort_key == 'price-desc' %}true{% else %}false{% endif %}">Price: High to low <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% endif %}
+                          {% if sort_newest_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'newest' %} is-active{% endif %}" data-sort-key="newest" data-sort-option="{{ sort_newest_value }}" data-sort-label="Newest" role="option" aria-selected="{% if current_sort_key == 'newest' %}true{% else %}false{% endif %}">Newest <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="pp-viewtoggle" data-view-toggle role="group" aria-label="Product layout">
+                        <button type="button" class="pp-viewtoggle__btn is-active" data-view="grid" aria-pressed="true" aria-label="Grid view">
+                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                          </svg>
+                        </button>
+                        <button type="button" class="pp-viewtoggle__btn" data-view="list" aria-pressed="false" aria-label="List view">
+                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="3" rx="1"></rect>
+                            <rect x="3" y="10.5" width="18" height="3" rx="1"></rect>
+                            <rect x="3" y="17" width="18" height="3" rx="1"></rect>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pp-chips{% if show_chips %} is-visible{% endif %}" data-chips aria-label="Active filters">
+                    {% for filter in collection.filters %}
+                      {% if filter.type == 'price_range' %}
+                        {% if filter.min_value.value != null or filter.max_value.value != null %}
+                          <a href="{{ filter.url_to_remove }}" class="pp-chip">
+                            {% if filter.min_value.value != null and filter.max_value.value != null %}
+                              {{ filter.min_value.value | money_without_trailing_zeros }} - {{ filter.max_value.value | money_without_trailing_zeros }}
+                            {% elsif filter.min_value.value != null %}
+                              From {{ filter.min_value.value | money_without_trailing_zeros }}
+                            {% else %}
+                              Up to {{ filter.max_value.value | money_without_trailing_zeros }}
+                            {% endif %}
+                            <span class="pp-chip__x" aria-hidden="true">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </span>
+                          </a>
+                        {% endif %}
+                      {% else %}
+                        {% for value in filter.active_values %}
+                          <a href="{{ value.url_to_remove }}" class="pp-chip">
+                            {{ value.label }}
+                            <span class="pp-chip__x" aria-hidden="true">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </span>
+                          </a>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                    {% if pp_use_manual and pp_active > 0 %}
+                      {% if pp_price_min != blank or pp_price_max != blank %}
+                        <span class="pp-chip">
+                          {% if pp_price_min != blank and pp_price_max != blank %}
+                            ${{ pp_price_min }} – ${{ pp_price_max }}
+                          {% elsif pp_price_min != blank %}
+                            From ${{ pp_price_min }}
+                          {% else %}
+                            Up to ${{ pp_price_max }}
+                          {% endif %}
+                        </span>
+                      {% endif %}
+                      {% if pp_in_stock %}
+                        <span class="pp-chip">In stock</span>
+                      {% endif %}
+                      {% if pp_preorder %}
+                        <span class="pp-chip">Pre-order</span>
+                      {% endif %}
+                      {% assign pp_type_chips = pp_types | split: '|' %}
+                      {% for type_chip in pp_type_chips %}
+                        {% if type_chip != blank %}
+                          <span class="pp-chip">{{ type_chip }}</span>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    {% if show_chips %}
+                      <a href="{{ clear_url }}" class="pp-chips__clear">Clear all</a>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="pp-grid" id="product-grid" aria-label="{{ collection.title }} products" data-pp-page-size="{{ products_per_page }}">
+                  {% assign pp_kind_rendered = 0 %}
+                  {% if pp_grid_source.products.size > 0 %}
+                    {% for product in pp_grid_source.products %}
+                      {% assign pp_match = true %}
+                      {% include 'pp-collection-kind-match' %}
+                      {% if pp_match %}
+                        {% assign pp_kind_rendered = pp_kind_rendered | plus: 1 %}
+                        {% render 'pp-collection-product-card', product: product, collection: collection, card_index: forloop.index %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  {% if pp_kind_rendered == 0 %}
+                    {% if fallback_handles != blank %}
+                      {% assign fallback_list = fallback_handles | split: ',' %}
+                      {% for handle in fallback_list %}
+                        {% assign fallback_product = all_products[handle] %}
+                        {% if fallback_product != blank %}
+                          {% render 'pp-collection-product-card', product: fallback_product, collection: collection, card_index: forloop.index %}
+                        {% endif %}
+                      {% endfor %}
+                    {% else %}
+                      <div class="pp-grid__empty">
+                        <p class="pp-grid__empty-title">No products in this collection yet</p>
+                        <p>Browse a related shop while we keep adding pieces here.</p>
+                        <div class="pp-grid__empty-links">
+                          <a href="/collections/furniture">Furniture</a>
+                        <a href="{{ pp_tv_url | default: '/collections/tv-stands' }}">TV Trolley / Stand</a>
+                        <a href="{{ pp_outdoor_url | default: '/collections/home-garden' }}">Garden &amp; Outdoor</a>
+                          <a href="/collections/home-garden">Home &amp; Garden</a>
+                          <a href="/collections/pets">Pets</a>
+                        </div>
+                        {% if show_chips %}
+                          <a href="{{ clear_url }}" class="pp-chips__clear">Clear all</a>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                </div>
+
+                {% if pp_use_manual and pp_total_pages > 1 %}
+                  <nav class="pp-pagination" aria-label="Pagination">
+                    <div class="pp-pagination__count">Showing {{ shown_from }}–{{ shown_to }} of {{ total_results }}</div>
+                    <div class="pp-pagination__pages">
+                      {% if pp_page > 1 %}
+                        <a href="{% if pp_query_base != blank %}{{ pp_page_url_base }}&{% else %}{{ collection.url }}?{% endif %}pp_page={{ pp_page | minus: 1 }}" class="pp-page pp-page--arrow" data-pp-page="{{ pp_page | minus: 1 }}" aria-label="Previous page">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="pp-page pp-page--arrow" aria-disabled="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </span>
+                      {% endif %}
+
+                      {% liquid
+                        assign win_size = 5
+                        assign win_start = pp_page | minus: 2
+                        if win_start < 1
+                          assign win_start = 1
+                        endif
+                        assign win_end = win_start | plus: win_size | minus: 1
+                        if win_end > pp_total_pages
+                          assign win_end = pp_total_pages
+                          assign win_start = win_end | minus: win_size | plus: 1
+                          if win_start < 1
+                            assign win_start = 1
+                          endif
+                        endif
+                      %}
+                      {% if win_start > 1 %}
+                        <a href="{% if pp_query_base != blank %}{{ pp_page_url_base }}{% else %}{{ collection.url }}{% endif %}" class="pp-page" data-pp-page="1">1</a>
+                      {% endif %}
+                      {% if win_start > 2 %}
+                        <span class="pp-page pp-page--ellipsis" aria-hidden="true">&hellip;</span>
+                      {% endif %}
+                      {% for page_n in (win_start..win_end) %}
+                        {% if page_n == 1 %}
+                          {% if pp_query_base != blank %}
+                            {% assign pp_page_href = pp_page_url_base %}
+                          {% else %}
+                            {% assign pp_page_href = collection.url %}
+                          {% endif %}
+                        {% else %}
+                          {% if pp_query_base != blank %}
+                            {% assign pp_page_href = pp_page_url_base | append: '&pp_page=' | append: page_n %}
+                          {% else %}
+                            {% assign pp_page_href = collection.url | append: '?pp_page=' | append: page_n %}
+                          {% endif %}
+                        {% endif %}
+                        <a
+                          href="{{ pp_page_href }}"
+                          class="pp-page{% if page_n == pp_page %} is-current{% endif %}"
+                          data-pp-page="{{ page_n }}"
+                          {% if page_n == pp_page %}aria-current="page"{% endif %}
+                        >{{ page_n }}</a>
+                      {% endfor %}
+                      {% assign win_last_gap = pp_total_pages | minus: 1 %}
+                      {% if win_end < win_last_gap %}
+                        <span class="pp-page pp-page--ellipsis" aria-hidden="true">&hellip;</span>
+                      {% endif %}
+                      {% if win_end < pp_total_pages %}
+                        <a
+                          href="{% if pp_query_base != blank %}{{ pp_page_url_base }}&pp_page={{ pp_total_pages }}{% else %}{{ collection.url }}?pp_page={{ pp_total_pages }}{% endif %}"
+                          class="pp-page{% if pp_page == pp_total_pages %} is-current{% endif %}"
+                          data-pp-page="{{ pp_total_pages }}"
+                        >{{ pp_total_pages }}</a>
+                      {% endif %}
+
+                      {% if pp_page < pp_total_pages %}
+                        <a href="{% if pp_query_base != blank %}{{ pp_page_url_base }}&{% else %}{{ collection.url }}?{% endif %}pp_page={{ pp_page | plus: 1 }}" class="pp-page pp-page--arrow" data-pp-page="{{ pp_page | plus: 1 }}" aria-label="Next page">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="pp-page pp-page--arrow" aria-disabled="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div class="pp-pagination__spacer" aria-hidden="true"></div>
+                  </nav>
+                {% elsif paginate.pages > 1 %}
+                  <nav class="pp-pagination" aria-label="Pagination">
+                    <div class="pp-pagination__count">Showing {{ shown_from }}–{{ shown_to }} of {{ total_results }}</div>
+                    <div class="pp-pagination__pages">
+                      {% if paginate.previous %}
+                        <a href="{{ paginate.previous.url }}" class="pp-page pp-page--arrow" aria-label="Previous page">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="pp-page pp-page--arrow" aria-disabled="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </span>
+                      {% endif %}
+
+                      {% for part in paginate.parts %}
+                        {% if part.is_link %}
+                          <a href="{{ part.url }}" class="pp-page">{{ part.title }}</a>
+                        {% else %}
+                          {% if part.title == '&hellip;' %}
+                            <span class="pp-page pp-page--ellipsis" aria-hidden="true">&hellip;</span>
+                          {% else %}
+                            <span class="pp-page is-current" aria-current="page">{{ part.title }}</span>
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+
+                      {% if paginate.next %}
+                        <a href="{{ paginate.next.url }}" class="pp-page pp-page--arrow" aria-label="Next page">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="pp-page pp-page--arrow" aria-disabled="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div class="pp-pagination__spacer" aria-hidden="true"></div>
+                  </nav>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="pp-collection-trust" aria-label="Shopping benefits">
+          <div class="pp-wrap">
+            <div class="pp-collection-trust__grid">
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>Australia wide shipping</h3>
+                  <p>Fast, tracked delivery to your door.</p>
+                </div>
+              </div>
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>30 day returns</h3>
+                  <p>Easy returns on unused items.</p>
+                </div>
+              </div>
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>Secure checkout</h3>
+                  <p>Encrypted payments you can trust.</p>
+                </div>
+              </div>
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>Pretty &amp; Practical</h3>
+                  <p>Designed for beautiful, everyday living.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="pp-overlay" data-overlay aria-hidden="true"></div>
+        <aside class="pp-drawer" id="filter-drawer" aria-label="Filter drawer" aria-hidden="true" data-filter-source="drawer">
+          <div class="pp-drawer__head">
+            <div class="pp-drawer__title">Filters</div>
+            <button type="button" class="pp-drawer__close" data-close-drawer aria-label="Close filters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="pp-drawer__body" id="drawer-filters">
+            {% render 'pp-collection-filters', source: 'drawer', section_id: section.id, price_min: pp_price_min, price_max: pp_price_max %}
+          </div>
+          <div class="pp-drawer__foot">
+            <a href="{{ clear_url }}" class="pp-drawer__clear">Clear all</a>
+            <button type="submit" class="pp-drawer__show" data-close-drawer>Show {{ total_results }} results</button>
+          </div>
+        </aside>
+      </form>
+    </main>
+  </div>
+{% endpaginate %}
+
+<style>
+  .shopify-section [data-pp-collection-page] button,
+  .shopify-section [data-pp-collection-page] input,
+  .shopify-section [data-pp-collection-page] select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .shopify-section [data-pp-collection-page] button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  .shopify-section [data-pp-collection-page] a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .shopify-section [data-pp-collection-page] p {
+    margin: 0;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb {
+    font-size: 13px !important;
+    color: var(--pp-text-muted) !important;
+    font-weight: 500 !important;
+    margin-bottom: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb a,
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb a:link,
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb a:visited,
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb a:active {
+    color: var(--pp-text-muted) !important;
+    font-weight: 500 !important;
+    transition: color 0.15s ease !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb a:hover {
+    color: var(--pp-navy) !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb svg {
+    width: 12px !important;
+    height: 12px !important;
+    color: var(--pp-text-muted) !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-breadcrumb__current {
+    color: var(--pp-navy) !important;
+    font-weight: 600 !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-drawer__title {
+    font-family: var(--pp-font-heading) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--pp-navy-deep) !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-drawer__close {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--pp-navy) !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    box-shadow: none !important;
+    transition: background 0.15s ease !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-drawer__close:hover {
+    background: var(--pp-bg-subtle) !important;
+  }
+
+  .shopify-section [data-pp-collection-page] .pp-drawer__close svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke-width: 2 !important;
+  }
+</style>
+
+{% javascript %}
+  (() => {
+    const roots = document.querySelectorAll('.pp-collection-template');
+
+    roots.forEach((root) => {
+      if (!(root instanceof HTMLElement) || root.dataset.ppCollectionReady === 'true') return;
+      root.dataset.ppCollectionReady = 'true';
+
+      const form = root.querySelector('[data-pp-collection-form]');
+      const sort = root.querySelector('[data-sort]');
+      const sortButton = root.querySelector('[data-sort-btn]');
+      const sortInput = root.querySelector('[data-pp-sort-input]');
+      const sortCurrent = root.querySelector('[data-sort-current]');
+      const overlay = root.querySelector('[data-overlay]');
+      const drawer = root.querySelector('.pp-drawer');
+      const drawerOpenButton = root.querySelector('[data-open-drawer]');
+      const drawerCloseButtons = root.querySelectorAll('[data-close-drawer]');
+      const countBadge = root.querySelector('[data-filterbtn-count]');
+      const drawerShowButton = root.querySelector('.pp-drawer__show');
+      const mediaQuery = window.matchMedia('(max-width: 880px)');
+
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const productGrid = root.querySelector('#product-grid');
+      const countLabel = root.querySelector('.pp-toolbar__count');
+      const chipsRow = root.querySelector('[data-chips]');
+      const pageSize = Number(productGrid instanceof HTMLElement && productGrid.dataset.ppPageSize || 16);
+
+      const sortValueToKey = (value) => {
+        const raw = String(value || '').trim().toLowerCase();
+        if (raw === 'best' || raw === 'best-selling') return 'best';
+        if (raw === 'price-asc' || raw === 'price-ascending') return 'price-asc';
+        if (raw === 'price-desc' || raw === 'price-descending') return 'price-desc';
+        if (raw === 'newest' || raw === 'created-descending') return 'newest';
+        if (raw === 'oldest' || raw === 'created-ascending') return 'oldest';
+        return 'featured';
+      };
+
+      const resolveSortKey = (params) => {
+        const fromPp = params instanceof URLSearchParams ? params.get('pp_sort') : '';
+        if (fromPp) return sortValueToKey(fromPp);
+        const fromBy = params instanceof URLSearchParams ? params.get('sort_by') : '';
+        if (fromBy) return sortValueToKey(fromBy);
+        if (sortInput instanceof HTMLInputElement && sortInput.value) return sortValueToKey(sortInput.value);
+        return 'featured';
+      };
+
+      const cardNumber = (card, key) => {
+        if (!(card instanceof HTMLElement)) return 0;
+        const value = Number(card.dataset[key] || 0);
+        return Number.isFinite(value) ? value : 0;
+      };
+
+      const compareProductCards = (a, b, sortKey) => {
+        const featured = () => cardNumber(a, 'ppIndex') - cardNumber(b, 'ppIndex');
+        const created = (card) => cardNumber(card, 'ppCreated') || cardNumber(card, 'ppPublished');
+        if (sortKey === 'price-asc') return cardNumber(a, 'ppPrice') - cardNumber(b, 'ppPrice') || featured();
+        if (sortKey === 'price-desc') return cardNumber(b, 'ppPrice') - cardNumber(a, 'ppPrice') || featured();
+        if (sortKey === 'newest') return created(b) - created(a) || featured();
+        if (sortKey === 'oldest') return created(a) - created(b) || featured();
+        if (sortKey === 'best') {
+          return cardNumber(b, 'ppBestseller') - cardNumber(a, 'ppBestseller')
+            || cardNumber(b, 'ppReviews') - cardNumber(a, 'ppReviews')
+            || featured();
+        }
+        return featured();
+      };
+
+      const syncSortUi = (sortKey) => {
+        if (sortInput instanceof HTMLInputElement) sortInput.value = sortKey;
+        if (!(sort instanceof HTMLElement)) return;
+        sort.querySelectorAll('[data-sort-option]').forEach((item) => {
+          const key = sortValueToKey(item.getAttribute('data-sort-key') || item.getAttribute('data-sort-option') || '');
+          const active = key === sortKey;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-selected', active ? 'true' : 'false');
+          if (active && sortCurrent instanceof HTMLElement) {
+            sortCurrent.textContent = item.getAttribute('data-sort-label') || item.textContent?.trim() || '';
+          }
+        });
+      };
+
+      const dollarsToCents = (value) => {
+        if (value == null) return null;
+        const trimmed = String(value).trim().replace(/,/g, '');
+        if (!trimmed) return null;
+        const amount = Number(trimmed);
+        if (!Number.isFinite(amount)) return null;
+        return Math.round(amount * 100);
+      };
+
+      const activeFilterSource = () => {
+        const name = mediaQuery.matches ? 'drawer' : 'desktop';
+        return root.querySelector(`[data-filter-source="${name}"]`) || root;
+      };
+
+      const arrowSvg = (dir) => (
+        dir === 'prev'
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>'
+      );
+
+      const hrefForPage = (n, filterParams) => {
+        const next = new URLSearchParams(filterParams);
+        next.delete('page');
+        if (n <= 1) next.delete('pp_page');
+        else next.set('pp_page', String(n));
+        const qs = next.toString();
+        return qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+      };
+
+      const renderPagination = (currentPage, totalPages, filterParams) => {
+        root.querySelectorAll('.pp-pagination').forEach((nav) => {
+          const pagesEl = nav.querySelector('.pp-pagination__pages');
+          if (!(pagesEl instanceof HTMLElement)) return;
+          if (totalPages <= 1) {
+            nav.hidden = true;
+            return;
+          }
+          nav.hidden = false;
+
+          const windowSize = 5;
+          let start = Math.max(1, currentPage - 2);
+          let end = start + windowSize - 1;
+          if (end > totalPages) {
+            end = totalPages;
+            start = Math.max(1, end - windowSize + 1);
+          }
+
+          let html = '';
+          if (currentPage > 1) {
+            html += `<a href="${hrefForPage(currentPage - 1, filterParams)}" class="pp-page pp-page--arrow" data-pp-page="${currentPage - 1}" aria-label="Previous page">${arrowSvg('prev')}</a>`;
+          } else {
+            html += `<span class="pp-page pp-page--arrow" aria-disabled="true">${arrowSvg('prev')}</span>`;
+          }
+
+          if (start > 1) {
+            html += `<a href="${hrefForPage(1, filterParams)}" class="pp-page" data-pp-page="1">1</a>`;
+          }
+          if (start > 2) html += '<span class="pp-page pp-page--ellipsis" aria-hidden="true">&hellip;</span>';
+
+          for (let n = start; n <= end; n += 1) {
+            const current = n === currentPage;
+            html += `<a href="${hrefForPage(n, filterParams)}" class="pp-page${current ? ' is-current' : ''}" data-pp-page="${n}"${current ? ' aria-current="page"' : ''}>${n}</a>`;
+          }
+
+          if (end < totalPages - 1) html += '<span class="pp-page pp-page--ellipsis" aria-hidden="true">&hellip;</span>';
+          if (end < totalPages) {
+            html += `<a href="${hrefForPage(totalPages, filterParams)}" class="pp-page${currentPage === totalPages ? ' is-current' : ''}" data-pp-page="${totalPages}">${totalPages}</a>`;
+          }
+
+          if (currentPage < totalPages) {
+            html += `<a href="${hrefForPage(currentPage + 1, filterParams)}" class="pp-page pp-page--arrow" data-pp-page="${currentPage + 1}" aria-label="Next page">${arrowSvg('next')}</a>`;
+          } else {
+            html += `<span class="pp-page pp-page--arrow" aria-disabled="true">${arrowSvg('next')}</span>`;
+          }
+
+          pagesEl.innerHTML = html;
+        });
+      };
+
+      const applyClientFilters = (nextParams, pushUrl = true) => {
+        const params = nextParams || new URLSearchParams(window.location.search);
+        params.delete('page');
+        params.delete('v');
+        params.delete('pp_max_exclusive');
+
+        const types = params.getAll('pp_type').filter(Boolean);
+        const min = params.get('pp_min');
+        const max = params.get('pp_max');
+        const minCents = dollarsToCents(min);
+        const maxCents = dollarsToCents(max);
+        const exclusiveMax = !min && !!max;
+        const avail = params.get('pp_avail');
+        const preorder = params.get('pp_preorder');
+        let page = Number(params.get('pp_page') || '1');
+        if (!Number.isFinite(page) || page < 1) page = 1;
+
+        const cards = [...root.querySelectorAll('#product-grid > .pp-card')];
+        const matched = cards.filter((card) => {
+          if (!(card instanceof HTMLElement)) return false;
+          if (types.length && !types.includes(card.dataset.ppType || '')) return false;
+          const price = Number(card.dataset.ppPrice || 0);
+          if (minCents != null && price < minCents) return false;
+          if (maxCents != null && (exclusiveMax ? price >= maxCents : price > maxCents)) return false;
+          const wantAvail = avail === '1';
+          const wantPreorder = preorder === '1';
+          if (wantAvail && wantPreorder) {
+            if (card.dataset.ppAvailable !== '1' && card.dataset.ppPreorder !== '1') return false;
+          } else if (wantAvail && card.dataset.ppAvailable !== '1') {
+            return false;
+          } else if (wantPreorder && card.dataset.ppPreorder !== '1') {
+            return false;
+          }
+          return true;
+        });
+
+        const sortKey = resolveSortKey(params);
+        syncSortUi(sortKey);
+        matched.sort((a, b) => compareProductCards(a, b, sortKey));
+
+        if (productGrid instanceof HTMLElement) {
+          const unmatched = cards.filter((card) => !matched.includes(card));
+          const emptyNode = productGrid.querySelector('[data-pp-empty-filters]');
+          matched.forEach((card) => productGrid.append(card));
+          unmatched.forEach((card) => productGrid.append(card));
+          if (emptyNode) productGrid.append(emptyNode);
+        }
+
+        const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
+        if (page > totalPages) page = totalPages;
+        const start = (page - 1) * pageSize;
+        const visible = matched.slice(start, start + pageSize);
+
+        cards.forEach((card) => {
+          if (!(card instanceof HTMLElement)) return;
+          const show = visible.includes(card);
+          card.hidden = !show;
+          card.style.display = show ? '' : 'none';
+        });
+
+        let empty = root.querySelector('[data-pp-empty-filters]');
+        if (matched.length === 0) {
+          if (!empty && productGrid instanceof HTMLElement) {
+            empty = document.createElement('div');
+            empty.className = 'pp-grid__empty';
+            empty.setAttribute('data-pp-empty-filters', 'true');
+            empty.innerHTML = '<p class="pp-grid__empty-title">No products match these filters</p><p>Try clearing a filter or browse a related collection.</p>';
+            productGrid.append(empty);
+          }
+        } else if (empty) {
+          empty.remove();
+        }
+
+        const shownFrom = matched.length ? start + 1 : 0;
+        const shownTo = matched.length ? start + visible.length : 0;
+        if (countLabel instanceof HTMLElement) {
+          countLabel.textContent = shownFrom === 0
+            ? `Showing 0 of ${matched.length} results in ${root.querySelector('#collection-title')?.textContent || 'this collection'}`
+            : `Showing ${shownFrom}–${shownTo} of ${matched.length} results in ${root.querySelector('#collection-title')?.textContent || 'this collection'}`;
+        }
+        root.querySelectorAll('.pp-pagination').forEach((nav) => {
+          const countEl = nav.querySelector('.pp-pagination__count');
+          if (countEl instanceof HTMLElement) {
+            countEl.textContent = shownFrom === 0
+              ? `Showing 0 of ${matched.length}`
+              : `Showing ${shownFrom}–${shownTo} of ${matched.length}`;
+          }
+        });
+        renderPagination(page, totalPages, params);
+        root.dataset.totalResults = String(matched.length);
+
+        if (chipsRow instanceof HTMLElement) {
+          const chipLabels = [];
+          if (min || max) chipLabels.push(min && max ? `$${min} – $${max}` : min ? `From $${min}` : `Up to $${max}`);
+          if (avail === '1') chipLabels.push('In stock');
+          if (preorder === '1') chipLabels.push('Pre-order');
+          types.forEach((type) => chipLabels.push(type));
+          chipsRow.querySelectorAll('[data-pp-js-chip]').forEach((node) => node.remove());
+          chipLabels.forEach((label) => {
+            const chip = document.createElement('span');
+            chip.className = 'pp-chip';
+            chip.dataset.ppJsChip = 'true';
+            chip.textContent = label;
+            const clear = chipsRow.querySelector('.pp-chips__clear');
+            chipsRow.insertBefore(chip, clear);
+          });
+          chipsRow.classList.toggle('is-visible', chipLabels.length > 0);
+        }
+
+        const migrateSortParam = params.has('sort_by');
+        if (pushUrl || migrateSortParam) {
+          params.delete('sort_by');
+          if (sortKey && sortKey !== 'featured') params.set('pp_sort', sortKey);
+          else params.delete('pp_sort');
+          params.set('pp_page', String(page));
+          if (page === 1) params.delete('pp_page');
+          const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+          window.history.replaceState({}, '', next);
+        }
+      };
+
+      const paramsFromForm = () => {
+        const source = activeFilterSource();
+        const params = new URLSearchParams();
+        const sortInputEl = root.querySelector('[data-pp-sort-input]');
+        if (sortInputEl instanceof HTMLInputElement && sortInputEl.value) {
+          const sortKey = sortValueToKey(sortInputEl.value);
+          if (sortKey !== 'featured') params.set('pp_sort', sortKey);
+        }
+        source.querySelectorAll('[data-pp-filter-input], [data-price-min], [data-price-max]').forEach((input) => {
+          if (!(input instanceof HTMLInputElement)) return;
+          if (!input.name || input.name.startsWith('pp-price-band')) return;
+          if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) return;
+          if (input.value.trim() === '') return;
+          params.append(input.name, input.value);
+        });
+        return params;
+      };
+
+      const applyFiltersFromForm = (closeDrawer = false) => {
+        const params = paramsFromForm();
+        params.delete('pp_page');
+        applyClientFilters(params, true);
+        updateFilterCount();
+        if (closeDrawer) setDrawerState(false);
+      };
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        applyFiltersFromForm(true);
+      });
+
+      applyClientFilters(new URLSearchParams(window.location.search), false);
+
+      const setDrawerState = (isOpen) => {
+        if (!(overlay instanceof HTMLElement) || !(drawer instanceof HTMLElement)) return;
+        overlay.classList.toggle('is-open', isOpen);
+        drawer.classList.toggle('is-open', isOpen);
+        drawer.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        document.body.classList.toggle('is-locked', isOpen);
+      };
+
+      const syncMirroredInputs = (changedInput) => {
+        const inputs = root.querySelectorAll('[data-pp-filter-input]');
+
+        inputs.forEach((input) => {
+          if (!(input instanceof HTMLInputElement) || input === changedInput) return;
+          if (input.type !== changedInput.type) return;
+          if (input.name !== changedInput.name) return;
+          if (input.value !== changedInput.value) return;
+
+          if (changedInput.type === 'checkbox' || changedInput.type === 'radio') {
+            input.checked = changedInput.checked;
+          } else {
+            input.value = changedInput.value;
+          }
+
+          const colorLabel = input.closest('.pp-fcolor');
+          if (colorLabel) {
+            colorLabel.classList.toggle('is-active', input.checked);
+          }
+        });
+
+        const currentColorLabel = changedInput.closest('.pp-fcolor');
+        if (currentColorLabel) {
+          currentColorLabel.classList.toggle('is-active', changedInput.checked);
+        }
+      };
+
+      const applyPriceBand = (band) => {
+        if (!(band instanceof HTMLInputElement)) return;
+        const minInputs = root.querySelectorAll('[data-price-min]');
+        const maxInputs = root.querySelectorAll('[data-price-max]');
+        const minVal = band.dataset.bandMin || '';
+        const maxVal = band.dataset.bandMax || '';
+
+        minInputs.forEach((input) => {
+          if (input instanceof HTMLInputElement) input.value = minVal;
+        });
+        maxInputs.forEach((input) => {
+          if (input instanceof HTMLInputElement) input.value = maxVal;
+        });
+
+        root.querySelectorAll('[data-price-band]').forEach((input) => {
+          if (!(input instanceof HTMLInputElement)) return;
+          input.checked = input.dataset.priceBand === band.dataset.priceBand;
+        });
+      };
+
+      const setCollectionView = (view) => {
+        const grid = root.querySelector('#product-grid');
+        const buttons = root.querySelectorAll('[data-view]');
+        const nextView = view === 'list' ? 'list' : 'grid';
+        if (grid instanceof HTMLElement) {
+          grid.classList.toggle('is-list', nextView === 'list');
+        }
+        buttons.forEach((button) => {
+          if (!(button instanceof HTMLButtonElement)) return;
+          const isActive = button.dataset.view === nextView;
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        try {
+          window.localStorage.setItem('pp-collection-view', nextView);
+        } catch {
+          /* ignore */
+        }
+      };
+
+      const syncPriceBandFromInputs = () => {
+        const source = activeFilterSource();
+        const minInput = source.querySelector('[data-price-min]');
+        const maxInput = source.querySelector('[data-price-max]');
+        const minVal = minInput instanceof HTMLInputElement ? minInput.value.trim() : '';
+        const maxVal = maxInput instanceof HTMLInputElement ? maxInput.value.trim() : '';
+        let match = '';
+
+        root.querySelectorAll('[data-price-band]').forEach((input) => {
+          if (!(input instanceof HTMLInputElement)) return;
+          const bandMin = input.dataset.bandMin || '';
+          const bandMax = input.dataset.bandMax || '';
+          if (bandMin === minVal && bandMax === maxVal) {
+            match = input.dataset.priceBand || '';
+          }
+        });
+
+        root.querySelectorAll('[data-price-band]').forEach((input) => {
+          if (!(input instanceof HTMLInputElement)) return;
+          input.checked = Boolean(match) && input.dataset.priceBand === match;
+        });
+      };
+
+      const updateFilterCount = () => {
+        let count = 0;
+        const activeSource = mediaQuery.matches ? 'drawer' : 'desktop';
+        const activeContainer = root.querySelector(`[data-filter-source="${activeSource}"]`);
+        const activeInputs = activeContainer?.querySelectorAll('[data-pp-filter-input]') ?? [];
+
+        activeInputs.forEach((input) => {
+          if (!(input instanceof HTMLInputElement)) return;
+          if (input.hasAttribute('data-price-band')) return;
+
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            if (input.checked) count += 1;
+            return;
+          }
+
+          if (input.value.trim() !== '') {
+            count += 1;
+          }
+        });
+
+        if (countBadge instanceof HTMLElement) {
+          countBadge.textContent = String(count);
+          countBadge.hidden = count === 0;
+        }
+
+        if (drawerShowButton instanceof HTMLButtonElement) {
+          const totalResults = root.dataset.totalResults || '0';
+          drawerShowButton.textContent = `Show ${totalResults} results`;
+        }
+      };
+
+      const setResponsiveFilterSource = () => {
+        const desktopInputs = root.querySelectorAll('[data-filter-source="desktop"] input');
+        const drawerInputs = root.querySelectorAll('[data-filter-source="drawer"] input');
+        const useDrawer = mediaQuery.matches;
+
+        desktopInputs.forEach((input) => {
+          if (input instanceof HTMLInputElement) {
+            input.disabled = useDrawer;
+          }
+        });
+
+        drawerInputs.forEach((input) => {
+          if (input instanceof HTMLInputElement) {
+            input.disabled = !useDrawer;
+          }
+        });
+
+        if (!useDrawer) setDrawerState(false);
+        updateFilterCount();
+      };
+
+      root.querySelectorAll('[data-group-toggle], [data-filter-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const group = button.closest('[data-filter-group]');
+          if (!(group instanceof HTMLElement)) return;
+          group.classList.toggle('is-collapsed');
+          button.setAttribute('aria-expanded', group.classList.contains('is-collapsed') ? 'false' : 'true');
+        });
+      });
+
+      root.querySelectorAll('[data-pp-filter-input]').forEach((input) => {
+        if (!(input instanceof HTMLInputElement)) return;
+
+        input.addEventListener('change', () => {
+          syncMirroredInputs(input);
+          updateFilterCount();
+
+          if (input.hasAttribute('data-price-input')) {
+            syncPriceBandFromInputs();
+            return;
+          }
+
+          applyFiltersFromForm(false);
+        });
+
+        if (input.hasAttribute('data-price-input')) {
+          input.addEventListener('input', () => {
+            syncMirroredInputs(input);
+            syncPriceBandFromInputs();
+            updateFilterCount();
+          });
+
+          input.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            syncMirroredInputs(input);
+            syncPriceBandFromInputs();
+            applyFiltersFromForm(false);
+          });
+        }
+      });
+
+      const activatePriceBand = (input) => {
+        if (!(input instanceof HTMLInputElement) || !input.checked) return;
+        applyPriceBand(input);
+        applyFiltersFromForm(false);
+      };
+
+      root.querySelectorAll('[data-price-band]').forEach((input) => {
+        if (!(input instanceof HTMLInputElement)) return;
+        input.addEventListener('change', () => activatePriceBand(input));
+        input.addEventListener('click', () => activatePriceBand(input));
+      });
+
+      root.querySelectorAll('[data-view]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (!(button instanceof HTMLButtonElement)) return;
+          setCollectionView(button.dataset.view || 'grid');
+        });
+      });
+
+      try {
+        setCollectionView(window.localStorage.getItem('pp-collection-view') || 'grid');
+      } catch {
+        setCollectionView('grid');
+      }
+
+      if (sort instanceof HTMLElement && sortButton instanceof HTMLButtonElement && sortInput instanceof HTMLInputElement) {
+        const closeSort = () => {
+          sort.classList.remove('is-open');
+          sortButton.setAttribute('aria-expanded', 'false');
+        };
+
+        sortButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const isOpen = sort.classList.toggle('is-open');
+          sortButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        sort.querySelectorAll('[data-sort-option]').forEach((option) => {
+          option.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const sortKey = sortValueToKey(option.getAttribute('data-sort-key') || option.getAttribute('data-sort-option') || '');
+            syncSortUi(sortKey);
+            closeSort();
+            applyFiltersFromForm(false);
+          });
+        });
+
+        document.addEventListener('click', (event) => {
+          if (!(event.target instanceof Element) || !sort.contains(event.target)) {
+            closeSort();
+          }
+        });
+      }
+
+      root.querySelectorAll('.pp-pagination').forEach((nav) => {
+        nav.addEventListener('click', (event) => {
+          const link = event.target instanceof Element ? event.target.closest('a.pp-page') : null;
+          if (!(link instanceof HTMLAnchorElement) || !link.href) return;
+          event.preventDefault();
+          const params = paramsFromForm();
+          const page = link.getAttribute('data-pp-page') || new URL(link.href, window.location.origin).searchParams.get('pp_page') || '1';
+          if (page === '1') params.delete('pp_page');
+          else params.set('pp_page', page);
+          applyClientFilters(params, true);
+          updateFilterCount();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      drawerOpenButton?.addEventListener('click', () => setDrawerState(true));
+      overlay?.addEventListener('click', () => setDrawerState(false));
+      drawerCloseButtons.forEach((button) => {
+        button.addEventListener('click', () => setDrawerState(false));
+      });
+
+      const wishlistStorageKey = 'pp-wishlist';
+
+      // Prefer shared wishlist module when available.
+      if (window.PPWishlist) {
+        window.PPWishlist.bindButtons(root);
+      } else {
+        const readWishlist = () => {
+          try {
+            return JSON.parse(window.localStorage.getItem(wishlistStorageKey) || window.localStorage.getItem('pp-collection-wishlist') || '[]');
+          } catch {
+            return [];
+          }
+        };
+
+        const writeWishlist = (items) => {
+          window.localStorage.setItem(wishlistStorageKey, JSON.stringify(items));
+        };
+
+        const wishlistItems = new Set(
+          readWishlist().map((item) => (item && typeof item === 'object' ? String(item.id) : String(item))).filter(Boolean)
+        );
+
+        root.querySelectorAll('[data-pp-wishlist], [data-wishlist]').forEach((button) => {
+          if (!(button instanceof HTMLButtonElement)) return;
+
+          const productId = button.dataset.productId;
+          if (!productId) return;
+
+          button.classList.toggle('is-active', wishlistItems.has(productId));
+
+          button.addEventListener('click', () => {
+            if (wishlistItems.has(productId)) {
+              wishlistItems.delete(productId);
+              button.classList.remove('is-active');
+            } else {
+              wishlistItems.add(productId);
+              button.classList.add('is-active');
+              button.classList.add('pulse');
+              window.setTimeout(() => button.classList.remove('pulse'), 250);
+            }
+
+            writeWishlist(Array.from(wishlistItems));
+          });
+        });
+      }
+
+      mediaQuery.addEventListener('change', setResponsiveFilterSource);
+      setResponsiveFilterSource();
+    });
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:names.collection_container",
+  "enabled_on": {
+    "templates": [
+      "collection"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Collection banner"
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_banner",
+      "label": "Fallback banner image",
+      "info": "Shown when a collection has no image set. Upload a generic lifestyle or brand banner."
+    },
+    {
+      "type": "color",
+      "id": "banner_overlay_color",
+      "label": "Banner overlay color",
+      "default": "#111827"
+    },
+    {
+      "type": "range",
+      "id": "banner_overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "default": 55,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "banner_height",
+      "label": "Banner height (px)",
+      "min": 180,
+      "max": 500,
+      "step": 10,
+      "default": 200,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "layout_type",
+      "label": "t:settings.type",
+      "options": [
+        {
+          "value": "grid",
+          "label": "t:options.grid"
+        },
+        {
+          "value": "organic",
+          "label": "t:options.editorial"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "product_card_size",
+      "label": "t:settings.card_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:options.small"
+        },
+        {
+          "value": "medium",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "large",
+          "label": "t:options.large"
+        },
+        {
+          "value": "extra-large",
+          "label": "t:options.extra_large"
+        }
+      ],
+      "default": "medium",
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+    },
+    {
+      "type": "select",
+      "id": "mobile_product_card_size",
+      "label": "t:settings.mobile_card_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:options.small"
+        },
+        {
+          "value": "large",
+          "label": "t:options.large"
+        }
+      ],
+      "default": "small"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_infinite_scroll",
+      "label": "t:settings.auto_load_products",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "t:settings.products_per_page",
+      "min": 8,
+      "max": 36,
+      "step": 4,
+      "default": 16,
+      "visible_if": "{{ section.settings.enable_infinite_scroll == false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "product_grid_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "centered",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "centered"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width_on_mobile",
+      "label": "t:settings.full_width_on_mobile",
+      "default": true,
+      "visible_if": "{{ section.settings.product_grid_width != 'full-width' }}"
+    },
+    {
+      "type": "range",
+      "id": "columns_gap_horizontal",
+      "label": "t:settings.horizontal_gap",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "columns_gap_vertical",
+      "label": "t:settings.vertical_gap",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left_padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right_padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.section_layout"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top_padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom_padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    }
+  ],
+  "presets": []
+}
+{% endschema %}

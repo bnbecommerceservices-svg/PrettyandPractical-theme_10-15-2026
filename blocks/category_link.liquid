@@ -1,0 +1,41 @@
+{% comment %}
+  Theme editor data block for the Pretty & Practical shared category row.
+  Rendering is handled by snippets/pp-site-header.liquid.
+{% endcomment %}
+
+{% schema %}
+{
+  "name": "Category navigation link",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "icon",
+      "label": "Icon",
+      "info": "Optional. Leave blank to use the automatic Pretty & Practical icon."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "Category"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Custom link",
+      "info": "Used only when no collection is selected."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Category navigation link"
+    }
+  ]
+}
+{% endschema %}

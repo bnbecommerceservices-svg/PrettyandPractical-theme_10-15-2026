@@ -1,0 +1,964 @@
+{% liquid
+  assign hero_blocks = section.blocks | where: 'type', 'hero_card'
+  assign value_blocks = section.blocks | where: 'type', 'value_item'
+  assign category_blocks = section.blocks | where: 'type', 'category_card'
+  assign review_blocks = section.blocks | where: 'type', 'review'
+  assign insta_blocks = section.blocks | where: 'type', 'insta_tile'
+
+  assign bestsellers_collection = section.settings.bestsellers_collection
+  assign secondary_collection = section.settings.secondary_collection
+  assign featured_product = section.settings.featured_product
+
+  assign has_category_mosaic = false
+  for block in category_blocks
+    if block.settings.collection != blank or block.settings.link != blank or block.settings.heading != blank
+      assign has_category_mosaic = true
+      break
+    endif
+  endfor
+
+  assign has_judgeme_carousel = false
+
+  assign has_reviews = false
+  for block in review_blocks
+    if block.settings.body != blank and block.settings.author_name != blank
+      assign has_reviews = true
+      break
+    endif
+  endfor
+
+  assign show_reviews_editor_placeholder = false
+  if request.design_mode and review_blocks.size > 0
+    assign show_reviews_editor_placeholder = true
+  endif
+
+  assign has_instagram = false
+  if section.settings.show_instagram and insta_blocks.size > 0
+    assign has_instagram = true
+  endif
+%}
+
+{{ 'pp-homepage.css' | asset_url | stylesheet_tag }}
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+
+{% capture pp_star_icon %}
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
+{% endcapture %}
+
+<main class="pp-main pp-homepage-storefront" id="main">
+  {% if hero_blocks.size > 0 or value_blocks.size > 0 %}
+  <div class="pp-welcome-screen">
+  {% endif %}
+  {% if hero_blocks.size > 0 %}
+    <section class="pp-section pp-hero" aria-labelledby="hero-heading-{{ section.id }}">
+      <div class="pp-wrap">
+        {% assign primary_hero = hero_blocks.first %}
+        <div class="pp-hero__feature-grid">
+          {% if primary_hero != blank %}
+            {% liquid
+              assign primary_url = primary_hero.settings.link
+              assign primary_key = primary_hero.settings.heading | append: ' ' | append: primary_hero.settings.badge | downcase
+              assign primary_fallback = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80'
+              if primary_key contains 'furniture' or primary_key contains 'living'
+                assign primary_fallback = 'https://images.pexels.com/photos/12289396/pexels-photo-12289396.jpeg?auto=compress&cs=tinysrgb&w=1600'
+              elsif primary_key contains 'outdoor' or primary_key contains 'plant' or primary_key contains 'garden'
+                assign primary_fallback = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80'
+              elsif primary_key contains 'kitchen'
+                assign primary_fallback = 'https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=1600&q=80'
+              endif
+            %}
+            <a
+              href="{{ primary_url | default: '#' }}"
+              class="pp-hero-card pp-hero-card--feature pp-hero-card--has-media{% if primary_url == blank %} pp-card-is-static{% endif %}"
+              {% if primary_url == blank %}aria-disabled="true"{% endif %}
+              {{ primary_hero.shopify_attributes }}
+            >
+              <span class="pp-hero-card__media">
+                {% if primary_hero.settings.image != blank %}
+                  {{ primary_hero.settings.image | image_url: width: 1800 | image_tag: widths: '600,900,1200,1600,1800', sizes: '(min-width: 990px) 60vw, 100vw', loading: 'eager', alt: primary_hero.settings.heading | default: 'Home décor' | escape }}
+                {% else %}
+                  <img src="{{ primary_fallback }}" alt="{{ primary_hero.settings.heading | default: 'Home décor' | escape }}" width="1800" height="1200" loading="eager" decoding="async">
+                {% endif %}
+              </span>
+              <div class="pp-hero-content">
+                {% if primary_hero.settings.badge != blank %}
+                  <span class="pp-hero-card__pill pp-hero-card__pill--main">{{ primary_hero.settings.badge }}</span>
+                {% endif %}
+                <h1 id="hero-heading-{{ section.id }}" class="pp-hero-card__title">{{ primary_hero.settings.heading }}</h1>
+                {% if primary_hero.settings.text != blank %}
+                  <p class="pp-hero-card__sub">{{ primary_hero.settings.text }}</p>
+                {% endif %}
+                <span class="pp-hero-cta">
+                  {{ primary_hero.settings.button_label | default: 'Shop now' }}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </span>
+              </div>
+            </a>
+          {% endif %}
+          {% if hero_blocks.size > 1 %}
+            <div class="pp-hero__side-stack">
+              {% for block in hero_blocks offset: 1 limit: 2 %}
+                {% liquid
+                  assign hero_url = block.settings.link
+                  assign hero_key = block.settings.heading | append: ' ' | append: block.settings.badge | downcase
+                  assign hero_modifier = 'pp-hero-card--outdoor'
+                  assign hero_fallback = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80'
+                  if forloop.index == 2
+                    assign hero_modifier = 'pp-hero-card--kitchen'
+                    assign hero_fallback = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80'
+                  endif
+                  if hero_key contains 'furniture' or hero_key contains 'living' or hero_key contains 'bedroom'
+                    assign hero_fallback = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80'
+                  elsif hero_key contains 'outdoor' or hero_key contains 'plant' or hero_key contains 'garden'
+                    assign hero_fallback = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80'
+                  elsif hero_key contains 'kitchen' or hero_key contains 'bath'
+                    assign hero_fallback = 'https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=1200&q=80'
+                  elsif hero_key contains 'pet'
+                    assign hero_fallback = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=1200&q=80'
+                  endif
+                %}
+                <a
+                  href="{{ hero_url | default: '#' }}"
+                  class="pp-hero-card {{ hero_modifier }} pp-hero-card--has-media{% if hero_url == blank %} pp-card-is-static{% endif %}"
+                  {% if hero_url == blank %}aria-disabled="true"{% endif %}
+                  {{ block.shopify_attributes }}
+                >
+                  <span class="pp-hero-card__media">
+                    {% if block.settings.image != blank %}
+                      {{ block.settings.image | image_url: width: 1200 | image_tag: widths: '400,600,900,1200', sizes: '(min-width: 990px) 30vw, 100vw', loading: 'eager', alt: block.settings.heading | escape }}
+                    {% else %}
+                      <img src="{{ hero_fallback }}" alt="{{ block.settings.heading | escape }}" width="1200" height="800" loading="eager" decoding="async">
+                    {% endif %}
+                  </span>
+                  <div class="pp-tile-content">
+                    {% if block.settings.badge != blank %}
+                      <span class="pp-hero-card__pill{% if forloop.index == 2 %} pp-hero-card__pill--clear{% else %} pp-hero-card__pill--flash{% endif %}">{{ block.settings.badge }}</span>
+                    {% endif %}
+                    <h2 class="pp-hero-card__title">{{ block.settings.heading }}</h2>
+                    {% if block.settings.text != blank %}
+                      <p class="pp-hero-card__sub pp-tile-description">{{ block.settings.text }}</p>
+                    {% endif %}
+                    <span class="pp-hero-cta pp-hero-cta--ghost">
+                      {{ block.settings.button_label | default: 'Shop now' }}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </span>
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if value_blocks.size > 0 %}
+    <section class="pp-values" aria-labelledby="values-heading-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="values-heading-{{ section.id }}">{{ section.settings.values_aria_label | default: 'Why shop with us' }}</h2>
+          </div>
+        </div>
+        <div class="pp-values__grid">
+          {% for block in value_blocks limit: 4 %}
+            <div class="pp-value" {{ block.shopify_attributes }}>
+              <span class="pp-value__icon" aria-hidden="true">
+                {% case block.settings.icon %}
+                  {% when 'truck' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                  {% when 'returns' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                  {% when 'secure' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                  {% when 'star' %}
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                {% endcase %}
+              </span>
+              <div class="pp-value__text">
+                <h3>{{ block.settings.heading }}</h3>
+                {% if block.settings.text != blank %}
+                  <p>{{ block.settings.text }}</p>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  {% if hero_blocks.size > 0 or value_blocks.size > 0 %}
+  </div>
+  {% endif %}
+
+  {% liquid
+    assign promo_1_heading = section.settings.promo_1_heading | default: 'New Arrivals'
+    assign promo_1_tag = section.settings.promo_1_tag | default: 'Just Landed'
+    assign promo_1_label = section.settings.promo_1_label | default: 'Explore now'
+    assign promo_1_url = section.settings.promo_1_link | default: '/collections/new-arrival'
+    assign promo_1_img = section.settings.promo_1_image
+    assign promo_1_fallback = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=80'
+
+    assign promo_2_heading = section.settings.promo_2_heading | default: 'Garden & Outdoor'
+    assign promo_2_tag = section.settings.promo_2_tag | default: 'Outdoor living'
+    assign promo_2_label = section.settings.promo_2_label | default: 'Shop outdoor'
+    assign promo_2_url = section.settings.promo_2_link | default: '/collections/home-garden'
+    assign promo_2_img = section.settings.promo_2_image
+    assign promo_2_fallback = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80'
+
+    assign promo_3_heading = section.settings.promo_3_heading | default: 'Pet Accessories'
+    assign promo_3_tag = section.settings.promo_3_tag | default: 'Pet accessories'
+    assign promo_3_label = section.settings.promo_3_label | default: 'Shop accessories'
+    assign promo_3_url = section.settings.promo_3_link | default: '/collections/pets'
+    assign promo_3_img = section.settings.promo_3_image
+    assign promo_3_fallback = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=900&q=80'
+  %}
+  {% unless section.settings.show_promos == false %}
+    <section class="pp-promo" aria-labelledby="promo-heading-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="promo-heading-{{ section.id }}">Featured collections</h2>
+            <p class="pp-section-head__sub">New arrivals, outdoor living and pet accessories — shop the looks we love right now.</p>
+          </div>
+        </div>
+        <div class="pp-promo__grid">
+          <a href="{{ promo_1_url }}" class="pp-promo-card">
+            {% if promo_1_img != blank %}
+              {{ promo_1_img | image_url: width: 900 | image_tag: class: 'pp-promo-card__img', loading: 'lazy', widths: '400,600,900', sizes: '(min-width: 990px) 33vw, 100vw', alt: promo_1_heading | escape }}
+            {% else %}
+              <img class="pp-promo-card__img" src="{{ promo_1_fallback }}" alt="{{ promo_1_heading | escape }}" loading="lazy" width="900" height="600">
+            {% endif %}
+            <div class="pp-promo-card__content">
+              <span class="pp-promo-card__tag">{{ promo_1_tag }}</span>
+              <h3>{{ promo_1_heading }}</h3>
+              <span class="pp-promo-card__cta">{{ promo_1_label }} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+            </div>
+          </a>
+          <a href="{{ promo_2_url }}" class="pp-promo-card">
+            {% if promo_2_img != blank %}
+              {{ promo_2_img | image_url: width: 900 | image_tag: class: 'pp-promo-card__img', loading: 'lazy', widths: '400,600,900', sizes: '(min-width: 990px) 33vw, 100vw', alt: promo_2_heading | escape }}
+            {% else %}
+              <img class="pp-promo-card__img" src="{{ promo_2_fallback }}" alt="{{ promo_2_heading | escape }}" loading="lazy" width="900" height="600">
+            {% endif %}
+            <div class="pp-promo-card__content">
+              <span class="pp-promo-card__tag">{{ promo_2_tag }}</span>
+              <h3>{{ promo_2_heading }}</h3>
+              <span class="pp-promo-card__cta">{{ promo_2_label }} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+            </div>
+          </a>
+          <a href="{{ promo_3_url }}" class="pp-promo-card pp-promo-card--pets">
+            {% if promo_3_img != blank %}
+              {{ promo_3_img | image_url: width: 900 | image_tag: class: 'pp-promo-card__img', loading: 'lazy', widths: '400,600,900', sizes: '(min-width: 990px) 33vw, 100vw', alt: promo_3_heading | escape }}
+            {% else %}
+              <img class="pp-promo-card__img" src="{{ promo_3_fallback }}" alt="{{ promo_3_heading | escape }}" loading="lazy" width="900" height="600">
+            {% endif %}
+            <div class="pp-promo-card__content">
+              <span class="pp-promo-card__tag">{{ promo_3_tag }}</span>
+              <h3>{{ promo_3_heading }}</h3>
+              <span class="pp-promo-card__cta">{{ promo_3_label }} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  {% endunless %}
+
+  {% liquid
+    assign bestsellers_product_1 = section.settings.bestsellers_product_1 | default: all_products['1-2m-oversized-luxury-decorative-wall-mirror-crushed-diamond-full-length-mirror']
+    assign bestsellers_product_2 = section.settings.bestsellers_product_2 | default: all_products['1-2m-wall-led-bathroom-vanity-mirror-smart-backlit-front-lighted-anti-fog']
+    assign bestsellers_product_3 = section.settings.bestsellers_product_3 | default: all_products['tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg']
+    assign bestsellers_product_4 = section.settings.bestsellers_product_4 | default: all_products['high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame']
+    if bestsellers_product_1 == blank
+      assign bestsellers_product_1 = all_products['1-2m-oversized-luxury-decorative-wall-mirror-crushed-diamond-full-length-mirror']
+    endif
+    if bestsellers_product_2 == blank
+      assign bestsellers_product_2 = all_products['1-2m-wall-led-bathroom-vanity-mirror-smart-backlit-front-lighted-anti-fog']
+    endif
+    if bestsellers_product_3 == blank
+      assign bestsellers_product_3 = all_products['tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg']
+    endif
+    if bestsellers_product_4 == blank
+      assign bestsellers_product_4 = all_products['high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame']
+    endif
+    assign has_picked_bestsellers = false
+    if bestsellers_product_1 != blank or bestsellers_product_2 != blank or bestsellers_product_3 != blank or bestsellers_product_4 != blank
+      assign has_picked_bestsellers = true
+    endif
+    assign bestsellers_view_url = '/collections/home-decor'
+    if bestsellers_collection != blank
+      assign bestsellers_view_url = bestsellers_collection.url
+    endif
+  %}
+  {% if has_picked_bestsellers or bestsellers_collection != blank and bestsellers_collection.products_count > 0 %}
+    <section class="pp-rail pp-section pp-section--white" aria-labelledby="bestsellers-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="bestsellers-title-{{ section.id }}">{{ section.settings.bestsellers_heading }}</h2>
+            {% if section.settings.bestsellers_subheading != blank %}
+              <p class="pp-section-head__sub">{{ section.settings.bestsellers_subheading }}</p>
+            {% endif %}
+          </div>
+          <a href="{{ bestsellers_view_url }}" class="pp-view-all">
+            {{ section.settings.bestsellers_link_label }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <div class="pp-rail__grid" id="bestsellers-grid">
+          {% if has_picked_bestsellers %}
+            {% for index in (1..4) %}
+              {% liquid
+                assign product = nil
+                case index
+                  when 1
+                    assign product = bestsellers_product_1
+                  when 2
+                    assign product = bestsellers_product_2
+                  when 3
+                    assign product = bestsellers_product_3
+                  when 4
+                    assign product = bestsellers_product_4
+                endcase
+              %}
+              {% if product != blank %}
+                {% render 'pp-home-product-card', product: product %}
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% for product in bestsellers_collection.products limit: section.settings.products_per_row %}
+              {% assign product_image = product.featured_media.preview_image | default: product.featured_image %}
+              {% if product_image != blank %}
+                {% render 'pp-home-product-card', product: product %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if has_category_mosaic %}
+    <section class="pp-section" aria-labelledby="cats-heading-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="cats-heading-{{ section.id }}">{{ section.settings.categories_heading }}</h2>
+            {% if section.settings.categories_subheading != blank %}
+              <p class="pp-section-head__sub">{{ section.settings.categories_subheading }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="pp-mosaic">
+          {% for block in category_blocks limit: 10 %}
+            {% liquid
+              assign category_collection = block.settings.collection
+              assign category_url = block.settings.link
+              if category_collection != blank
+                assign category_url = category_collection.url
+              endif
+
+              assign category_title = block.settings.heading
+              if category_title == blank and category_collection != blank
+                assign category_title = category_collection.title
+              endif
+
+              assign category_image = blank
+              if category_collection != blank
+                assign category_image = category_collection.featured_image | default: category_collection.image
+              endif
+              if category_image == blank and block.settings.image != blank
+                assign category_image = block.settings.image
+              endif
+
+              assign category_count = blank
+              if block.settings.count_text != blank
+                assign category_count = block.settings.count_text
+              elsif category_collection != blank and category_collection.all_products_count > 0
+                assign category_count = category_collection.all_products_count | append: ' products'
+              endif
+
+              assign cat_key = category_title | downcase
+              assign cat_link = category_url | default: block.settings.link | downcase
+              assign is_metal_plant_stand = false
+              assign is_plant_stand = false
+              assign is_pets = false
+              if cat_key contains 'metal'
+                if cat_key contains 'plant' or cat_link contains 'metal-plant-stand' or cat_link contains 'metal_plant_stand'
+                  assign is_metal_plant_stand = true
+                endif
+              endif
+              if is_metal_plant_stand == false
+                if cat_key contains 'plant' or cat_link contains 'plant-stand' or cat_link contains 'plant_stand'
+                  assign is_plant_stand = true
+                endif
+              endif
+              if cat_key contains 'pet' or cat_key contains 'animal' or cat_link contains 'pet'
+                assign is_pets = true
+              endif
+
+              assign category_bg = 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=80'
+              if is_metal_plant_stand
+                assign category_bg = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=900&q=80'
+              elsif is_plant_stand
+                assign category_bg = 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=900&q=80'
+              elsif is_pets
+                assign category_bg = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'bedroom'
+                assign category_bg = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'living'
+                assign category_bg = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'dining'
+                assign category_bg = 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'office'
+                assign category_bg = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'decor'
+                assign category_bg = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'kitchen'
+                assign category_bg = 'https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'light'
+                assign category_bg = 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=900&q=80'
+              elsif cat_key contains 'outdoor' or cat_key contains 'garden'
+                assign category_bg = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80'
+              endif
+
+              if block.settings.image == blank
+                if is_metal_plant_stand or is_plant_stand or is_pets
+                  assign category_image = blank
+                endif
+              endif
+              if category_image != blank
+                assign category_bg = category_image | image_url: width: 900
+              endif
+            %}
+            <a
+              href="{{ category_url | default: '#' }}"
+              class="pp-cat pp-cat--{{ block.settings.style }}{% if is_pets %} pp-cat--pets{% endif %}{% if is_plant_stand %} pp-cat--plants{% endif %}{% if is_metal_plant_stand %} pp-cat--metal-plants{% endif %} pp-cat--has-image{% if category_url == blank %} pp-card-is-static{% endif %}"
+              style="background-image: url('{{ category_bg }}');"
+              aria-label="{% if category_count != blank %}Shop {{ category_title }}, {{ category_count }}{% else %}Shop {{ category_title }}{% endif %}"
+              {% if category_url == blank %}aria-disabled="true"{% endif %}
+              {{ block.shopify_attributes }}
+            >
+              <svg class="pp-cat__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              <h3 class="pp-cat__name">{{ category_title }}</h3>
+              {% if category_count != blank %}
+                <p class="pp-cat__count">{{ category_count }}</p>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% liquid
+    assign has_picked_new = false
+    if section.settings.secondary_product_1 != blank or section.settings.secondary_product_2 != blank or section.settings.secondary_product_3 != blank or section.settings.secondary_product_4 != blank
+      assign has_picked_new = true
+    endif
+    assign secondary_view_url = secondary_collection.url | default: '/collections/furniture'
+  %}
+  {% if has_picked_new or secondary_collection != blank and secondary_collection.products_count > 0 %}
+    <section class="pp-rail pp-section pp-section--white" aria-labelledby="secondary-rail-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="secondary-rail-title-{{ section.id }}">{{ section.settings.secondary_heading }}</h2>
+            {% if section.settings.secondary_subheading != blank %}
+              <p class="pp-section-head__sub">{{ section.settings.secondary_subheading }}</p>
+            {% endif %}
+          </div>
+          <a href="{{ secondary_view_url }}" class="pp-view-all">
+            {{ section.settings.secondary_link_label }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="pp-rail__grid">
+          {% if has_picked_new %}
+            {% for index in (1..4) %}
+              {% liquid
+                assign product = nil
+                case index
+                  when 1
+                    assign product = section.settings.secondary_product_1
+                  when 2
+                    assign product = section.settings.secondary_product_2
+                  when 3
+                    assign product = section.settings.secondary_product_3
+                  when 4
+                    assign product = section.settings.secondary_product_4
+                endcase
+              %}
+              {% if product != blank %}
+                {% render 'pp-home-product-card', product: product %}
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% for product in secondary_collection.products limit: section.settings.products_per_row %}
+              {% assign product_image = product.featured_media.preview_image | default: product.featured_image %}
+              {% if product_image != blank %}
+                {% render 'pp-home-product-card', product: product %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if section.settings.show_featured_band and featured_product != blank %}
+    {% liquid
+      assign feature_product = featured_product
+      assign feature_variant = feature_product.selected_or_first_available_variant
+      assign feature_image = feature_product.featured_media.preview_image | default: feature_product.featured_image
+      assign feature_has_sale = false
+      capture feature_promo
+        render 'pp-product-promo', product: feature_product, price: feature_product.price, compare_at: feature_product.compare_at_price_max
+      endcapture
+      assign feature_promo = feature_promo | strip
+      if feature_promo contains '|sale'
+        assign feature_has_sale = true
+      endif
+      assign feature_rating_object = feature_product.metafields.reviews.rating.value
+      assign feature_rating = feature_rating_object.rating
+      assign feature_count = feature_product.metafields.reviews.rating_count.value | default: feature_product.metafields.reviews.rating_count
+      assign feature_show_rating = false
+      if feature_rating != blank and feature_count != blank and feature_count > 0
+        assign feature_show_rating = true
+      endif
+      assign bullet_metafield = feature_product.metafields.custom.bullet_points
+      if bullet_metafield == blank
+        assign bullet_metafield = feature_product.metafields.custom.highlights
+      endif
+    %}
+    <section class="pp-feature" aria-labelledby="feature-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-feature__grid">
+          <a href="{{ feature_product.url }}" class="pp-feature__image" aria-label="{{ feature_product.title | escape }}">
+            {% if section.settings.featured_floating_label != blank %}
+              <span class="pp-feature__floating">{{ section.settings.featured_floating_label }}</span>
+            {% endif %}
+            {% if feature_image != blank %}
+              {{ feature_image | image_url: width: 1200 | image_tag: class: 'pp-feature__product-image', widths: '420,620,820,1200', sizes: '(min-width: 990px) 40vw, 100vw', loading: 'lazy', alt: feature_product.title }}
+            {% else %}
+              <span class="pp-feature__image-label">Product image</span>
+            {% endif %}
+          </a>
+          <div class="pp-feature__info">
+            <p class="pp-feature__category">{{ section.settings.featured_overline | default: feature_product.type | default: feature_product.vendor }}</p>
+            <h2 id="feature-title-{{ section.id }}" class="pp-feature__title">{{ section.settings.featured_title | default: feature_product.title }}</h2>
+            <div class="pp-feature__rating">
+              {% render 'pp-home-rating', product: feature_product %}
+            </div>
+            {% if section.settings.featured_description != blank %}
+              <p class="pp-feature__desc">{{ section.settings.featured_description }}</p>
+            {% elsif feature_product.description != blank %}
+              <div class="pp-feature__desc">{{ feature_product.description | strip_html | truncatewords: 36 }}</div>
+            {% endif %}
+            <div class="pp-feature__ticks">
+              {% if section.settings.feature_tick_1 != blank %}<div class="pp-feature__tick"><span class="pp-feature__tick-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></span><span>{{ section.settings.feature_tick_1 }}</span></div>{% endif %}
+              {% if section.settings.feature_tick_2 != blank %}<div class="pp-feature__tick"><span class="pp-feature__tick-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></span><span>{{ section.settings.feature_tick_2 }}</span></div>{% endif %}
+              {% if section.settings.feature_tick_3 != blank %}<div class="pp-feature__tick"><span class="pp-feature__tick-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></span><span>{{ section.settings.feature_tick_3 }}</span></div>{% endif %}
+              {% if section.settings.feature_tick_1 == blank and section.settings.feature_tick_2 == blank and section.settings.feature_tick_3 == blank and bullet_metafield != blank %}
+                {% if bullet_metafield.type contains 'list.' %}
+                  {% for bullet in bullet_metafield.value limit: 3 %}
+                    <div class="pp-feature__tick"><span class="pp-feature__tick-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></span><span>{{ bullet }}</span></div>
+                  {% endfor %}
+                {% else %}
+                  {% assign bullet_lines = bullet_metafield.value | default: bullet_metafield | newline_to_br | split: '<br />' %}
+                  {% for bullet in bullet_lines limit: 3 %}
+                    {% assign bullet_text = bullet | strip_html | strip %}
+                    {% if bullet_text != blank %}
+                      <div class="pp-feature__tick"><span class="pp-feature__tick-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></span><span>{{ bullet_text }}</span></div>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endif %}
+            </div>
+            <div class="pp-feature__price-row">
+              <span class="pp-feature__price-current">{{ feature_product.price | money }}</span>
+              {% if feature_has_sale %}
+                <span class="pp-feature__price-compare">{{ feature_product.compare_at_price_max | money }}</span>
+                <span class="pp-feature__save">{{ section.settings.featured_save_label }}</span>
+              {% endif %}
+            </div>
+            <div class="pp-feature__ctas">
+              <a href="{{ feature_product.url }}" class="pp-btn pp-btn--primary">{{ section.settings.featured_primary_label }}</a>
+              {% if feature_product.available and feature_product.variants_count == 1 and feature_variant != blank %}
+                {% assign feature_form_id = 'pp-feature-product-form-' | append: section.id %}
+                <product-form-component id="pp-feature-form-{{ section.id }}" data-section-id="{{ section.id }}" data-product-id="{{ feature_product.id }}" on:submit="/handleSubmit">
+                  <div class="sr-only" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+                  {% form 'product', feature_product, id: feature_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' %}
+                    <input type="hidden" name="id" ref="variantId" value="{{ feature_variant.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <add-to-cart-component ref="addToCartButtonContainer" data-product-variant-media="{% if feature_image != blank %}{{ feature_image | image_url: width: 100 }}{% endif %}" data-add-to-cart-animation="{{ settings.add_to_cart_animation }}">
+                      <button type="submit" name="add" ref="addToCartButton" on:click="/handleClick" class="pp-btn pp-btn--outline pp-btn--feature">
+                        {{ section.settings.featured_secondary_label }}
+                      </button>
+                    </add-to-cart-component>
+                  {% endform %}
+                </product-form-component>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if has_judgeme_carousel or has_reviews or show_reviews_editor_placeholder %}
+    <section class="pp-reviews pp-section pp-section--subtle{% if has_judgeme_carousel %} pp-reviews--judgeme{% endif %}" aria-labelledby="reviews-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-reviews__head">
+          <div class="pp-reviews__head-text">
+            <h2 id="reviews-title-{{ section.id }}">
+              <svg class="pp-reviews__head-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4l4 4 4-4h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+              {{ section.settings.reviews_heading }}
+            </h2>
+            {% if section.settings.reviews_subheading != blank %}
+              <p class="pp-reviews__sub">{{ section.settings.reviews_subheading }}</p>
+            {% endif %}
+          </div>
+          {% unless has_judgeme_carousel %}
+          <div class="pp-reviews__nav" aria-label="Reviews navigation">
+            <button class="pp-reviews__nav-btn" id="reviews-prev-{{ section.id }}" aria-label="Previous reviews" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="pp-reviews__nav-btn" id="reviews-next-{{ section.id }}" aria-label="Next reviews" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          {% endunless %}
+        </div>
+        {% if has_judgeme_carousel %}
+          <div class="jdgm-carousel-wrapper pp-judgeme-carousel">
+            {{ shop.metafields.judgeme.featured_carousel }}
+          </div>
+        {% else %}
+        <div class="pp-reviews__track-wrap">
+          <div class="pp-reviews__track" id="reviews-track-{{ section.id }}">
+            {% for block in review_blocks %}
+              {% if block.settings.body != blank and block.settings.author_name != blank %}
+                <article class="pp-review" {{ block.shopify_attributes }}>
+                  <div class="pp-review__top">
+                    <span class="pp-review__avatar" aria-hidden="true">{{ block.settings.avatar_text | default: block.settings.author_name | slice: 0, 2 | upcase }}</span>
+                    <div class="pp-review__author-info">
+                      <span class="pp-review__author-name">{{ block.settings.author_name }}</span>
+                      {% if block.settings.location != blank %}
+                        <span class="pp-review__author-location">{{ block.settings.location }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <span class="pp-stars pp-review__stars" aria-label="{{ block.settings.rating }} out of 5 stars">
+                    {% assign review_fill = block.settings.rating | plus: 0 %}
+                    {% for i in (1..5) %}
+                      <span{% if i > review_fill %} class="dim"{% endif %}>{{ pp_star_icon }}</span>
+                    {% endfor %}
+                  </span>
+                  <blockquote class="pp-review__body">"{{ block.settings.body }}"</blockquote>
+                  <div class="pp-review__footer">
+                    {% if block.settings.purchased_product != blank %}
+                      <div class="pp-review__purchased">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <span>Purchased: {{ block.settings.purchased_product }}</span>
+                      </div>
+                    {% endif %}
+                    {% if block.settings.show_verified %}
+                      <span class="pp-review__verified">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        Verified Purchase
+                      </span>
+                    {% endif %}
+                  </div>
+                </article>
+              {% elsif request.design_mode %}
+                <article class="pp-review pp-review--editor-placeholder" {{ block.shopify_attributes }}>
+                  <div class="pp-review__top">
+                    <span class="pp-review__avatar" aria-hidden="true">RV</span>
+                    <div class="pp-review__author-info">
+                      <span class="pp-review__author-name">Add author name</span>
+                      <span class="pp-review__author-location">Add location</span>
+                    </div>
+                  </div>
+                  <span class="pp-stars pp-review__stars" aria-hidden="true">
+                    {% for i in (1..5) %}
+                      <span class="dim">{{ pp_star_icon }}</span>
+                    {% endfor %}
+                  </span>
+                  <blockquote class="pp-review__body">"Fill this block in the theme editor with real review content."</blockquote>
+                  <div class="pp-review__footer">
+                    <div class="pp-review__purchased">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                      <span>Purchased: Add product name</span>
+                    </div>
+                  </div>
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if has_instagram %}
+    <section class="pp-section" aria-labelledby="insta-title-{{ section.id }}">
+      <div class="pp-wrap">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="insta-title-{{ section.id }}">{{ section.settings.instagram_heading }}</h2>
+            {% if section.settings.instagram_subheading != blank %}
+              <p class="pp-section-head__sub">{{ section.settings.instagram_subheading }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="pp-insta">
+          {% for block in insta_blocks limit: 6 %}
+            <a href="{{ block.settings.link | default: '#' }}" class="pp-insta__tile{% if block.settings.link == blank %} pp-card-is-static{% endif %}" {% if block.settings.link == blank %}aria-disabled="true"{% endif %} {{ block.shopify_attributes }}>
+              {% if block.settings.image != blank %}
+                {{ block.settings.image | image_url: width: 600 | image_tag: widths: '200,300,400,600', sizes: '(min-width: 990px) 16vw, 33vw', loading: 'lazy', alt: block.settings.handle }}
+              {% else %}
+                <svg class="pp-insta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+              {% endif %}
+              {% if block.settings.handle != blank %}
+                <span class="pp-insta__handle">{{ block.settings.handle }}</span>
+              {% endif %}
+              {% if block.settings.likes != blank %}
+                <span class="pp-insta__likes"><svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path></svg>{{ block.settings.likes }}</span>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+</main>
+
+{% javascript %}
+  document.addEventListener('click', function (event) {
+    var wishlistButton = event.target.closest('[data-pp-wishlist]');
+    if (!wishlistButton) return;
+    event.preventDefault();
+    wishlistButton.classList.toggle('is-active');
+    wishlistButton.classList.add('is-pulsing');
+    window.setTimeout(function () {
+      wishlistButton.classList.remove('is-pulsing');
+    }, 220);
+  });
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.pp-homepage-storefront video').forEach(function (video) {
+        video.pause();
+        video.removeAttribute('autoplay');
+      });
+      document.querySelectorAll('.pp-ticker__track, .pp-lookbook__track').forEach(function (el) {
+        el.style.animation = 'none';
+      });
+    }
+  document.querySelectorAll('.pp-reviews__track').forEach(function (track) {
+    var section = track.closest('.pp-reviews');
+    if (!section) return;
+    var id = track.id.replace('reviews-track-', '');
+    var prevBtn = section.querySelector('#reviews-prev-' + id);
+    var nextBtn = section.querySelector('#reviews-next-' + id);
+    if (!prevBtn || !nextBtn) return;
+
+    function getCardWidth() {
+      var card = track.querySelector('.pp-review');
+      if (!card) return 320;
+      var gap = 24;
+      return card.offsetWidth + gap;
+    }
+
+    nextBtn.addEventListener('click', function () {
+      track.scrollBy({ left: getCardWidth(), behavior: 'smooth' });
+    });
+    prevBtn.addEventListener('click', function () {
+      track.scrollBy({ left: -getCardWidth(), behavior: 'smooth' });
+    });
+  });
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "PP Home",
+  "settings": [
+    { "type": "checkbox", "id": "show_ticker", "label": "Show announcement ticker", "default": true },
+    { "type": "text", "id": "values_aria_label", "label": "Values aria label", "default": "Why shop with us" },
+    { "type": "text", "id": "categories_heading", "label": "Categories heading", "default": "Shop by Category" },
+    { "type": "text", "id": "categories_subheading", "label": "Categories subheading", "default": "Find your next favourite piece across our most-loved categories." },
+    { "type": "header", "content": "Promo banners" },
+    { "type": "checkbox", "id": "show_promos", "label": "Show promo banners", "default": true },
+    { "type": "image_picker", "id": "promo_1_image", "label": "Promo 1 image" },
+    { "type": "text", "id": "promo_1_tag", "label": "Promo 1 tag", "default": "Just Landed" },
+    { "type": "text", "id": "promo_1_heading", "label": "Promo 1 heading", "default": "New Arrivals" },
+    { "type": "text", "id": "promo_1_label", "label": "Promo 1 button", "default": "Explore now" },
+    { "type": "url", "id": "promo_1_link", "label": "Promo 1 link" },
+    { "type": "image_picker", "id": "promo_2_image", "label": "Promo 2 image" },
+    { "type": "text", "id": "promo_2_tag", "label": "Promo 2 tag", "default": "Outdoor living" },
+    { "type": "text", "id": "promo_2_heading", "label": "Promo 2 heading", "default": "Garden & Outdoor" },
+    { "type": "text", "id": "promo_2_label", "label": "Promo 2 button", "default": "Shop outdoor" },
+    { "type": "url", "id": "promo_2_link", "label": "Promo 2 link" },
+    { "type": "image_picker", "id": "promo_3_image", "label": "Promo 3 image" },
+    { "type": "text", "id": "promo_3_tag", "label": "Promo 3 tag", "default": "Pet accessories" },
+    { "type": "text", "id": "promo_3_heading", "label": "Promo 3 heading", "default": "Pet Accessories" },
+    { "type": "text", "id": "promo_3_label", "label": "Promo 3 button", "default": "Shop accessories" },
+    { "type": "url", "id": "promo_3_link", "label": "Promo 3 link" },
+    { "type": "collection", "id": "bestsellers_collection", "label": "Bestsellers collection" },
+    { "type": "product", "id": "bestsellers_product_1", "label": "Bestseller product 1" },
+    { "type": "product", "id": "bestsellers_product_2", "label": "Bestseller product 2" },
+    { "type": "product", "id": "bestsellers_product_3", "label": "Bestseller product 3" },
+    { "type": "product", "id": "bestsellers_product_4", "label": "Bestseller product 4" },
+    { "type": "text", "id": "bestsellers_heading", "label": "Bestsellers heading", "default": "Bestsellers right now" },
+    { "type": "text", "id": "bestsellers_subheading", "label": "Bestsellers subheading", "default": "Customer favourites this season." },
+    { "type": "text", "id": "bestsellers_link_label", "label": "Bestsellers link label", "default": "View all" },
+    { "type": "range", "id": "products_per_row", "label": "Products per rail", "min": 2, "max": 8, "step": 1, "default": 4 },
+    { "type": "text", "id": "sale_badge_label", "label": "Sale badge label", "default": "Sale" },
+    { "type": "text", "id": "new_badge_tag", "label": "New badge tag" },
+    { "type": "text", "id": "new_badge_label", "label": "New badge label", "default": "New" },
+    { "type": "text", "id": "bestseller_badge_tag", "label": "Bestseller badge tag" },
+    { "type": "text", "id": "bestseller_badge_label", "label": "Bestseller badge label", "default": "Bestseller" },
+    { "type": "text", "id": "quick_add_label", "label": "Quick add label", "default": "Quick add" },
+    { "type": "text", "id": "view_product_label", "label": "View product label", "default": "View product" },
+    { "type": "checkbox", "id": "show_featured_band", "label": "Show featured product band", "default": true },
+    { "type": "product", "id": "featured_product", "label": "Featured product" },
+    { "type": "text", "id": "featured_floating_label", "label": "Featured floating label", "default": "Featured pick" },
+    { "type": "text", "id": "featured_overline", "label": "Featured overline" },
+    { "type": "text", "id": "featured_title", "label": "Featured title override" },
+    { "type": "textarea", "id": "featured_description", "label": "Featured description override" },
+    { "type": "text", "id": "feature_tick_1", "label": "Feature tick 1" },
+    { "type": "text", "id": "feature_tick_2", "label": "Feature tick 2" },
+    { "type": "text", "id": "feature_tick_3", "label": "Feature tick 3" },
+    { "type": "text", "id": "featured_save_label", "label": "Featured save label", "default": "Save now" },
+    { "type": "text", "id": "featured_primary_label", "label": "Featured primary button label", "default": "Shop product" },
+    { "type": "text", "id": "featured_secondary_label", "label": "Featured secondary button label", "default": "Add to cart" },
+    { "type": "collection", "id": "secondary_collection", "label": "Secondary collection" },
+    { "type": "product", "id": "secondary_product_1", "label": "New Arrival product 1" },
+    { "type": "product", "id": "secondary_product_2", "label": "New Arrival product 2" },
+    { "type": "product", "id": "secondary_product_3", "label": "New Arrival product 3" },
+    { "type": "product", "id": "secondary_product_4", "label": "New Arrival product 4" },
+    { "type": "text", "id": "secondary_heading", "label": "Secondary rail heading", "default": "Fresh finds to browse" },
+    { "type": "text", "id": "secondary_subheading", "label": "Secondary rail subheading", "default": "More real products from your store." },
+    { "type": "text", "id": "secondary_link_label", "label": "Secondary rail link label", "default": "View all" },
+    { "type": "text", "id": "reviews_heading", "label": "Reviews heading", "default": "A favourite across Australia" },
+    { "type": "text", "id": "reviews_subheading", "label": "Reviews subheading", "default": "Thoughtful feedback from shoppers styling practical, beautiful spaces." },
+    { "type": "checkbox", "id": "show_instagram", "label": "Show Instagram grid", "default": false },
+    { "type": "text", "id": "instagram_heading", "label": "Instagram heading", "default": "Seen in the wild" },
+    { "type": "text", "id": "instagram_subheading", "label": "Instagram subheading", "default": "Merchant-managed social proof tiles." }
+  ],
+  "blocks": [
+    {
+      "type": "hero_card",
+      "name": "Hero card",
+      "limit": 3,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "badge", "label": "Badge", "default": "Featured" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Transform Your Living Space" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Curated furniture, homewares, outdoor pieces and everyday essentials for a practical, beautiful home." },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop now" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    },
+    {
+      "type": "value_item",
+      "name": "Value item",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "truck",
+          "options": [
+            { "value": "truck", "label": "Truck" },
+            { "value": "returns", "label": "Returns" },
+            { "value": "secure", "label": "Secure" },
+            { "value": "star", "label": "Star" }
+          ]
+        },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Store benefit" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Supporting message" }
+      ]
+    },
+    {
+      "type": "category_card",
+      "name": "Category card",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "default": "furniture",
+          "options": [
+            { "value": "furniture", "label": "Furniture" },
+            { "value": "outdoor", "label": "Outdoor" },
+            { "value": "kitchen", "label": "Kitchen" },
+            { "value": "decor", "label": "Decor" },
+            { "value": "bath", "label": "Bath" },
+            { "value": "pets", "label": "Pets" }
+          ]
+        },
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "image_picker", "id": "image", "label": "Fallback image" },
+        { "type": "text", "id": "heading", "label": "Heading override" },
+        { "type": "text", "id": "count_text", "label": "Count text override" },
+        { "type": "url", "id": "link", "label": "Fallback link" }
+      ]
+    },
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "textarea", "id": "body", "label": "Body" },
+        { "type": "text", "id": "avatar_text", "label": "Avatar text" },
+        { "type": "text", "id": "author_name", "label": "Author name" },
+        { "type": "text", "id": "location", "label": "Location" },
+        { "type": "text", "id": "purchased_product", "label": "Purchased product name" },
+        { "type": "checkbox", "id": "show_verified", "label": "Show verified badge", "default": true }
+      ]
+    },
+    {
+      "type": "insta_tile",
+      "name": "Instagram tile",
+      "limit": 6,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "handle", "label": "Handle", "default": "@prettyandpractical" },
+        { "type": "text", "id": "likes", "label": "Likes" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pretty homepage storefront",
+      "blocks": [
+        { "type": "hero_card" },
+        { "type": "hero_card" },
+        { "type": "hero_card" },
+        { "type": "value_item" },
+        { "type": "value_item" },
+        { "type": "value_item" },
+        { "type": "value_item" },
+        { "type": "category_card" },
+        { "type": "category_card" },
+        { "type": "category_card" },
+        { "type": "category_card" },
+        { "type": "category_card" }
+      ]
+    }
+  ]
+}
+{% endschema %}

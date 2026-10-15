@@ -1,0 +1,76 @@
+<div class="marquee-text" aria-label="Pretty &amp; Practical">
+  <div class="marquee-text__track">
+    <div class="marquee-text__group">
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+    </div>
+    <div class="marquee-text__group" aria-hidden="true">
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+      <span>Pretty &amp; Practical</span>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .marquee-text {
+    width: 100%;
+    overflow: hidden;
+    padding-block: 12px;
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  .marquee-text__track {
+    display: flex;
+    width: max-content;
+    animation: marquee-text-move 24s linear infinite;
+  }
+
+  .marquee-text__group {
+    display: flex;
+    gap: clamp(32px, 6vw, 72px);
+    padding-inline-end: clamp(32px, 6vw, 72px);
+    white-space: nowrap;
+  }
+
+  .marquee-text__group span {
+    font: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-text__track {
+      animation: none;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes marquee-text-move {
+    from {
+      transform: translateX(-50%);
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Marquee text",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Marquee text"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,131 @@
+{%- doc -%}
+  One header shop link. Nested Shopify menu children render as the old-style mega columns.
+{%- enddoc -%}
+
+{%- liquid
+  assign item_label = label | default: ''
+  assign item_url = url | default: ''
+  assign child_links = blank
+  if item_label == blank
+    assign item_label = link.title
+    assign item_url = link.url
+    assign child_links = link.links
+  endif
+  assign has_children = false
+  assign has_grandchildren = false
+  if child_links != blank and child_links.size > 0
+    assign has_children = true
+    for child in child_links
+      if child.links != blank and child.links.size > 0
+        assign has_grandchildren = true
+      endif
+    endfor
+  endif
+
+  assign pp_tv_url = '/collections/tv-stands'
+  if collections['tv-stands'].url != blank
+    assign pp_tv_url = collections['tv-stands'].url
+  elsif collections['tv-trolley-stand'].url != blank
+    assign pp_tv_url = collections['tv-trolley-stand'].url
+  endif
+  assign pp_garden_url = blank
+  assign pp_garden_try = 'garden-outdoor,garden-and-outdoor,outdoor-garden,garden,home-garden,home-and-garden' | split: ','
+  for h in pp_garden_try
+    if pp_garden_url == blank and collections[h].url != blank
+      assign pp_garden_url = collections[h].url
+    endif
+  endfor
+  if pp_garden_url == blank
+    for c in collections
+      assign ct = c.title | downcase
+      if pp_garden_url == blank and ct == 'garden & outdoor'
+        assign pp_garden_url = c.url
+      endif
+    endfor
+  endif
+  if pp_garden_url == blank
+    for c in collections
+      assign ct = c.title | downcase
+      if pp_garden_url == blank and ct == 'home & garden'
+        assign pp_garden_url = c.url
+      endif
+    endfor
+  endif
+  if pp_garden_url == blank
+    assign pp_garden_url = routes.all_products_collection_url
+  endif
+  assign pp_outdoor_url = pp_garden_url
+  if collections['outdoor'].products_count > 0
+    assign pp_outdoor_url = collections['outdoor'].url
+  endif
+
+  assign item_key = item_label | handleize
+  if item_key == 'tv-trolley-stand' or item_key == 'tv-stands' or item_url contains '/tv-trolley-stand'
+    assign item_url = pp_tv_url
+  elsif item_key == 'outdoor' or item_key == 'garden-outdoor' or item_url contains '/garden-outdoor'
+    assign item_url = pp_outdoor_url
+    if item_key == 'garden-outdoor'
+      assign item_url = pp_garden_url
+    endif
+  endif
+  assign item_path = item_url | split: '?' | first
+  assign item_active = false
+  if item_path != blank and request.path == item_path
+    assign item_active = true
+  endif
+-%}
+
+{%- unless item_key == 'outdoor' -%}
+{%- if has_children -%}
+  <div class="pp-mega-group">
+    <a
+      href="{{ item_url }}"
+      class="pp-nav-link{% if item_active %} is-active{% endif %}"
+      aria-haspopup="true"
+    >
+      {{ item_label | escape }}
+    </a>
+    <div class="pp-mega-menu" role="menu">
+      <div class="pp-mega-menu__surface">
+        <div class="pp-mega-menu__columns{% if has_grandchildren %} pp-mega-menu__columns--wide{% endif %}">
+          {%- if has_grandchildren -%}
+            {%- for child in child_links -%}
+              {%- assign child_col_title = child.title | downcase -%}
+              {%- unless child_col_title == 'outdoor' -%}
+              <div class="pp-mega-column">
+                <a class="pp-mega-column__title" href="{{ child.url }}">{{ child.title | escape }}</a>
+                <ul class="pp-mega-links">
+                  {%- if child.links != blank -%}
+                    {%- for grand in child.links -%}
+                      {%- assign grand_title = grand.title | downcase -%}
+                      {%- unless grand_title == 'view all' or grand_title == 'view-all' or grand_title == 'outdoor' -%}
+                        <li><a href="{{ grand.url }}">{{ grand.title | escape }}</a></li>
+                      {%- endunless -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+                  <li><a class="pp-mega-links__view-all" href="{{ child.url }}">View All</a></li>
+                </ul>
+              </div>
+              {%- endunless -%}
+            {%- endfor -%}
+          {%- else -%}
+            <div class="pp-mega-column">
+              <ul class="pp-mega-links">
+                {%- for child in child_links -%}
+                  {%- assign child_title = child.title | downcase -%}
+                  {%- unless child_title == 'view all' or child_title == 'view-all' or child_title == 'outdoor' -%}
+                    <li><a href="{{ child.url }}">{{ child.title | escape }}</a></li>
+                  {%- endunless -%}
+                {%- endfor -%}
+                <li><a class="pp-mega-links__view-all" href="{{ item_url }}">View All</a></li>
+              </ul>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- else -%}
+  <a href="{{ item_url }}" class="pp-nav-link{% if item_active %} is-active{% endif %}">{{ item_label | escape }}</a>
+{%- endif -%}
+{%- endunless -%}

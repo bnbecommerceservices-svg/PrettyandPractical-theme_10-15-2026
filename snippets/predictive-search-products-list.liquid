@@ -1,0 +1,188 @@
+{%- doc -%}
+  Renders the predictive search products list for empty state and recently viewed products
+
+  @param {string} title - title of the result list
+  @param {object[]} products - array of products
+  @param {string[]} [order_ids] - array of product ids
+  @param {number} [limit] - limit of products to display
+  @param {string} [products_test_id] - a playwright test id, used to differentiate empty state from 'real' search results
+{%- enddoc -%}
+{%- liquid
+  assign recently_viewed_title_text = 'content.recently_viewed_products' | t
+-%}
+<div
+  id="predictive-search-products"
+  class="predictive-search-results__products"
+  {% if products_test_id %}
+    data-testid="{{ products_test_id }}"
+  {% endif %}
+>
+  {% if title == recently_viewed_title_text %}
+    <div
+      class="recently-viewed-wrapper"
+      ref="recentlyViewedWrapper"
+    >
+      <h4
+        class="predictive-search-results__title"
+        ref="recentlyViewedTitle[]"
+      >
+        {{ title }}
+        <button
+          class="predictive-search-results__clear button button-unstyled"
+          type="button"
+          on:click="/clearRecentlyViewedProducts"
+        >
+          {{ 'actions.clear' | t }}
+        </button>
+      </h4>
+      <ul
+        class="predictive-search-results__list predictive-search-results__list--rows predictive-search-results__wrapper-products list-unstyled"
+      >
+        {% liquid
+          assign limit = limit | default: 8
+        %}
+        {% comment %}
+          If we're searching for recently viewed products by id, we need to reorder the products.
+          The order here comes from the search terms, and we display the products in the order of the ids.
+        {% endcomment %}
+        {% if order_ids != blank %}
+          {% for _id in order_ids %}
+            {% assign int_id = _id | times: 1 %}
+            {% assign product = products | find: 'id', int_id %}
+            {% if product != blank %}
+              {% assign product_image = product.featured_media.preview_image | default: product.featured_image %}
+              {% assign product_compare_at_price = product.compare_at_price | default: 0 %}
+              <li
+                class="predictive-search-results__card predictive-search-results__card--product"
+                ref="recentlyViewedItems[]"
+              >
+                <a class="predictive-search-results__row predictive-search-results__row--product" href="{{ product.url }}">
+                  <span class="predictive-search-results__thumb" aria-hidden="true">
+                    {% if product_image != blank %}
+                      {{
+                        product_image
+                        | image_url: width: 88
+                        | image_tag:
+                          loading: 'lazy',
+                          class: 'predictive-search-results__thumb-image',
+                          widths: '44,88,132',
+                          sizes: '44px'
+                      }}
+                    {% else %}
+                      <span class="predictive-search-results__thumb-fallback">{{ product.title | slice: 0 }}</span>
+                    {% endif %}
+                  </span>
+                  <span class="predictive-search-results__product-copy">
+                    <span class="predictive-search-results__product-title">{{ product.title }}</span>
+                    <span class="predictive-search-results__product-price">
+                      <span class="predictive-search-results__price-current">{{ product.price | money }}</span>
+                      {% capture pp_promo %}{% render 'pp-product-promo', product: product, price: product.price, compare_at: product_compare_at_price %}{% endcapture %}
+                      {% if pp_promo contains '|sale' %}
+                        <span class="predictive-search-results__price-compare">{{ product_compare_at_price | money }}</span>
+                      {% endif %}
+                    </span>
+                  </span>
+                  <svg class="predictive-search-results__chevron" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6"></path>
+                  </svg>
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          {% for product in products limit: limit %}
+            {% assign product_image = product.featured_media.preview_image | default: product.featured_image %}
+            {% assign product_compare_at_price = product.compare_at_price | default: 0 %}
+            <li
+              class="predictive-search-results__card predictive-search-results__card--product"
+              ref="recentlyViewedItems[]"
+            >
+              <a class="predictive-search-results__row predictive-search-results__row--product" href="{{ product.url }}">
+                <span class="predictive-search-results__thumb" aria-hidden="true">
+                  {% if product_image != blank %}
+                    {{
+                      product_image
+                      | image_url: width: 88
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'predictive-search-results__thumb-image',
+                        widths: '44,88,132',
+                        sizes: '44px'
+                    }}
+                  {% else %}
+                    <span class="predictive-search-results__thumb-fallback">{{ product.title | slice: 0 }}</span>
+                  {% endif %}
+                </span>
+                <span class="predictive-search-results__product-copy">
+                  <span class="predictive-search-results__product-title">{{ product.title }}</span>
+                  <span class="predictive-search-results__product-price">
+                    <span class="predictive-search-results__price-current">{{ product.price | money }}</span>
+                    {% capture pp_promo %}{% render 'pp-product-promo', product: product, price: product.price, compare_at: product_compare_at_price %}{% endcapture %}
+                      {% if pp_promo contains '|sale' %}
+                      <span class="predictive-search-results__price-compare">{{ product_compare_at_price | money }}</span>
+                    {% endif %}
+                  </span>
+                </span>
+                <svg class="predictive-search-results__chevron" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </a>
+            </li>
+          {% endfor %}
+        {% endif %}
+      </ul>
+    </div>
+  {% else %}
+    <section class="predictive-search-results__group predictive-search-results__group--products" aria-labelledby="predictive-search-products-title">
+      <h4 id="predictive-search-products-title" class="predictive-search-results__title">
+        {{ title }}
+      </h4>
+      <ul
+        class="predictive-search-results__list predictive-search-results__list--rows predictive-search-results__wrapper-products list-unstyled"
+      >
+        {% liquid
+          assign limit = limit | default: 8
+        %}
+        {% for product in products limit: limit %}
+          {% assign product_image = product.featured_media.preview_image | default: product.featured_image %}
+          {% assign product_compare_at_price = product.compare_at_price | default: 0 %}
+          <li
+            class="predictive-search-results__card predictive-search-results__card--product"
+            ref="resultsItems[]"
+          >
+            <a class="predictive-search-results__row predictive-search-results__row--product" href="{{ product.url }}">
+              <span class="predictive-search-results__thumb" aria-hidden="true">
+                {% if product_image != blank %}
+                  {{
+                    product_image
+                    | image_url: width: 88
+                    | image_tag:
+                      loading: 'lazy',
+                      class: 'predictive-search-results__thumb-image',
+                      widths: '44,88,132',
+                      sizes: '44px'
+                  }}
+                {% else %}
+                  <span class="predictive-search-results__thumb-fallback">{{ product.title | slice: 0 }}</span>
+                {% endif %}
+              </span>
+              <span class="predictive-search-results__product-copy">
+                <span class="predictive-search-results__product-title">{{ product.title }}</span>
+                <span class="predictive-search-results__product-price">
+                  <span class="predictive-search-results__price-current">{{ product.price | money }}</span>
+                  {% capture pp_promo %}{% render 'pp-product-promo', product: product, price: product.price, compare_at: product_compare_at_price %}{% endcapture %}
+                      {% if pp_promo contains '|sale' %}
+                    <span class="predictive-search-results__price-compare">{{ product_compare_at_price | money }}</span>
+                  {% endif %}
+                </span>
+              </span>
+              <svg class="predictive-search-results__chevron" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</div>

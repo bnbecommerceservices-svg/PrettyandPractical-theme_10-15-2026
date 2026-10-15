@@ -1,0 +1,144 @@
+{% liquid
+  assign pp_show = false
+  assign page_handle = page.handle | default: ''
+  assign pp_policy_haystack = request.path | append: '|' | append: policy.url | downcase
+  if template.suffix == 'shipping-policy'
+    assign pp_show = true
+  elsif page_handle == 'shipping-policy' or page_handle == 'shipping'
+    assign pp_show = true
+  elsif pp_policy_haystack contains 'shipping'
+    assign pp_show = true
+  endif
+%}
+{% if pp_show %}
+{{ 'pp-shipping-policy.css' | asset_url | stylesheet_tag }}
+{{ 'pp-policy-toc.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pp-policy-toc.js' | asset_url }}" defer></script>
+
+<section class="pp-shipping-policy">
+  <div class="pp-wrap">
+    <header class="page-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Shipping Policy</span>
+      </nav>
+      <h1>Shipping Policy</h1>
+      <p class="lead">Everything you need to know about how and when we deliver your order across Australia.</p>
+      <hr class="header-divider">
+    </header>
+
+    <nav class="jump-nav" aria-label="Jump to section">
+      <details>
+        <summary>
+          Jump to section
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul>
+          <li><a href="#shipping-promotions">Shipping promotions</a></li>
+          <li><a href="#delivery-fees">Delivery fees</a></li>
+          <li><a href="#dispatch-time">Dispatch time</a></li>
+          <li><a href="#delivery-methods">Delivery methods &amp; locations</a></li>
+          <li><a href="#standard-delivery">Standard delivery</a></li>
+          <li><a href="#delivery-failure">Delivery failure</a></li>
+          <li><a href="#risk-and-title">Risk and title</a></li>
+        </ul>
+      </details>
+    </nav>
+
+    <div class="page-body">
+      <aside class="sidebar" aria-label="Page contents">
+        <p class="toc-label">On this page</p>
+        <ul class="toc-list" id="toc-list">
+          <li><a href="#shipping-promotions" data-section="shipping-promotions">Shipping promotions</a></li>
+          <li><a href="#delivery-fees" data-section="delivery-fees">Delivery fees</a></li>
+          <li><a href="#dispatch-time" data-section="dispatch-time">Dispatch time</a></li>
+          <li><a href="#delivery-methods" data-section="delivery-methods">Delivery methods &amp; locations</a></li>
+          <li><a href="#standard-delivery" data-section="standard-delivery">Standard delivery</a></li>
+          <li><a href="#delivery-failure" data-section="delivery-failure">Delivery failure</a></li>
+          <li><a href="#risk-and-title" data-section="risk-and-title">Risk and title</a></li>
+        </ul>
+      </aside>
+
+      <main class="content" id="main-content">
+        <section id="shipping-promotions">
+          <h2>Shipping Promotions</h2>
+          <p>Free shipping, flat rate, capped price or other types of shipping price promotions may be offered at specified times and on specified products. Where a shipping promotion is offered, it may only be available on selected products and to selected locations. Please check the Promo Terms for details.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section id="delivery-fees">
+          <h2>Delivery Fees</h2>
+          <p>Delivery fees and times vary for different products and are calculated based on the size and weight of your order, the number and type of products in the cart, where the products are shipping from, and its destination. The delivery price for each order will be displayed during the checkout process, prior to payment and order confirmation and included in the total price of your order. Changes made by you to the delivery address or delivery time after placing an order may incur additional charges.</p>
+          <p>Delivery estimates calculated at checkout are based on delivery to the front door of a ground floor. If delivery of an order will result in unacceptably high freight charges to us, we reserve the right to contact you after your order is placed to request further delivery fees or to cancel your order prior to dispatch. If we cancel your order in these circumstances, we will issue a full refund to you.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section id="dispatch-time">
+          <h2>Dispatch Time</h2>
+          <p>Typically, Orders received and processed by us before 11:59pm each business day (in NSW) will be dispatched within 1-3 business days from the relevant warehouse, unless otherwise stated.</p>
+          <p>Orders received and processed by us on Friday or weekend days will be processed for dispatch on the following Monday. In some cases, the estimated dispatch time frame will be longer, for example where items are made to order.</p>
+          <p>From time to time, the estimated dispatch time frame may exceed our usual stated delivery window for reasons outside of our control or if payment is subject to a fraud check.</p>
+          <p>We work hard to process all orders as quickly as possible and we will generally contact you to let you know when your item has been dispatched by us or if we anticipate delays.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section id="delivery-methods">
+          <h2>Delivery methods &amp; locations</h2>
+          <p>We work with a number of third party delivery providers in order to deliver our products nationwide. Your order will be delivered to the delivery address provided by you during the checkout process or as updated through our Customer Care team after your order is finalised and before your order is dispatched.</p>
+          <p>We cannot deliver to PO boxes or Parcel Lockers because they're usually too small to accept most of the products we sell. Most of our products require a signature upon delivery.</p>
+          <p>Our delivery provider may leave a card at the address and you will need to pick up the delivery from an Australia Post outlet or contact the delivery contractor to arrange for re-delivery.</p>
+          <p>We reserve the right to refuse delivery to specific locations for items we consider to be at high risk of loss or damage and also areas that are inaccessible with standard courier and delivery services. In this case, you may choose to have an item delivered using your own couriers, in which case title and risk in the products will pass to you at the time we deliver the products to your courier and you will be responsible for all insurance for loss or damage to the order caused by the delivery.</p>
+          <p>In some cases, we will only be able to deliver products in metropolitan areas. We are not able to accept orders for international delivery at this time.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section id="standard-delivery">
+          <h2>Standard Delivery</h2>
+          <p>Standard Delivery is a fast and cost effective shipping method used for most items. Orders with Standard Delivery will be delivered by one of our national carrier partners, e.g. Australia Post, Allied Express, Couriers Please or other carrier as appropriate. Delivery is to a ground floor; if the delivery is in a multi-story building the delivery company will not travel past the ground floor front door.</p>
+          <p>Standard Delivery will usually occur Monday to Friday (8am to 6pm) but could occur outside of these hours during peak periods. We do our best to keep you informed along the way as to when your order is dispatched to when it will be delivered via emails and SMS alerts.</p>
+          <p>Unfortunately we're unable to provide a choice of delivery day or time for these types of deliveries.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section id="delivery-failure">
+          <h2>Delivery failure</h2>
+          <p>It is important that you check your information is correct before placing your order, especially your delivery address. If you provide the incorrect delivery address, you agree that you will be liable for the additional shipping charges in order for your delivery to reach you. If our delivery provider has been unable to deliver your order due to your error or fault after 21 days or 2 attempts (whichever is sooner), we reserve the right to cancel your order. In these circumstances, we will refund you the money you have paid for your order less the delivery fees and reasonable handling fees that reflect our loss.</p>
+        </section>
+
+        <hr class="section-divider">
+
+        <section id="risk-and-title">
+          <h2>Risk and Title</h2>
+          <p>Risk and title to the products passes to you on the date and time of delivery of the products to you by our delivery provider to you or to the ATL (Authority To Leave) address.</p>
+        </section>
+
+        <div class="page-footer-row">
+          <span class="updated-note">Shipping policy</span>
+          <a href="mailto:contact@prettyandpractical.com.au" class="contact-link">
+            Have questions? Contact us
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "PP Shipping Policy",
+  "settings": [],
+  "presets": [
+    {
+      "name": "PP Shipping Policy"
+    }
+  ]
+}
+{% endschema %}

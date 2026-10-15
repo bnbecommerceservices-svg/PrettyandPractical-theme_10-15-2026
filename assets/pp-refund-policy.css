@@ -1,0 +1,453 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+.pp-refund-policy {
+  --pp-primary: #e8532a;
+  --pp-primary-dark: #c73e18;
+  --pp-primary-light: #fff1ec;
+  --pp-navy: #111827;
+  --pp-white: #ffffff;
+  --pp-bg: #ffffff;
+  --pp-bg-subtle: #f7f8fa;
+  --pp-border: #e5e7eb;
+  --pp-border-light: #f3f4f6;
+  --pp-text: #111827;
+  --pp-text-secondary: #4b5563;
+  --pp-text-muted: #9ca3af;
+  --pp-shadow-sm: 0 1px 3px rgb(0 0 0 / .07);
+  --pp-radius-md: 12px;
+  --pp-radius-lg: 16px;
+  --pp-radius-pill: 999px;
+  --pp-font-heading: 'Sora', sans-serif;
+  --pp-font-body: 'DM Sans', sans-serif;
+  --pp-wrap-max: 1600px;
+  --pp-wrap-pad: 24px;
+
+  font-family: var(--pp-font-body);
+  color: var(--pp-text);
+  background: var(--pp-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.pp-refund-policy,
+.pp-refund-policy *,
+.pp-refund-policy *::before,
+.pp-refund-policy *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.pp-refund-policy .pp-wrap {
+  width: min(100%, var(--pp-wrap-max));
+  max-width: var(--pp-wrap-max);
+  margin-inline: auto;
+  padding-inline: var(--pp-wrap-pad);
+}
+
+@media (max-width: 768px) {
+  .pp-refund-policy {
+    --pp-wrap-pad: 16px;
+  }
+}
+
+.pp-refund-policy .page-header {
+  padding-top: 48px;
+  padding-bottom: 32px;
+}
+
+.pp-refund-policy .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--pp-font-body);
+  font-size: 13px;
+  color: var(--pp-text-muted);
+  margin-bottom: 18px;
+}
+
+.pp-refund-policy .breadcrumb a {
+  color: var(--pp-text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.pp-refund-policy .breadcrumb a:hover {
+  color: var(--pp-primary);
+}
+
+.pp-refund-policy .breadcrumb-sep {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--pp-text-muted);
+}
+
+.pp-refund-policy .page-header h1 {
+  font-family: var(--pp-font-heading);
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--pp-navy);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.pp-refund-policy .page-header .last-updated {
+  font-family: var(--pp-font-body);
+  font-size: 14px;
+  color: var(--pp-text-muted);
+  margin-bottom: 14px;
+}
+
+.pp-refund-policy .page-divider {
+  height: 1px;
+  background: var(--pp-border-light);
+  margin-top: 32px;
+}
+
+.pp-refund-policy .page-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 72px;
+  padding-top: 48px;
+  padding-bottom: 96px;
+  align-items: start;
+}
+
+.pp-refund-policy .sidebar {
+  position: sticky;
+  top: 32px;
+}
+
+.pp-refund-policy .toc-label {
+  font-family: var(--pp-font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--pp-text-muted);
+  margin-bottom: 14px;
+  padding-left: 0;
+}
+
+.pp-refund-policy .toc-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pp-refund-policy .toc-list a {
+  display: block;
+  font-family: var(--pp-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pp-text-secondary);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-left: 3px solid transparent;
+  border-radius: 0 8px 8px 0;
+  box-shadow: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1.45;
+}
+
+.pp-refund-policy .toc-list a:hover {
+  background: #f3f4f6;
+  color: var(--pp-navy);
+}
+
+.pp-refund-policy .toc-list a.active,
+.pp-refund-policy .toc-list a.is-active {
+  background: var(--pp-primary-light);
+  color: var(--pp-primary);
+  font-weight: 600;
+  border-left-color: var(--pp-primary);
+  box-shadow: none;
+}
+
+.pp-refund-policy .page-content {
+  max-width: 720px;
+}
+
+.pp-refund-policy .mobile-jump {
+  display: none;
+}
+
+.pp-refund-policy .content-section,
+.pp-refund-policy [id] {
+  scroll-margin-top: 110px;
+}
+
+.pp-refund-policy .content-section {
+  margin-bottom: 56px;
+}
+
+.pp-refund-policy .content-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.pp-refund-policy .content-section h2 {
+  font-family: var(--pp-font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--pp-navy);
+  margin-bottom: 20px;
+  scroll-margin-top: 40px;
+}
+
+.pp-refund-policy .content-section h3 {
+  font-family: var(--pp-font-heading);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--pp-navy);
+  margin-top: 28px;
+  margin-bottom: 14px;
+}
+
+.pp-refund-policy .content-section p {
+  font-family: var(--pp-font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--pp-text);
+  margin-bottom: 14px;
+}
+
+.pp-refund-policy .content-section p:last-child {
+  margin-bottom: 0;
+}
+
+.pp-refund-policy .content-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pp-refund-policy .content-section ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--pp-font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--pp-text);
+}
+
+.pp-refund-policy .content-section ul li::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pp-primary);
+  flex-shrink: 0;
+  margin-top: 9px;
+}
+
+.pp-refund-policy .callout {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--pp-primary-light);
+  border-left: 4px solid var(--pp-primary);
+  border-radius: var(--pp-radius-md);
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+
+.pp-refund-policy .callout-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--pp-primary);
+  margin-top: 2px;
+}
+
+.pp-refund-policy .callout p {
+  font-family: var(--pp-font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--pp-navy);
+  font-weight: 500;
+  margin: 0 !important;
+}
+
+.pp-refund-policy .link-orange {
+  color: var(--pp-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.pp-refund-policy .link-orange:hover {
+  color: var(--pp-primary-dark);
+  border-bottom-color: var(--pp-primary-dark);
+}
+
+.pp-refund-policy .content-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 36px;
+  margin-top: 56px;
+  border-top: 1px solid var(--pp-border-light);
+}
+
+.pp-refund-policy .content-footer .footer-updated {
+  font-family: var(--pp-font-body);
+  font-size: 14px;
+  color: var(--pp-text-muted);
+}
+
+.pp-refund-policy .footer-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--pp-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pp-primary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.pp-refund-policy .footer-cta:hover {
+  color: var(--pp-primary-dark);
+}
+
+.pp-refund-policy .footer-cta svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 900px) {
+  .pp-refund-policy .page-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-top: 32px;
+    padding-bottom: 64px;
+  }
+
+  .pp-refund-policy .sidebar {
+    display: none;
+  }
+
+  .pp-refund-policy .mobile-jump {
+    display: block;
+    margin-bottom: 36px;
+  }
+
+  .pp-refund-policy .mobile-jump summary {
+    font-family: var(--pp-font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pp-navy);
+    cursor: pointer;
+    padding: 11px 16px;
+    background: var(--pp-bg-subtle);
+    border: 1px solid var(--pp-border);
+    border-radius: var(--pp-radius-md);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+
+  .pp-refund-policy .mobile-jump summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .pp-refund-policy .mobile-jump summary .chev {
+    width: 16px;
+    height: 16px;
+    color: var(--pp-text-muted);
+    transition: transform 0.2s;
+  }
+
+  .pp-refund-policy .mobile-jump[open] summary .chev {
+    transform: rotate(180deg);
+  }
+
+  .pp-refund-policy .mobile-jump-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+    border: 1px solid var(--pp-border);
+    border-top: none;
+    border-radius: 0 0 var(--pp-radius-md) var(--pp-radius-md);
+    background: var(--pp-white);
+  }
+
+  .pp-refund-policy .mobile-jump-list a {
+    display: block;
+    font-family: var(--pp-font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--pp-text-secondary);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .pp-refund-policy .mobile-jump-list a:hover {
+    background: var(--pp-bg-subtle);
+    color: var(--pp-navy);
+  }
+
+  .pp-refund-policy .page-content {
+    max-width: min(720px, 100%);
+  }
+
+  .pp-refund-policy .page-header h1 {
+    font-size: 26px;
+  }
+
+  .pp-refund-policy .content-section {
+    margin-bottom: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pp-refund-policy .pp-wrap {
+    padding-inline: var(--pp-wrap-pad);
+  }
+
+  .pp-refund-policy .page-header {
+    padding-top: 32px;
+    padding-bottom: 24px;
+  }
+
+  .pp-refund-policy .page-header h1 {
+    font-size: 26px;
+  }
+
+  .pp-refund-policy .content-section h2 {
+    font-size: 21px;
+  }
+}
+
+.pp-refund-policy .toc-list {
+  position: relative;
+}
+
+.pp-refund-policy .pp-toc-indicator {
+  position: absolute;
+  left: 0;
+  width: 3px;
+  background: var(--pp-primary);
+  border-radius: 999px;
+  transition: top 220ms ease, height 220ms ease;
+  pointer-events: none;
+}
+
+.pp-refund-policy .sidebar {
+  top: 96px;
+}

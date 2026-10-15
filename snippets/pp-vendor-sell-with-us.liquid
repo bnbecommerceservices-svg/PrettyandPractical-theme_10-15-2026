@@ -1,0 +1,75 @@
+{% liquid
+  assign nexus_register = nexus_register | default: settings.nexus_seller_register_url | strip
+  if nexus_register == blank
+    assign nexus_register = 'https://nexus.marmeto.org/registration-page/794354c4-2f85-48ca-8d3f-aefb28129aca'
+  endif
+  assign nexus_embed = nexus_embed | default: settings.nexus_register_embed | strip
+  assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard'
+%}
+
+<div class="pp-vendor-card pp-seller-signup">
+  <ol class="pp-nexus-steps">
+    <li><strong>Apply</strong> — tell us who you are and what you sell.</li>
+    <li><strong>Get approved</strong> — we review every seller in Nexus before they go live.</li>
+    <li><strong>List &amp; ship</strong> — use your Nexus seller portal for products, orders and tracking.</li>
+  </ol>
+
+  {% if nexus_embed != blank %}
+    <div class="pp-nexus-embed">{{ nexus_embed | raw }}</div>
+  {% elsif nexus_register != blank %}
+    <p>Applications are reviewed in Nexus. You will get a seller login by email once you are approved.</p>
+    <a class="pp-vendor-btn" href="{{ nexus_register }}">Start your application</a>
+    {% unless nexus_register contains shop.permanent_domain %}
+      <iframe class="pp-nexus-frame" title="Seller application" src="{{ nexus_register | escape }}" loading="lazy"></iframe>
+    {% endunless %}
+  {% else %}
+    {% form 'contact', id: 'pp-sell-form', class: 'pp-nexus-contact' %}
+      {% if form.posted_successfully? %}
+        <p class="pp-form-success">Thanks — we have your application. We will email you a Nexus seller login if it is approved.</p>
+        <script>window.location.assign({{ pages['application-received'].url | default: '/pages/application-received' | json }});</script>
+      {% else %}
+        {% if form.errors %}
+          <p class="pp-form-error">{{ form.errors | default_errors }}</p>
+        {% endif %}
+        <input type="hidden" name="contact[subject]" value="Seller application — Pretty &amp; Practical">
+        <div class="pp-field">
+          <label for="pp-sell-name">Full name</label>
+          <input id="pp-sell-name" name="contact[name]" type="text" autocomplete="name" required>
+        </div>
+        <div class="pp-field">
+          <label for="pp-sell-email">Email</label>
+          <input id="pp-sell-email" name="contact[email]" type="email" autocomplete="email" required>
+        </div>
+        <div class="pp-field">
+          <label for="pp-sell-phone">Phone</label>
+          <input id="pp-sell-phone" name="contact[phone]" type="tel" autocomplete="tel" placeholder="+61">
+        </div>
+        <div class="pp-field">
+          <label for="pp-sell-biz">Business name</label>
+          <input id="pp-sell-biz" type="text" autocomplete="organization">
+        </div>
+        <div class="pp-field">
+          <label for="pp-sell-msg">What would you like to sell?</label>
+          <textarea id="pp-sell-msg" name="contact[body]" rows="5" required placeholder="Furniture, storage, outdoor, pets — tell us about your range."></textarea>
+        </div>
+        <button type="submit" class="pp-vendor-btn">Submit application</button>
+      {% endif %}
+    {% endform %}
+    <script>
+      (function () {
+        var form = document.getElementById('pp-sell-form');
+        var biz = document.getElementById('pp-sell-biz');
+        var msg = document.getElementById('pp-sell-msg');
+        if (!form || !msg) return;
+        form.addEventListener('submit', function () {
+          var business = biz && biz.value ? biz.value.trim() : '';
+          if (business && msg.value.indexOf('Business name:') !== 0) {
+            msg.value = 'Business name: ' + business + '\n\n' + msg.value;
+          }
+        });
+      })();
+    </script>
+  {% endif %}
+
+  <p class="pp-sell-login">Already approved? <a href="{{ nexus_seller_href }}">Log in to your Seller Dashboard</a>.</p>
+</div>

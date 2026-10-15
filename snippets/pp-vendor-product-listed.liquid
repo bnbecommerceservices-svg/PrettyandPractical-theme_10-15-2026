@@ -1,0 +1,7 @@
+{% assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard' %}
+
+<div class="pp-status-card">
+  <h2>Product submitted for review</h2>
+  <p>New listings are reviewed in Nexus before they go live on Pretty &amp; Practical.</p>
+  <a class="pp-vendor-btn" href="{{ nexus_seller_href }}">Back to seller portal</a>
+</div>

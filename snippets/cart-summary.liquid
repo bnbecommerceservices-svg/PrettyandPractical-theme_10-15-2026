@@ -1,0 +1,449 @@
+{%- doc -%}
+  Renders the cart summary totals.
+
+  @param {string} [accelerated_checkout_buttons_layout] - { 'vertical' } Forced layout of the additional checkout buttons, instead of relying on platform's layout.
+  @param {boolean} [is_drawer] - Whether the summary is being rendered in the cart drawer.
+  @param {string} [section_id] - The section ID for cart discount component.
+{%- enddoc -%}
+
+{% liquid
+  assign is_drawer = is_drawer | default: false
+%}
+
+{% if is_drawer %}
+  {%- liquid
+    assign real_discount_total = cart.total_discount
+    assign cart_discount_progress_enabled = settings.cart_discount_progress_enabled | default: true, allow_false: true
+    assign cart_discount_threshold = settings.cart_discount_threshold | plus: 0
+    assign cart_discount_threshold_cents = cart_discount_threshold | times: 100
+    assign discount_codes = cart.cart_level_discount_applications | where: 'type', 'discount_code' | map: 'title'
+    assign cart_level_discount_titles = cart.cart_level_discount_applications | map: 'title'
+
+    for item in cart.items
+      for allocation in item.line_level_discount_allocations
+        if allocation.discount_application.type == 'discount_code'
+          assign discount_codes = item.line_level_discount_allocations | slice: forloop.index0 | map: 'discount_application' | map: 'title' | concat: discount_codes
+        endif
+      endfor
+    endfor
+
+    assign discount_codes = discount_codes | uniq
+
+    if settings.currency_code_enabled_cart_total
+      assign subtotal_price = cart.items_subtotal_price | money_with_currency
+      assign grand_total_price = cart.total_price | money_with_currency
+      assign discount_price = real_discount_total | money_with_currency
+      assign free_shipping_threshold_price = cart_discount_threshold_cents | money_with_currency
+    else
+      assign subtotal_price = cart.items_subtotal_price | money
+      assign grand_total_price = cart.total_price | money
+      assign discount_price = real_discount_total | money
+      assign free_shipping_threshold_price = cart_discount_threshold_cents | money
+    endif
+
+    capture cart_drawer_note
+      if cart.duties_included and cart.taxes_included
+        echo 'content.duties_and_taxes_included_shipping_at_checkout_without_policy_without_discounts' | t
+      elsif cart.taxes_included
+        echo 'content.taxes_included_shipping_at_checkout_without_policy_without_discounts' | t
+      elsif cart.duties_included
+        echo 'content.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy_without_discounts' | t
+      else
+        echo 'content.taxes_at_checkout_shipping_at_checkout_without_policy_without_discounts' | t
+      endif
+      if cart_discount_progress_enabled and cart_discount_threshold_cents > 0
+        echo ' Free shipping over '
+        echo free_shipping_threshold_price
+        echo '.'
+      endif
+    endcapture
+  -%}
+
+  <div class="pp-totals">
+    <div class="pp-total-row">
+      <span class="pp-label">Subtotal</span>
+      <span class="pp-value" data-testid="cart-subtotal-value">{{ subtotal_price }}</span>
+    </div>
+    {% if real_discount_total > 0 %}
+      <div class="pp-total-row pp-total-row--discount">
+        <span class="pp-label">Discount</span>
+        <span class="pp-value">-{{ discount_price }}</span>
+      </div>
+      {% if cart.cart_level_discount_applications.size > 0 or discount_codes.size > 0 %}
+        <ul class="pp-summary-discounts" role="list" aria-label="{{ 'content.discounts' | t }}">
+          {% for discount_application in cart.cart_level_discount_applications %}
+            <li>{{ discount_application.title | escape }}</li>
+          {% endfor %}
+          {% for discount_code in discount_codes %}
+            {% unless cart_level_discount_titles contains discount_code %}
+              <li>{{ discount_code | escape }}</li>
+            {% endunless %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endif %}
+    <div class="pp-total-row">
+      <span class="pp-label">Shipping</span>
+      {% if cart_discount_progress_enabled and cart_discount_threshold_cents > 0 and cart.items_subtotal_price >= cart_discount_threshold_cents %}
+        <span class="pp-value pp-value-free">FREE</span>
+      {% else %}
+        <span class="pp-value pp-value-pending">At checkout</span>
+      {% endif %}
+    </div>
+    <div class="pp-total-row">
+      <span class="pp-label">Estimated tax</span>
+      <span class="pp-value pp-value-pending">At checkout</span>
+    </div>
+    <div class="pp-totals-divider" aria-hidden="true"></div>
+    <div class="pp-grand">
+      <span class="pp-label">Total</span>
+      <text-component
+        class="pp-value"
+        ref="cartTotal"
+        value="{{ grand_total_price | strip_html }}"
+        data-testid="cart-total-value"
+      >
+        {{ grand_total_price }}
+      </text-component>
+    </div>
+    <div class="pp-grand-note">{{ cart_drawer_note | strip }}</div>
+  </div>
+
+  <div class="pp-cart-actions">
+    <button
+      type="submit"
+      id="checkout"
+      class="button pp-checkout"
+      name="checkout"
+      {% if cart == empty %}
+        disabled
+      {% endif %}
+      form="cart-form"
+      aria-label="Proceed to secure checkout"
+    >
+      <svg class="pp-lock" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="11" width="16" height="10" rx="2"/>
+        <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+      </svg>
+      <span class="button-text">Checkout</span>
+      <svg class="pp-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <a href="{{ routes.cart_url }}" class="pp-view-cart">
+      <span class="button-text">View full cart</span>
+    </a>
+    <button type="button" class="pp-continue-link" on:click="cart-drawer-component/close">
+      <span class="button-text">&larr; Continue shopping</span>
+    </button>
+  </div>
+
+  <div class="pp-trust" role="list" aria-label="Store benefits">
+    <div class="pp-trust-item" role="listitem">
+      <span class="pp-trust-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </span>
+      Secure checkout
+    </div>
+    <div class="pp-trust-item" role="listitem">
+      <span class="pp-trust-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7"/>
+          <path d="M3 4v5h5"/>
+        </svg>
+      </span>
+      Returns policy
+    </div>
+    <div class="pp-trust-item" role="listitem">
+      <span class="pp-trust-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 7h13v10H1zM14 11h5l3 3v3h-8z"/>
+          <circle cx="6" cy="18" r="2"/>
+          <circle cx="18" cy="18" r="2"/>
+        </svg>
+      </span>
+      Shipping calculated at checkout
+    </div>
+  </div>
+
+  <div class="pp-pay">
+    <div class="pp-pay-label">We accept</div>
+    <div class="pp-pay-marks" aria-hidden="true">
+      <span class="pp-pay-mark">VISA</span>
+      <span class="pp-pay-mark">MC</span>
+      <span class="pp-pay-mark">AMEX</span>
+      <span class="pp-pay-mark">PYPL</span>
+      <span class="pp-pay-mark">PAY</span>
+    </div>
+  </div>
+{% else %}
+  {%- liquid
+    assign real_discount_total = cart.total_discount
+
+    if settings.currency_code_enabled_cart_total
+      assign subtotal_price = cart.items_subtotal_price | money_with_currency
+      assign total_price = cart.total_price | money_with_currency
+      assign discount_price = real_discount_total | money_with_currency
+    else
+      assign subtotal_price = cart.items_subtotal_price | money
+      assign total_price = cart.total_price | money
+      assign discount_price = real_discount_total | money
+    endif
+
+    assign discount_codes = cart.cart_level_discount_applications | where: 'type', 'discount_code' | map: 'title'
+    for item in cart.items
+      for allocation in item.line_level_discount_allocations
+        if allocation.discount_application.type == 'discount_code'
+          assign discount_codes = item.line_level_discount_allocations | slice: forloop.index0 | map: 'discount_application' | map: 'title' | concat: discount_codes
+        endif
+      endfor
+    endfor
+    assign discount_codes = discount_codes | uniq
+    assign cart_level_discount_title = cart.cart_level_discount_applications | map: 'title' | first
+    assign discount_code_title = discount_codes | first
+    assign promo_discount_title = cart_level_discount_title | default: discount_code_title | default: 'Cart discount applied'
+
+    if discount_codes.size == 0
+      assign disclosure_expanded = false
+    else
+      assign disclosure_expanded = true
+    endif
+  -%}
+
+  <section class="pp-cart-page__summary-card" aria-label="Order summary">
+    <h2>Order Summary</h2>
+
+    <div class="pp-cart-page__sum-row">
+      <span>Subtotal ({{ cart.item_count }} {% if cart.item_count == 1 %}item{% else %}items{% endif %})</span>
+      <span data-testid="cart-subtotal-value">{{ subtotal_price }}</span>
+    </div>
+
+    {% if real_discount_total > 0 %}
+      <div class="pp-cart-page__sum-row pp-cart-page__sum-row--discount">
+        <span>
+          Discount
+          {% if cart.cart_level_discount_applications.size == 1 and cart_level_discount_title != blank %}
+            ({{ cart_level_discount_title | escape }})
+          {% elsif discount_codes.size == 1 and discount_code_title != blank %}
+            ({{ discount_code_title | escape }})
+          {% endif %}
+        </span>
+        <span>-{{ discount_price }}</span>
+      </div>
+    {% endif %}
+
+    <div class="pp-cart-page__rule" aria-hidden="true"></div>
+
+    <div class="pp-cart-page__sum-row pp-cart-page__sum-row--muted">
+      <span>Shipping</span>
+      <span>Calculated at checkout</span>
+    </div>
+    <div class="pp-cart-page__sum-row pp-cart-page__sum-row--muted">
+      <span>Estimated taxes</span>
+      <span>Calculated at checkout</span>
+    </div>
+
+    <div class="pp-cart-page__rule" aria-hidden="true"></div>
+
+    <div class="pp-cart-page__grand" role="status">
+      <span>Total</span>
+      <text-component
+        ref="cartTotal"
+        value="{{ total_price | strip_html }}"
+        data-testid="cart-total-value"
+        data-cart-subtotal
+      >
+        {{ total_price }}
+      </text-component>
+    </div>
+
+    <button
+      type="submit"
+      id="checkout"
+      class="button pp-cart-page__checkout"
+      name="checkout"
+      {% if cart == empty %}
+        disabled
+      {% endif %}
+      form="cart-form"
+    >
+      <span class="svg-wrapper" aria-hidden="true">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <path d="M7 10V8a5 5 0 0 1 10 0v2m-12 0h14v10H5V10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="button-text">Checkout</span>
+    </button>
+
+    <a class="button pp-cart-page__secondary" href="{{ settings.empty_cart_button_link | default: routes.all_products_collection_url }}">
+      <span class="button-text">Continue shopping</span>
+    </a>
+
+    {% if additional_checkout_buttons and settings.show_accelerated_checkout_buttons %}
+      <div
+        class="
+          additional-checkout-buttons pp-cart-page__additional-checkout
+          {% if accelerated_checkout_buttons_layout == 'vertical' %}additional-checkout-buttons--vertical{% endif %}
+        "
+      >
+        {{ content_for_additional_checkout_buttons }}
+      </div>
+    {% endif %}
+
+    <div class="pp-cart-page__support" role="list" aria-label="Store benefits">
+      <div class="pp-cart-page__support-row" role="listitem">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v9H5v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <strong>Secure checkout</strong>
+          <span>Your payment details are protected</span>
+        </div>
+      </div>
+      <div class="pp-cart-page__support-row" role="listitem">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12a7 7 0 1 0 2-5M5 6v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <strong>Easy returns</strong>
+          <span>Hassle-free returns within 30 days</span>
+        </div>
+      </div>
+      <div class="pp-cart-page__support-row" role="listitem">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h10v10H4V7Zm10 3h3l3 3v4h-6v-7ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <strong>Fast delivery</strong>
+          <span>Delivery options calculated at checkout</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if real_discount_total > 0 %}
+    <section class="pp-cart-page__promo-card" aria-label="Applied cart offer">
+      <div class="pp-cart-page__promo-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M20 12v8H4v-8m17-5H3v5h18V7Zm-9 13V7m0 0H8.5A2.5 2.5 0 1 1 12 3.5V7Zm0 0h3.5A2.5 2.5 0 1 0 12 3.5V7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <strong>{{ promo_discount_title }}</strong>
+        <div class="pp-cart-page__promo-meter"><span></span></div>
+        <p>{{ discount_price }} discount reflected in your order summary.</p>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if settings.show_add_discount_code %}
+    <div class="pp-cart-page__summary-extras">
+      {% capture cart_discount_accordion_children %}
+        <details
+          class="details"
+          {% if disclosure_expanded %}
+            open
+          {% endif %}
+        >
+          <summary class="cart-discount__summary pp-cart-page__discount-summary">
+            <span class="cart-discount__label cart-primary-typography">{{ 'content.discount' | t }}</span>
+
+            <span class="cart-totals__icon pp-cart-page__accordion-icon">
+              {{- 'icon-plus.svg' | inline_asset_content -}}
+            </span>
+          </summary>
+
+          <div class="details-content">
+            <div id="cart-discount-disclosure">
+              <cart-discount-component
+                {% if section_id != blank %}
+                  data-section-id="{{ section_id }}"
+                {% endif %}
+              >
+                <div class="cart-discount__content pp-cart-page__discount-content">
+                  <form
+                    on:submit="/applyDiscount"
+                    onsubmit="return false;"
+                    class="cart-discount__form pp-cart-page__discount-form"
+                  >
+                    <label
+                      for="cart-discount"
+                      class="visually-hidden"
+                    >
+                      {{- 'accessibility.discount' | t -}}
+                    </label>
+                    <input
+                      id="cart-discount"
+                      class="cart-discount__input pp-cart-page__discount-input"
+                      type="text"
+                      name="discount"
+                      size="8"
+                      placeholder="{{ 'content.discount_code' | t }}"
+                      required
+                    >
+                    <button
+                      type="submit"
+                      class="button cart-discount__button pp-cart-page__discount-button"
+                    >
+                      {{ 'actions.apply' | t }}
+                    </button>
+                  </form>
+                </div>
+                <div
+                  class="cart-discount__error hidden"
+                  role="alert"
+                  ref="cartDiscountError"
+                >
+                  <span class="svg-wrapper">
+                    {{- 'icon-error.svg' | inline_asset_content -}}
+                  </span>
+                  <small
+                    class="cart-discount__error-text cart-primary-typography hidden"
+                    ref="cartDiscountErrorDiscountCode"
+                  >
+                    {{ 'content.discount_code_error' | t: code: 'test' }}
+                  </small>
+                  <small
+                    class="cart-discount__error-text cart-primary-typography hidden"
+                    ref="cartDiscountErrorShipping"
+                  >
+                    {{ 'content.shipping_discount_error' | t }}
+                  </small>
+                </div>
+                <ul class="cart-discount__codes pp-cart-page__discount-codes">
+                  {% for discount_code in discount_codes %}
+                    <li
+                      class="cart-discount__pill pp-cart-page__discount-pill"
+                      data-discount-code="{{ discount_code }}"
+                      aria-label="{{ 'accessibility.discount_applied' | t: code: discount_code }}"
+                    >
+                      <p class="cart-discount__pill-code">
+                        {{ discount_code }}
+                      </p>
+                      <button
+                        type="button"
+                        on:click="/removeDiscount"
+                        class="cart-discount__pill-remove svg-wrapper svg-wrapper--smaller button-unstyled"
+                        aria-label="{{ 'actions.remove_discount' | t: code: discount_code }}"
+                      >
+                        {{- 'icon-filters-close.svg' | inline_asset_content -}}
+                      </button>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </cart-discount-component>
+            </div>
+          </div>
+        </details>
+      {% endcapture %}
+      {% render 'accordion-custom-component',
+        children: cart_discount_accordion_children,
+        class: 'cart-discount pp-cart-page__discount'
+      %}
+    </div>
+  {% endif %}
+{% endif %}

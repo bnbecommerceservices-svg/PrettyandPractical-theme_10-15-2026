@@ -1,0 +1,34 @@
+{% liquid
+  assign nexus_login = nexus_login | default: settings.nexus_seller_login_url | strip
+  assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard'
+%}
+
+{% liquid
+  assign tool = portal | default: 'list_product'
+  assign tool_title = 'seller portal'
+  case tool
+    when 'list_product'
+      assign tool_title = 'list products'
+    when 'bulk_list'
+      assign tool_title = 'bulk-upload products'
+    when 'bulk_status'
+      assign tool_title = 'check upload status'
+    when 'ship_order'
+      assign tool_title = 'ship orders and add tracking'
+  endcase
+%}
+
+<div class="pp-vendor-card pp-nexus-gateway">
+  <p>To {{ tool_title }}, use your Nexus seller portal. Pretty &amp; Practical reviews new listings before they appear in the store.</p>
+  {% if nexus_login != blank %}
+    <a class="pp-vendor-btn" href="{{ nexus_login }}">Open seller portal</a>
+    <script>
+      (function () {
+        var url = {{ nexus_login | json }};
+        if (url) window.location.replace(url);
+      })();
+    </script>
+  {% else %}
+    <a class="pp-vendor-btn" href="{{ nexus_seller_href }}">Go to Seller Dashboard</a>
+  {% endif %}
+</div>

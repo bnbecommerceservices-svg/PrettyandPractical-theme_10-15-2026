@@ -1,0 +1,53 @@
+{%- doc -%}
+  Product badge styles consolidated into a single snippet.
+
+  @example
+  {% render 'product-badges-styles' %}
+{%- enddoc -%}
+
+{% stylesheet %}
+  .product-badges {
+    --badge-inset: 14px;
+
+    position: absolute;
+    z-index: var(--layer-flat);
+  }
+
+  .product-badges--bottom-left {
+    bottom: calc(var(--badge-inset) + var(--padding-block-start));
+    left: calc(var(--badge-inset) + var(--padding-inline-start));
+  }
+
+  .product-badges--top-left {
+    top: calc(var(--badge-inset) + var(--padding-block-start));
+    left: calc(var(--badge-inset) + var(--padding-inline-start));
+  }
+
+  .product-badges--top-right {
+    top: calc(var(--badge-inset) + var(--padding-block-start));
+    right: calc(var(--badge-inset) + var(--padding-inline-start));
+  }
+
+  .product-badges__badge {
+    --badge-font-size: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 24px;
+    color: #fff;
+    font-size: var(--badge-font-size);
+    font-family: var(--badge-font-family);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    text-transform: none;
+    border-radius: 7px;
+    box-shadow: 0 1px 2px rgb(17 24 39 / 8%);
+  }
+
+  .product-badges__badge--rectangle {
+    padding-block: 0;
+    padding-inline: 9px;
+  }
+{% endstylesheet %}

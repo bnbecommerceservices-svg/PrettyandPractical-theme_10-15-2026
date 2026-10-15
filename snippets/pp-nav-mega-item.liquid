@@ -1,0 +1,24 @@
+{% liquid
+  assign mega_label = category_label | default: nav_link.title
+  assign mega_url = category_url | default: nav_link.url
+  assign mega_handle = item_handle
+  if mega_handle == blank
+    assign mega_handle = mega_label | handleize
+  endif
+  assign mega_active = false
+  if is_active == true or is_active == 'true'
+    assign mega_active = true
+  endif
+  assign mega_sale = false
+  if is_sale == true or is_sale == 'true'
+    assign mega_sale = true
+  endif
+%}
+<a
+  href="{{ mega_url }}"
+  class="pp-nav-link{% if mega_active %} is-active{% endif %}{% if mega_sale %} pp-nav-link--sale{% endif %}"
+  data-catmega-open="{{ mega_handle | escape }}"
+  {{ shopify_attributes }}
+>
+  {{ mega_label | escape }}
+</a>

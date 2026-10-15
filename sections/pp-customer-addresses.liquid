@@ -1,0 +1,132 @@
+{{ 'pp-account.css' | asset_url | stylesheet_tag }}
+
+<section class="pp-account pp-account-body" {{ section.shopify_attributes }}>
+  <div class="pp-wrap">
+    <div class="pp-account-layout">
+      {% render 'pp-account-nav', current: 'profile' %}
+
+      <div class="pp-account-stack">
+        <div class="pp-account-panel">
+          <div class="pp-account-panel__head">
+            <div>
+              <h2>Contact</h2>
+              <p class="pp-account-panel__sub">The email on this Pretty &amp; Practical account.</p>
+            </div>
+          </div>
+          <label class="pp-account-readonly" for="pp-account-email">
+            <span>Email</span>
+            <input id="pp-account-email" type="email" value="{{ customer.email | escape }}" readonly>
+          </label>
+          {% if customer.name != blank or customer.phone != blank %}
+            <p class="pp-account-contact-extra">
+              {% if customer.name != blank %}{{ customer.name | escape }}{% endif %}
+              {% if customer.phone != blank %}
+                {% if customer.name != blank %}<br>{% endif %}
+                {{ customer.phone | escape }}
+              {% endif %}
+            </p>
+          {% endif %}
+        </div>
+
+        <div class="pp-account-panel">
+          <div class="pp-account-panel__head">
+            <div>
+              <h2>Addresses</h2>
+              <p class="pp-account-panel__sub">Keep delivery details current for Australia wide shipping.</p>
+            </div>
+          </div>
+
+          {% if customer.addresses.size > 0 %}
+            <div class="pp-account-profile-grid">
+              {% for address in customer.addresses %}
+                <div class="pp-account-info-card">
+                  <h3>
+                    {% if address == customer.default_address %}Default address{% else %}Address {{ forloop.index }}{% endif %}
+                  </h3>
+                  <p>{{ address | format_address }}</p>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="pp-account-empty pp-account-empty--inline">
+              <span class="pp-account-empty__icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <h3>No addresses added</h3>
+              <p>Add a delivery address so checkout and returns are quicker next time.</p>
+            </div>
+          {% endif %}
+
+          <div class="pp-account-add-address">
+            {% form 'customer_address', customer.new_address %}
+              <h3>Add a new address</h3>
+              <div class="pp-account-profile-grid">
+                <div class="pp-account-field">
+                  <label for="AddressFirstName">First name</label>
+                  <input id="AddressFirstName" type="text" name="address[first_name]" value="{{ form.first_name | escape }}">
+                </div>
+                <div class="pp-account-field">
+                  <label for="AddressLastName">Last name</label>
+                  <input id="AddressLastName" type="text" name="address[last_name]" value="{{ form.last_name | escape }}">
+                </div>
+                <div class="pp-account-field">
+                  <label for="AddressAddress1">Address</label>
+                  <input id="AddressAddress1" type="text" name="address[address1]" value="{{ form.address1 | escape }}">
+                </div>
+                <div class="pp-account-field">
+                  <label for="AddressCity">Suburb / City</label>
+                  <input id="AddressCity" type="text" name="address[city]" value="{{ form.city | escape }}">
+                </div>
+                <div class="pp-account-field">
+                  <label for="AddressZip">Postcode</label>
+                  <input id="AddressZip" type="text" name="address[zip]" value="{{ form.zip | escape }}">
+                </div>
+                <div class="pp-account-field">
+                  <label for="AddressPhone">Phone</label>
+                  <input id="AddressPhone" type="tel" name="address[phone]" value="{{ form.phone | escape }}">
+                </div>
+              </div>
+              <input type="hidden" name="address[country]" value="Australia">
+              <button type="submit" class="pp-account-btn pp-account-btn--primary">Add address</button>
+            {% endform %}
+          </div>
+        </div>
+
+        <div class="pp-account-panel">
+          <div class="pp-account-panel__head">
+            <div>
+              <h2>Marketing preferences</h2>
+              <p class="pp-account-panel__sub">Email updates from Pretty &amp; Practical.</p>
+            </div>
+          </div>
+          <div class="pp-account-pref">
+            <span class="pp-account-pref__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/></svg>
+            </span>
+            <div>
+              <p class="pp-account-pref__title">Email</p>
+              <p class="pp-account-pref__copy">
+                {% if customer.accepts_marketing %}
+                  You’re subscribed to news and offers.
+                {% else %}
+                  You’re not subscribed to marketing emails.
+                {% endif %}
+              </p>
+            </div>
+            <span class="pp-account-pref__pill{% if customer.accepts_marketing %} is-on{% endif %}">
+              {% if customer.accepts_marketing %}On{% else %}Off{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PP Customer Addresses",
+  "settings": [],
+  "presets": [{ "name": "PP Customer Addresses" }]
+}
+{% endschema %}

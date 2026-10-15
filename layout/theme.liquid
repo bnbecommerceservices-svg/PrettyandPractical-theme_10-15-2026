@@ -1,0 +1,252 @@
+{%- if request.path contains 'google6f2b512ed5b8797f.html' -%}
+google-site-verification: google6f2b512ed5b8797f.html
+{%- else -%}
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+    {%- liquid
+      assign pp_page_handle = page.handle | default: ''
+      assign pp_policy_dest = blank
+      if request.page_type == 'page'
+        if pp_page_handle == 'privacy-policy' or pp_page_handle == 'privacy'
+          assign pp_policy_dest = '/policies/privacy-policy'
+        elsif pp_page_handle == 'refund-policy' or pp_page_handle == 'return-policy' or pp_page_handle == 'returns' or pp_page_handle == 'refunds'
+          assign pp_policy_dest = '/policies/refund-policy'
+        elsif pp_page_handle == 'shipping-policy' or pp_page_handle == 'shipping'
+          assign pp_policy_dest = '/policies/shipping-policy'
+        elsif pp_page_handle == 'terms-of-service' or pp_page_handle == 'terms' or pp_page_handle == 'terms-and-conditions'
+          assign pp_policy_dest = '/policies/terms-of-service'
+        elsif pp_page_handle == 'contact-information'
+          assign pp_policy_dest = '/policies/contact-information'
+        endif
+      endif
+    -%}
+    {%- if pp_policy_dest != blank -%}
+      <link rel="canonical" href="{{ request.origin }}{{ pp_policy_dest }}">
+      <meta http-equiv="refresh" content="0;url={{ pp_policy_dest }}">
+      <script>window.location.replace({{ pp_policy_dest | json }});</script>
+    {%- endif -%}
+    <script>
+      (function () {
+        function navigationType() {
+          try {
+            var entry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+            if (entry && entry.type) return entry.type;
+          } catch (err) {}
+          try {
+            if (performance.navigation) {
+              if (performance.navigation.type === 1) return 'reload';
+              if (performance.navigation.type === 2) return 'back_forward';
+            }
+          } catch (err2) {}
+          return 'navigate';
+        }
+
+        var isReload = navigationType() === 'reload';
+        var keepHash = location.hash.length > 1;
+
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = isReload && !keepHash ? 'manual' : 'auto';
+        }
+
+        function toTop(behavior) {
+          if (!isReload || keepHash) return;
+          try {
+            window.scrollTo({ top: 0, left: 0, behavior: behavior || 'instant' });
+          } catch (err) {
+            window.scrollTo(0, 0);
+          }
+          document.documentElement.scrollTop = 0;
+          if (document.body) document.body.scrollTop = 0;
+        }
+
+        function onShow() {
+          if (!isReload || keepHash) return;
+          var from = window.scrollY || document.documentElement.scrollTop || 0;
+          toTop(from > 0 ? 'smooth' : 'instant');
+          setTimeout(function () {
+            toTop('instant');
+          }, 450);
+        }
+
+        window.addEventListener('pageshow', function (event) {
+          if (event.persisted) return;
+          onShow();
+        });
+        window.addEventListener('load', onShow);
+      })();
+    </script>
+    {%- render 'pp-favicon' -%}
+    {%- if settings.google_site_verification != blank -%}
+      <meta name="google-site-verification" content="{{ settings.google_site_verification | escape }}">
+    {%- endif -%}
+
+    {% # theme-check-disable RemoteAsset %}
+    {% comment %} This a way to wait for main content to load when navigating to a new page so that the view transitions can work consistently {% endcomment %}
+    {% if settings.transition_to_main_product or settings.page_transition_enabled %}
+      <link
+        rel="expect"
+        href="#MainContent"
+        blocking="render"
+        id="view-transition-render-blocker"
+      >
+    {% endif %}
+
+    {%- render 'meta-tags' -%}
+    <script src="{{ 'pp-policy-links.js' | asset_url }}"></script>
+    {%- render 'stylesheets' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-schemes' -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+    {% # theme-check-enable RemoteAsset %}
+  </head>
+
+  <body class="page-width-{{ settings.page_width_mode }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    <div id="header-group">
+      {% sections 'header-group' %}
+    </div>
+
+    <script>
+      // Inline header height and menu style calculations to prevent layout shift
+      // Note: Updates in calculateHeaderGroupHeight(), updateTransparentHeaderOffset() and setHeaderMenuStyle() utilities.js should be kept in sync with this function
+      (function setHeaderHeighCustomProperties() {
+        /*
+         * Header calculation functions for maintaining CSS variables
+         * Mimic calculateHeaderGroupHeight() in utilities.js
+         */
+        const header = document.querySelector('header-component');
+        const headerGroup = document.querySelector('#header-group');
+        const hasHeaderSection = headerGroup?.querySelector('.header-section');
+
+        if (!header || !headerGroup) return;
+
+        const headerTopRow = header.querySelector('.header__row--top');
+        const headerHeight = header.offsetHeight;
+
+        // Calculate the total height of the header group
+        let headerGroupHeight = 0;
+        const children = headerGroup.children;
+        for (let i = 0; i < children.length; i++) {
+          const element = children[i];
+          if (element === header || !(element instanceof HTMLElement)) continue;
+          headerGroupHeight += element.offsetHeight;
+        }
+
+        // Check for transparent header special case
+        if (header.hasAttribute('transparent') && header.parentElement?.nextElementSibling) {
+          headerGroupHeight += headerHeight;
+        }
+
+        // Set CSS variables
+        document.body.style.setProperty('--header-height', `${headerHeight}px`);
+        document.body.style.setProperty('--header-group-height', `${headerGroupHeight}px`);
+
+        if (headerTopRow) {
+          window.requestAnimationFrame(function () {
+            document.body.style.setProperty('--top-row-height', `${headerTopRow.offsetHeight}px`);
+          });
+        }
+
+        /**
+         * Updates CSS custom properties for transparent header offset calculation
+         * Mimic updateTransparentHeaderOffset() in utilities.js
+         */
+
+        if (!hasHeaderSection || !header?.hasAttribute('transparent')) {
+          document.body.style.setProperty('--transparent-header-offset-boolean', '0');
+          return;
+        }
+
+        const hasImmediateSection = hasHeaderSection.nextElementSibling?.classList.contains('shopify-section');
+
+        const shouldApplyOffset = !hasImmediateSection ? '1' : '0';
+        document.body.style.setProperty('--transparent-header-offset-boolean', shouldApplyOffset);
+      })();
+
+      (function setHeaderMenuStyle() {
+        const headerComponent = document.querySelector('#header-component');
+        if (headerComponent) {
+          const isTouchDevice = 'ontouchstart' in window && navigator.maxTouchPoints > 0;
+          const overflowList = headerComponent?.querySelector('overflow-list');
+          const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
+          headerComponent.dataset.menuStyle = isTouchDevice || hasReachedMinimum ? 'drawer' : 'menu';
+        }
+      })();
+    </script>
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+      data-product-transition="{{ settings.transition_to_main_product }}"
+      data-template="{{ template }}"
+    >
+      {%- liquid
+        assign pp_legal_hay = request.path | append: '|' | append: policy.url | downcase
+        assign pp_legal_custom = false
+        if request.path contains '/policies/'
+          assign pp_legal_custom = true
+        elsif request.page_type == 'policy'
+          assign pp_legal_custom = true
+        endif
+      -%}
+      {%- if pp_legal_custom -%}
+        <style>
+          .shopify-policy,
+          .shopify-policy__container,
+          .shopify-policy__title,
+          .pp-404 {
+            display: none !important;
+          }
+        </style>
+        {%- if pp_legal_hay contains 'privacy' -%}
+          {% section 'pp-privacy-policy' %}
+        {%- elsif pp_legal_hay contains 'refund' or pp_legal_hay contains 'return' -%}
+          {% section 'pp-refund-policy' %}
+        {%- elsif pp_legal_hay contains 'shipping' -%}
+          {% section 'pp-shipping-policy' %}
+        {%- elsif pp_legal_hay contains 'terms' -%}
+          {% section 'pp-terms-of-service' %}
+        {%- elsif pp_legal_hay contains 'contact' -%}
+          {% section 'pp-contact-us' %}
+        {%- else -%}
+          {{ content_for_layout }}
+        {%- endif -%}
+      {%- else -%}
+        {{ content_for_layout }}
+      {%- endif -%}
+    </main>
+
+    <footer>
+      {% sections 'footer-group' %}
+    </footer>
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+    {% render 'pp-scroll-glow' %}
+    <script src="{{ 'pp-page-scrollbar.js' | asset_url }}" defer></script>
+    <script>
+      window.jdgm = window.jdgm || {};
+      jdgm.SHOP_DOMAIN = {{ shop.permanent_domain | json }};
+      jdgm.PLATFORM = 'shopify';
+      jdgm.PUBLIC_TOKEN = {{ shop.metafields.judgeme.public_token | default: shop.metafields.judgeme.token | json }};
+    </script>
+    <script data-cfasync="false" src="https://cdnwidget.judge.me/widget_preloader.js" async></script>
+  </body>
+</html>
+{%- endif -%}

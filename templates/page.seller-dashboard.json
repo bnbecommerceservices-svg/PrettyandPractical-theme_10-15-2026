@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "pp-vendor-portal",
+      "settings": {
+        "portal_page": "seller_dashboard"
+      }
+    },
+    "nexus_apps": {
+      "type": "apps"
+    }
+  },
+  "order": ["main", "nexus_apps"]
+}

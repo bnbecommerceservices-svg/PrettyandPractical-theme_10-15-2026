@@ -1,0 +1,81 @@
+{%- liquid
+  assign fallback_handles = ''
+  assign fallback_count = 0
+  assign seen_ids = ','
+  assign needles = ''
+  assign source_handles = 'furniture,home-garden,home-decor,garden-outdoor,pets,new-arrival,all'
+  assign take_all_from_source = false
+
+  case collection.handle
+    when 'bedroom-furniture'
+      assign needles = 'bed,bedroom,vanity,nightstand,night stand,dresser,wardrobe,mattress,headboard,ottoman,stool,bedside,mirror'
+      assign source_handles = 'furniture,home-garden,home-decor,new-arrival,all'
+    when 'living-room-furniture'
+      assign needles = 'sofa,couch,living,coffee,nest,side table,tv unit,lounge,armchair,ottoman,console'
+      assign source_handles = 'furniture,home-garden,home-decor,new-arrival,all'
+    when 'dining-furniture'
+      assign needles = 'dining,table,chair,stool,buffet,sideboard,bench'
+      assign source_handles = 'furniture,home-garden,new-arrival,all'
+    when 'office-furniture'
+      assign needles = 'office,desk,bookshelf,bookcase,filing,work'
+      assign source_handles = 'furniture,home-garden,new-arrival,all'
+    when 'home-decor'
+      assign needles = 'decor,mirror,vase,wall,art,cushion,rug,frame,clock,candle,ornament'
+      assign source_handles = 'home-decor,home-garden,furniture,new-arrival,all'
+    when 'kitchenware'
+      assign needles = 'kitchen,cook,utensil,pot,pan,rack,dining'
+      assign source_handles = 'home-garden,home-decor,furniture,all'
+    when 'plant-stands', 'metal-plant-stand'
+      assign needles = 'plant,planter,stand,pot holder,garden'
+      assign source_handles = 'garden-outdoor,home-garden,plant-stands,new-arrival,all'
+    when 'lighting'
+      assign needles = 'light,lamp,led,pendant,chandelier,backlit,lit'
+      assign source_handles = 'home-decor,home-garden,furniture,all'
+    when 'tv-trolley-stand', 'tv-stands'
+      assign needles = 'tv stand,tv trolley,tv cart,tv mount,tv cabinet,entertainment unit,tv stands & mounts'
+      assign source_handles = 'furniture,home-garden,new-arrival,all'
+    when 'outdoor'
+      assign needles = 'camping,kayak,canoe,golf,surfboard,wood burning,tent stove,caravan,outdoor'
+      assign source_handles = 'garden-outdoor,home-garden,new-arrival,all'
+    when 'animals-pets'
+      assign needles = 'pet,dog,cat,stroller,carrier,kennel,litter'
+      assign source_handles = 'pets,new-arrival,all'
+    endcase
+
+  assign source_list = source_handles | split: ','
+  assign needle_list = needles | split: ','
+-%}
+{%- if needle_list.size > 0 -%}
+  {%- for source_handle in source_list -%}
+    {%- assign source = collections[source_handle] -%}
+    {%- if source != blank -%}
+      {%- for product in source.products -%}
+        {%- if fallback_count >= 24 -%}
+          {%- break -%}
+        {%- endif -%}
+        {%- assign id_token = ',' | append: product.id | append: ',' -%}
+        {%- unless seen_ids contains id_token -%}
+          {%- assign tag_text = product.tags | join: ' ' -%}
+          {%- assign hay = product.title | append: ' ' | append: product.type | append: ' ' | append: tag_text | downcase -%}
+          {%- assign hit = false -%}
+          {%- for needle in needle_list -%}
+            {%- assign needle_clean = needle | strip -%}
+            {%- if needle_clean != blank and hay contains needle_clean -%}
+              {%- assign hit = true -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if hit -%}
+            {%- if fallback_handles == blank -%}
+              {%- assign fallback_handles = product.handle -%}
+            {%- else -%}
+              {%- assign fallback_handles = fallback_handles | append: ',' | append: product.handle -%}
+            {%- endif -%}
+            {%- assign fallback_count = fallback_count | plus: 1 -%}
+            {%- assign seen_ids = seen_ids | append: product.id | append: ',' -%}
+          {%- endif -%}
+        {%- endunless -%}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}

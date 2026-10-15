@@ -1,0 +1,163 @@
+{% liquid
+  assign selected_variant = product.selected_or_first_available_variant
+  assign product_url = product.url
+  if collection != blank
+    assign product_url = product.url | within: collection
+  endif
+  assign featured_image = product.featured_media.preview_image | default: product.featured_image
+  assign current_price = selected_variant.price | default: product.price
+  assign compare_at_price = selected_variant.compare_at_price | default: product.compare_at_price
+  assign has_bestseller_tag = false
+  assign has_sale = false
+  capture pp_promo
+    render 'pp-product-promo', product: product, price: current_price, compare_at: compare_at_price
+  endcapture
+  assign pp_promo = pp_promo | strip
+  if pp_promo contains '|sale'
+    assign has_sale = true
+  endif
+  if pp_promo contains '|bestseller'
+    assign has_bestseller_tag = true
+  endif
+  assign can_quick_add = false
+  if product.available and product.variants.size == 1 and selected_variant.available
+    assign can_quick_add = true
+  endif
+  assign quick_add_form_id = 'PPCollectionQuickAdd-' | append: section.id | append: '-' | append: product.id
+  assign quick_add_body_form_id = quick_add_form_id | append: '-body'
+  assign card_category = product.type | default: collection.title
+  assign review_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count | default: 0
+%}
+<article
+  class="pp-card"
+  data-pp-type="{{ product.type | escape }}"
+  data-pp-price="{{ current_price }}"
+  data-pp-available="{% if product.available %}1{% else %}0{% endif %}"
+  data-pp-preorder="{% if product.tags contains 'pre-order' or product.tags contains 'preorder' or product.tags contains 'Pre-order' %}1{% else %}0{% endif %}"
+  data-pp-index="{{ card_index | default: 0 }}"
+  data-pp-created="{{ product.created_at | date: '%s' }}"
+  data-pp-published="{{ product.published_at | date: '%s' }}"
+  data-pp-bestseller="{% if has_bestseller_tag %}1{% else %}0{% endif %}"
+  data-pp-reviews="{{ review_count | default: 0 }}"
+>
+  <div class="pp-card__image">
+    {% if pp_promo contains '|sale' or pp_promo contains '|new' or pp_promo contains '|bestseller' %}
+      <div class="pp-card__badges">
+        {% if pp_promo contains '|sale' %}
+          <span class="pp-pill pp-pill--sale">Sale</span>
+        {% endif %}
+        {% if pp_promo contains '|new' %}
+          <span class="pp-pill pp-pill--new">New</span>
+        {% endif %}
+        {% if pp_promo contains '|bestseller' %}
+          <span class="pp-pill pp-pill--bestseller">Bestseller</span>
+        {% endif %}
+      </div>
+    {% endif %}
+    <button
+      type="button"
+      class="pp-wishlist"
+      data-wishlist
+      data-pp-wishlist
+      data-wishlist-label="wishlist"
+      data-product-id="{{ product.id }}"
+      data-product-handle="{{ product.handle | escape }}"
+      data-product-title="{{ product.title | escape }}"
+      data-product-url="{{ product_url }}"
+      data-product-image="{% if featured_image != blank %}{{ featured_image | image_url: width: 600 }}{% endif %}"
+      data-product-price="{{ current_price | money }}"
+      aria-label="Add {{ product.title | escape }} to wishlist"
+      aria-pressed="false"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </button>
+    <a href="{{ product_url }}" class="pp-card__image-inner" aria-label="{{ product.title | escape }}">
+      {% if featured_image != blank %}
+        {{
+          featured_image
+          | image_url: width: 900
+          | image_tag:
+            widths: '320, 480, 512, 640, 900, 1200',
+            sizes: '(min-width: 1101px) 512px, (min-width: 769px) min(45vw, 512px), 100vw',
+            alt: product.title,
+            loading: 'lazy'
+        }}
+      {% else %}
+        <div class="pp-card__placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="5.5" width="17" height="13" rx="2"></rect>
+            <circle cx="9" cy="10" r="1.25"></circle>
+            <path d="M7 16l4.25-4.25a1 1 0 0 1 1.41 0L17 16"></path>
+          </svg>
+          <span>No image available</span>
+        </div>
+      {% endif %}
+    </a>
+    {% if can_quick_add %}
+      <product-form-component
+        data-section-id="{{ section.id }}"
+        data-product-id="{{ product.id }}"
+        on:submit="/handleSubmit"
+        class="pp-card__quickadd-form pp-card__quickadd-form--overlay"
+      >
+        <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+        {%- form 'product', product, id: quick_add_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+          <input type="hidden" name="id" ref="variantId" value="{{ selected_variant.id }}" {% unless selected_variant.available %}disabled{% endunless %}>
+          <input type="hidden" name="quantity" value="1">
+          {% assign pp_add_to_cart_text = 'actions.add_to_cart' | t %}
+          {% render 'add-to-cart-button', can_add_to_cart: selected_variant.available, add_to_cart_text: pp_add_to_cart_text, product: product, class: 'pp-quickadd' %}
+        {%- endform -%}
+      </product-form-component>
+    {% endif %}
+  </div>
+  <div class="pp-card__body">
+    {% if card_category != blank %}
+      <p class="pp-card__cat">{{ card_category }}</p>
+    {% endif %}
+    <a href="{{ product_url }}" class="pp-card__title">{{ product.title }}</a>
+    {% liquid
+      assign seller_name = product.vendor | strip
+      assign shop_name_l = shop.name | downcase
+      assign seller_name_l = seller_name | downcase
+    %}
+    {% if settings.nexus_show_sold_by and seller_name != blank and seller_name_l != shop_name_l %}
+      <p class="pp-card__seller">Sold by {{ seller_name | escape }}</p>
+    {% endif %}
+    <div class="pp-card__rating">
+      {% render 'pp-home-rating', product: product %}
+      {% if review_count != blank and review_count != 0 %}
+        <span class="pp-card__count">({{ review_count }})</span>
+      {% endif %}
+    </div>
+    <div class="pp-card__price">
+      <span class="pp-price{% if has_sale %} pp-price--sale{% endif %}">{{ current_price | money }}</span>
+      {% if has_sale %}
+        <span class="pp-price__was">{{ compare_at_price | money }}</span>
+      {% endif %}
+    </div>
+    <p class="pp-card__ship">Free delivery over $120*</p>
+    <div class="pp-card__cta">
+      {% if product.available == false %}
+        <span class="pp-card-cta pp-card-cta--soldout">Sold out</span>
+      {% elsif can_quick_add %}
+        <product-form-component
+          data-section-id="{{ section.id }}"
+          data-product-id="{{ product.id }}"
+          on:submit="/handleSubmit"
+          class="pp-card__quickadd-form pp-card__quickadd-form--body"
+        >
+          <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+          {%- form 'product', product, id: quick_add_body_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+            <input type="hidden" name="id" ref="variantId" value="{{ selected_variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+            {% render 'add-to-cart-button', can_add_to_cart: selected_variant.available, add_to_cart_text: 'Add to cart', product: product, class: 'pp-card-cta' %}
+          {%- endform -%}
+        </product-form-component>
+      {% else %}
+        <a href="{{ product_url }}" class="pp-card-cta">Choose options</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

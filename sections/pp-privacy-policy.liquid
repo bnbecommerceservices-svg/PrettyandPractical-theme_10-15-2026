@@ -1,0 +1,249 @@
+{% liquid
+  assign pp_show = false
+  assign page_handle = page.handle | default: ''
+  assign pp_policy_haystack = request.path | append: '|' | append: policy.url | downcase
+  if template.suffix == 'privacy-policy'
+    assign pp_show = true
+  elsif page_handle == 'privacy-policy' or page_handle == 'privacy'
+    assign pp_show = true
+  elsif pp_policy_haystack contains 'privacy'
+    assign pp_show = true
+  endif
+%}
+{% if pp_show %}
+{{ 'pp-privacy-policy.css' | asset_url | stylesheet_tag }}
+{{ 'pp-policy-toc.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pp-policy-toc.js' | asset_url }}" defer></script>
+<script src="{{ 'pp-privacy-policy.js' | asset_url }}" defer></script>
+
+<section class="pp-privacy-policy">
+  <div class="wrap">
+    <header class="page-header">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Privacy Policy</span>
+      </nav>
+      <h1>Privacy Policy</h1>
+      <p class="last-updated">Pretty and Practical Pty Ltd &nbsp;|&nbsp; ABN 46 670 097 668</p>
+      <p class="last-updated">Effective date: 16 September 2026 &nbsp;|&nbsp; Last reviewed: 16 September 2026</p>
+      <p class="lead">This policy explains how Pretty and Practical Pty Ltd collects, holds, uses and discloses personal information when you browse our website, create or use an account, place an order, contact us, subscribe to marketing, submit a review or otherwise interact with us.</p>
+      <hr class="header-divider" aria-hidden="true">
+    </header>
+
+    <div class="mobile-toc">
+      <details>
+        <summary>
+          Jump to section
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </summary>
+        <nav class="mobile-toc-list" aria-label="Page sections">
+          <a href="#about-this-policy">About this policy</a>
+          <a href="#who-to-contact">Who to contact</a>
+          <a href="#personal-information-we-collect">Personal information we collect</a>
+          <a href="#how-we-collect-personal-information">How we collect personal information</a>
+          <a href="#why-we-use-personal-information">Why we use personal information</a>
+          <a href="#cookies-analytics-and-advertising">Cookies, analytics and advertising</a>
+          <a href="#direct-marketing">Direct marketing</a>
+          <a href="#when-we-disclose-personal-information">When we disclose personal information</a>
+          <a href="#overseas-disclosures">Overseas disclosures</a>
+          <a href="#how-we-hold-and-protect-personal-information">How we hold and protect information</a>
+          <a href="#retention-and-deletion">Retention and deletion</a>
+          <a href="#access-correction-and-privacy-choices">Access, correction and privacy choices</a>
+          <a href="#complaints">Complaints</a>
+          <a href="#children">Children</a>
+          <a href="#public-content-and-third-party-links">Public content and third-party links</a>
+          <a href="#changes-to-this-policy">Changes to this policy</a>
+        </nav>
+      </details>
+    </div>
+
+    <div class="main-layout">
+      <aside class="toc-sidebar" aria-label="Table of contents">
+        <p class="toc-label">On this page</p>
+        <nav>
+          <ul class="toc-list" role="list">
+            <li><a href="#about-this-policy">About this policy</a></li>
+            <li><a href="#who-to-contact">Who to contact</a></li>
+            <li><a href="#personal-information-we-collect">Personal information we collect</a></li>
+            <li><a href="#how-we-collect-personal-information">How we collect personal information</a></li>
+            <li><a href="#why-we-use-personal-information">Why we use personal information</a></li>
+            <li><a href="#cookies-analytics-and-advertising">Cookies, analytics and advertising</a></li>
+            <li><a href="#direct-marketing">Direct marketing</a></li>
+            <li><a href="#when-we-disclose-personal-information">When we disclose personal information</a></li>
+            <li><a href="#overseas-disclosures">Overseas disclosures</a></li>
+            <li><a href="#how-we-hold-and-protect-personal-information">How we hold and protect information</a></li>
+            <li><a href="#retention-and-deletion">Retention and deletion</a></li>
+            <li><a href="#access-correction-and-privacy-choices">Access, correction and privacy choices</a></li>
+            <li><a href="#complaints">Complaints</a></li>
+            <li><a href="#children">Children</a></li>
+            <li><a href="#public-content-and-third-party-links">Public content and third-party links</a></li>
+            <li><a href="#changes-to-this-policy">Changes to this policy</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="content" id="main-content">
+        <section class="content-section" id="about-this-policy">
+          <h2>1. About this policy</h2>
+          <p>Pretty and Practical Pty Ltd (ABN 46 670 097 668) (“Pretty and Practical”, “we”, “us” or “our”) operates the ecommerce website www.prettyandpractical.com.au and associated customer services. This policy explains how we collect, hold, use and disclose personal information when you browse our website, create or use an account, place an order, contact us, subscribe to marketing, submit a review or otherwise interact with us.</p>
+          <p>This policy is intended to describe our practices; it does not make consent the basis for every activity. Where consent is legally required, we will seek it separately. If you do not provide information that is reasonably required for an order or requested service, we may be unable to provide that order or service.</p>
+          <p>We voluntarily follow the Australian Privacy Principles as a framework for handling personal information. References to statutory obligations apply where the Privacy Act 1988 (Cth) applies to us.</p>
+        </section>
+
+        <section class="content-section" id="who-to-contact">
+          <h2>2. Who to contact</h2>
+          <p>Questions about this policy, access or correction requests, and privacy complaints can be sent to our Privacy Officer:</p>
+          <ul>
+            <li><strong>Privacy Officer</strong></li>
+            <li>Email: <a href="mailto:contact@prettyandpractical.com.au">contact@prettyandpractical.com.au</a></li>
+            <li>Telephone: <a href="tel:+61411597261">+61 411 597 261</a></li>
+            <li>Postal address: Suite 1.01, Level 1, 4 Burbank Place, Norwest NSW 2153, Australia</li>
+          </ul>
+        </section>
+
+        <section class="content-section" id="personal-information-we-collect">
+          <h2>3. Personal information we collect and hold</h2>
+          <p>The kinds of personal information we collect and hold depend on how you interact with us and may include the categories below.</p>
+          <ul>
+            <li>Identity and contact information, such as your name, email address, telephone number, billing address and delivery address.</li>
+            <li>Order and transaction information, such as products purchased, order value, delivery instructions, returns, refunds and payment confirmation. Payment card details are generally collected and processed by our payment providers rather than stored in full by us.</li>
+            <li>Account information, such as your account identifier, preferences and order history. Authentication credentials may be handled by Shopify or another authentication provider and may not be visible to us.</li>
+            <li>Website and device information, such as IP address, browser type, device identifiers, cookie identifiers, referring pages and how you use our website.</li>
+            <li>Marketing information, such as subscription status, campaign interactions and advertising preferences.</li>
+            <li>Communications and customer-service information, including enquiries, complaints, chat messages and information you choose to provide.</li>
+            <li>User-generated content, such as product reviews, photographs or other content you submit.</li>
+            <li>Fraud-prevention information, including information used to identify suspicious or unauthorised transactions.</li>
+          </ul>
+          <p>We do not intend to collect sensitive information unless it is reasonably necessary for a specific purpose and permitted by law. Please do not send sensitive information through ordinary email, chat, reviews or other unsecured channels.</p>
+        </section>
+
+        <section class="content-section" id="how-we-collect-personal-information">
+          <h2>4. How we collect personal information</h2>
+          <p>We may collect personal information:</p>
+          <ul>
+            <li>directly from you when you make a purchase, create an account, contact us, subscribe, enter a promotion, request a return or submit content;</li>
+            <li>automatically when you use our website, through cookies, pixels, server logs and similar technologies;</li>
+            <li>from Shopify and service providers that operate parts of our store, payments, delivery, customer support, analytics, fraud prevention and marketing;</li>
+            <li>from delivery recipients or other people who provide your details to us, for example when sending you a gift; and</li>
+            <li>from publicly available sources or social media where lawful and relevant to our dealings with you.</li>
+          </ul>
+          <p>If you provide us with another person’s personal information, you should have authority to do so and, where appropriate, tell that person about this policy.</p>
+        </section>
+
+        <section class="content-section" id="why-we-use-personal-information">
+          <h2>5. Why we collect, use and disclose personal information</h2>
+          <p>We may collect, use and disclose personal information to:</p>
+          <ul>
+            <li>process payments, accept and fulfil orders, arrange delivery, manage returns and refunds, and provide requested products and services;</li>
+            <li>create and administer customer accounts;</li>
+            <li>communicate about orders, deliveries, enquiries, complaints, warranties and customer support;</li>
+            <li>operate, maintain, secure and improve our website, products and customer experience;</li>
+            <li>prevent and investigate fraud, misuse, security incidents and unlawful activity;</li>
+            <li>conduct analytics, forecasting and business administration;</li>
+            <li>send marketing where permitted by law and personalise advertising, subject to your choices;</li>
+            <li>publish reviews or other content at your direction;</li>
+            <li>comply with legal, tax, accounting and regulatory obligations; and</li>
+            <li>establish, exercise or defend legal claims and enforce our terms.</li>
+          </ul>
+          <p>We may also use or disclose information for another purpose where you would reasonably expect it, where you consent, or where the use or disclosure is otherwise authorised or required by law.</p>
+          <p>We and our payment and ecommerce providers use automated tools to detect fraud, misuse and security risks. These tools may assess transaction details, payment-verification results, device and network information, location indicators and purchasing patterns. A transaction may be flagged for review or, in some circumstances, blocked before an order is created. Existing orders are reviewed by our team unless we later implement and disclose a different process.</p>
+        </section>
+
+        <section class="content-section" id="cookies-analytics-and-advertising">
+          <h2>6. Cookies, analytics and advertising</h2>
+          <p>We use cookies and similar technologies to operate the website, remember preferences, maintain shopping-cart functions, understand website performance, prevent fraud and, where enabled, measure or personalise advertising. These technologies may collect device, browser, network, cookie identifier, approximate location and website-interaction information.</p>
+          <p>Some cookies are necessary for the website to function. You can control cookies through your browser settings and manage targeted-advertising preferences through services such as Google, Meta and TikTok. Blocking some cookies may affect website functions and may not prevent all online tracking or advertising.</p>
+          <p>We currently use Google Analytics, Google Ads, Meta Pixel, Shopify Audiences and TikTok Pixel for analytics, advertising measurement and targeted advertising.</p>
+          <p>Information about cookies used by Shopify is available at <a href="https://www.shopify.com/legal/cookies" target="_blank" rel="noopener noreferrer">https://www.shopify.com/legal/cookies</a>.</p>
+        </section>
+
+        <section class="content-section" id="direct-marketing">
+          <h2>7. Direct marketing</h2>
+          <p>Where permitted by law, we may use your contact details to send information about our products, offers and news by email or SMS. Marketing messages will identify the sender and provide an unsubscribe method. You can opt out at any time by using the unsubscribe facility in a message or contacting us. We may still send non-promotional communications about your account, orders, safety notices or customer-service requests.</p>
+        </section>
+
+        <section class="content-section" id="when-we-disclose-personal-information">
+          <h2>8. When we disclose personal information</h2>
+          <p>We may disclose personal information to:</p>
+          <ul>
+            <li>Shopify and providers that host, maintain or secure our ecommerce website;</li>
+            <li>payment gateways, banks and fraud-prevention providers;</li>
+            <li>warehousing, fulfilment, courier, postal and logistics providers;</li>
+            <li>customer-support, email, SMS, review, analytics and advertising providers;</li>
+            <li>professional advisers, insurers, auditors and technology providers;</li>
+            <li>regulators, courts, law-enforcement bodies and other parties where required or authorised by law;</li>
+            <li>a purchaser, adviser or relevant counterparty in connection with a proposed or completed business sale, merger, restructure or insolvency; and</li>
+            <li>other parties where you direct us or provide consent.</li>
+          </ul>
+          <p>We do not sell, rent or exchange customer contact lists. We may disclose limited personal information or digital identifiers to service providers and advertising platforms for the purposes described in this policy.</p>
+        </section>
+
+        <section class="content-section" id="overseas-disclosures">
+          <h2>9. Overseas disclosures</h2>
+          <p>Some of our service providers and operations personnel may store or access personal information outside Australia. The countries in which overseas recipients are likely to be located include Canada, the Philippines and the United States. These locations may change if our service-provider arrangements change. Where the Privacy Act applies, we take reasonable steps required by law in relation to overseas disclosures.</p>
+          <p>If laws outside Australia apply to a particular customer or processing activity, we will take any additional steps required by those laws.</p>
+        </section>
+
+        <section class="content-section" id="how-we-hold-and-protect-personal-information">
+          <h2>10. How we hold and protect personal information</h2>
+          <p>Personal information may be held in our ecommerce platform, cloud services, payment and order systems, customer-support tools and business records. We use reasonable administrative, technical and physical safeguards appropriate to the information and risks, such as limiting access, using reputable service providers and protecting accounts and systems. No method of storage or transmission is completely secure, so please avoid sending sensitive or confidential information through unsecured channels.</p>
+          <p>If an eligible data breach occurs and the Notifiable Data Breaches scheme applies, we will assess and notify affected individuals and the Office of the Australian Information Commissioner as required by law.</p>
+        </section>
+
+        <section class="content-section" id="retention-and-deletion">
+          <h2>11. Retention and deletion</h2>
+          <p>We retain personal information only for as long as reasonably needed for the purpose for which it was collected, to provide services, maintain business and tax records, resolve disputes, manage fraud and security risks, and satisfy legal obligations. Retention periods vary by record type. When information is no longer required, we take reasonable steps to destroy it or permanently de-identify it, unless retention is required or authorised by law.</p>
+        </section>
+
+        <section class="content-section" id="access-correction-and-privacy-choices">
+          <h2>12. Access, correction and privacy choices</h2>
+          <p>You may request access to personal information we hold about you or ask us to correct information that is inaccurate, out of date, incomplete, irrelevant or misleading. We may need to verify your identity. We will respond within the period required by applicable law and, if we refuse a request, will generally explain why and identify available complaint options. In some circumstances, another law may provide additional rights such as deletion, restriction, portability, consent withdrawal or review of a decision.</p>
+          <p>You may manage some account information through your account settings, change browser cookie controls, or unsubscribe from promotional communications. Requests may be sent to the Privacy Officer using the contact details in section 2.</p>
+        </section>
+
+        <section class="content-section" id="complaints">
+          <h2>13. Complaints</h2>
+          <p>If you believe we have mishandled your personal information, contact our Privacy Officer and describe the issue and the outcome you are seeking. We will acknowledge your complaint, investigate it and respond within a reasonable time. If we require additional time, we will let you know.</p>
+          <p>If you are not satisfied with our response and the Australian Privacy Act 1988 applies, you may complain to the Office of the Australian Information Commissioner. Information about lodging a complaint is available at <a href="https://www.oaic.gov.au/privacy/privacy-complaints" target="_blank" rel="noopener noreferrer">https://www.oaic.gov.au/privacy/privacy-complaints</a> or by calling 1300 363 992.</p>
+        </section>
+
+        <section class="content-section" id="children">
+          <h2>14. Children</h2>
+          <p>Our website and products are intended for a general adult audience and are not directed to children. We do not knowingly collect personal information directly from children without appropriate involvement from a parent or guardian. A parent or guardian who believes a child has provided personal information may contact us to request appropriate action.</p>
+        </section>
+
+        <section class="content-section" id="public-content-and-third-party-links">
+          <h2>15. Public content and third-party links</h2>
+          <p>If you submit a review, photograph or other content for public display, the content and any name or identifier you choose to display may be visible to others. Do not include information you do not want made public.</p>
+          <p>Our website may link to third-party websites or services. Their handling of personal information is governed by their own privacy policies, and we are not responsible for their practices.</p>
+        </section>
+
+        <section class="content-section" id="changes-to-this-policy">
+          <h2>16. Changes to this policy</h2>
+          <p>We may update this policy to reflect changes to our practices, services or legal obligations. We will publish the current version on our website and update the effective or review date. Where a change is material and additional notice is appropriate or legally required, we will take reasonable steps to provide that notice.</p>
+        </section>
+
+        <div class="content-footer">
+          <p class="stamp">Effective date: 16 September 2026 &nbsp;|&nbsp; Last reviewed: 16 September 2026</p>
+          <a href="#who-to-contact" class="contact-cta">Have questions? Contact our Privacy Officer &rarr;</a>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "PP Privacy Policy",
+  "settings": [],
+  "presets": [
+    {
+      "name": "PP Privacy Policy"
+    }
+  ]
+}
+{% endschema %}

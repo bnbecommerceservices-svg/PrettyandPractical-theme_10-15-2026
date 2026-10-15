@@ -1,0 +1,148 @@
+{%- assign refund_policy_url = shop.refund_policy.url | default: '/policies/refund-policy' -%}
+{%- assign current_policy = blank -%}
+
+{%- if request.path == refund_policy_url -%}
+  {%- assign current_policy = shop.refund_policy -%}
+{%- elsif request.path == shop.shipping_policy.url -%}
+  {%- assign current_policy = shop.shipping_policy -%}
+{%- elsif request.path == shop.terms_of_service.url -%}
+  {%- assign current_policy = shop.terms_of_service -%}
+{%- elsif request.path == shop.subscription_policy.url -%}
+  {%- assign current_policy = shop.subscription_policy -%}
+{%- endif -%}
+
+{%- if request.path == refund_policy_url -%}
+  {{ 'pp-refund-policy.css' | asset_url | stylesheet_tag }}
+  {{ 'pp-policy-toc.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'pp-policy-toc.js' | asset_url }}" defer></script>
+
+  <section class="pp-refund-policy">
+    <div class="pp-wrap">
+      <header class="page-header">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="{{ routes.root_url }}">Home</a>
+          <svg class="breadcrumb-sep" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M4.5 2.5l3 3.5-3 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Returns &amp; Refunds</span>
+        </nav>
+
+        <h1>Returns &amp; Refunds</h1>
+
+        <div class="page-divider"></div>
+      </header>
+
+      <div class="page-layout">
+        <aside class="sidebar" aria-label="On this page">
+          <p class="toc-label">ON THIS PAGE</p>
+          <ul class="toc-list" id="toc-list">
+            <li><a href="#our-return-policy">Our return policy</a></li>
+            <li><a href="#eligibility">Eligibility</a></li>
+            <li><a href="#how-to-return">How to return</a></li>
+            <li><a href="#refunds">Refunds</a></li>
+            <li><a href="#exchanges">Exchanges</a></li>
+            <li><a href="#faulty-or-damaged-items">Faulty or damaged items</a></li>
+            <li><a href="#contact-us">Contact us</a></li>
+          </ul>
+        </aside>
+
+        <main class="page-content">
+          <details class="mobile-jump">
+            <summary>
+              Jump to section
+              <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="mobile-jump-list">
+              <a href="#our-return-policy">Our return policy</a>
+              <a href="#eligibility">Eligibility</a>
+              <a href="#how-to-return">How to return</a>
+              <a href="#refunds">Refunds</a>
+              <a href="#exchanges">Exchanges</a>
+              <a href="#faulty-or-damaged-items">Faulty or damaged items</a>
+              <a href="#contact-us">Contact us</a>
+            </div>
+          </details>
+
+          <section class="content-section" id="our-return-policy">
+            <h2>Refund policy</h2>
+
+            <div class="callout">
+              <svg class="callout-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.625"/>
+                <path d="M10 6.5v4" stroke="currentColor" stroke-width="1.625" stroke-linecap="round"/>
+                <circle cx="10" cy="13" r=".875" fill="currentColor"/>
+              </svg>
+              <p>We have a 30 day return policy, which means you have 30 days after receiving your item to request a return.</p>
+            </div>
+
+            <div id="eligibility" style="scroll-margin-top:40px"></div>
+            <p>To be eligible for a return, your item must be in the same condition that you received it, unworn or unused, with tags, and in its original packaging. You'll also need the receipt or proof of purchase.</p>
+
+            <div id="how-to-return" style="scroll-margin-top:40px"></div>
+            <p>To start a return, you can contact us at <a href="mailto:contact@prettyandpractical.com.au" class="link-orange">contact@prettyandpractical.com.au</a>.</p>
+            <p>If your return is accepted, we'll send you a return shipping label, as well as instructions on how and where to send your package. Items sent back to us without first requesting a return will not be accepted.</p>
+
+            <div id="contact-us" style="scroll-margin-top:40px"></div>
+            <p>You can always contact us for any return question at <a href="mailto:contact@prettyandpractical.com.au" class="link-orange">contact@prettyandpractical.com.au</a>.</p>
+          </section>
+
+          <section class="content-section" id="faulty-or-damaged-items">
+            <h2>Damages and issues</h2>
+            <p>Please inspect your order upon reception and contact us immediately if the item is defective, damaged or if you receive the wrong item, so that we can evaluate the issue and make it right.</p>
+          </section>
+
+          <section class="content-section" id="exceptions">
+            <h2>Exceptions / non returnable items</h2>
+            <p>Certain types of items cannot be returned, like perishable goods (such as food, flowers, or plants), custom products (such as special orders or personalized items), and personal care goods (such as beauty products). We also do not accept returns for hazardous materials, flammable liquids, or gases. Please get in touch if you have questions or concerns about your specific item.</p>
+            <p>Unfortunately, we cannot accept returns on sale items or gift cards.</p>
+          </section>
+
+          <section class="content-section" id="exchanges">
+            <h2>Exchanges</h2>
+            <p>The fastest way to ensure you get what you want is to return the item you have, and once the return is accepted, make a separate purchase for the new item.</p>
+          </section>
+
+          <section class="content-section" id="refunds">
+            <h2>Refunds</h2>
+            <p>We will notify you once we've received and inspected your return, and let you know if the refund was approved or not. If approved, you'll be automatically refunded on your original payment method within 10 business days. Please remember it can take some time for your bank or credit card company to process and post the refund too.</p>
+          </section>
+
+          <div class="content-footer">
+            <span class="footer-updated">Refund policy</span>
+            <a href="mailto:contact@prettyandpractical.com.au" class="footer-cta">
+              contact@prettyandpractical.com.au
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+{%- else -%}
+  <section class="shopify-policy">
+    <div class="pp-page-shell shopify-policy__container">
+      <div class="shopify-policy__title">
+        <h1>{{ current_policy.title }}</h1>
+      </div>
+      <div class="rte">
+        {{ current_policy.body }}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "PP Policy",
+  "settings": [],
+  "presets": [
+    {
+      "name": "PP Policy"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,263 @@
+{% render 'pp-site-footer', section: section %}
+
+{% schema %}
+{
+  "name": "t:names.footer",
+  "class": "section-wrapper",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "label": "Show newsletter band",
+      "default": true
+    },
+      {
+        "type": "text",
+        "id": "newsletter_eyebrow",
+        "label": "Newsletter eyebrow",
+        "default": "&#x1F4E6;"
+      },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Newsletter heading",
+      "default": "Sign up for our newsletter and be the first to know about coupons and special promotions"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_subtext",
+      "label": "Newsletter subtext",
+      "default": "Coupons and special promotions straight to your inbox."
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "Newsletter placeholder",
+      "default": "Enter your email address"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button_label",
+      "label": "Newsletter button label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "logo_tagline",
+      "label": "Logo tagline",
+      "default": "Australia's Home Store"
+    },
+    {
+      "type": "textarea",
+      "id": "brand_text",
+      "label": "Brand text",
+      "default": "Your destination for stylish, functional, and high-quality home and lifestyle products."
+    },
+    {
+      "type": "textarea",
+      "id": "footer_brand_description",
+      "label": "Footer brand description",
+      "default": "We believe that your home is more than just a place; it's a reflection of your style, personality, and the memories you create within its walls. That's why we're dedicated to helping you transform your living spaces into functional and beautiful sanctuaries, one piece of furniture or decor item at a time."
+    },
+    {
+      "type": "link_list",
+      "id": "menu_legal",
+      "label": "Legal menu"
+    },
+    {
+      "type": "url",
+      "id": "privacy_policy_url",
+      "label": "Privacy policy URL"
+    },
+    {
+      "type": "url",
+      "id": "refund_policy_url",
+      "label": "Refund policy URL"
+    },
+    {
+      "type": "url",
+      "id": "shipping_policy_url",
+      "label": "Shipping policy URL"
+    },
+    {
+      "type": "url",
+      "id": "terms_policy_url",
+      "label": "Terms and conditions URL"
+    },
+    {
+      "type": "url",
+      "id": "contact_information_url",
+      "label": "Contact information URL"
+    },
+    {
+      "type": "text",
+      "id": "heading_explore",
+      "label": "Explore heading",
+      "default": "Explore"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_explore",
+      "label": "Explore menu"
+    },
+    {
+      "type": "text",
+      "id": "heading_help",
+      "label": "Help heading",
+      "default": "Help"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_help",
+      "label": "Help menu"
+    },
+    {
+      "type": "url",
+      "id": "help_faq_url",
+      "label": "FAQ URL"
+    },
+    {
+      "type": "url",
+      "id": "help_about_url",
+      "label": "About us URL"
+    },
+    {
+      "type": "url",
+      "id": "help_contact_url",
+      "label": "Contact us URL"
+    },
+    {
+      "type": "url",
+      "id": "help_search_url",
+      "label": "Search URL"
+    },
+    {
+      "type": "url",
+      "id": "help_blogs_url",
+      "label": "Blogs URL"
+    },
+    {
+      "type": "url",
+      "id": "help_track_url",
+      "label": "Track your order URL"
+    },
+    {
+      "type": "text",
+      "id": "heading_account",
+      "label": "Account heading",
+      "default": "My Account"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_account",
+      "label": "Account menu"
+    },
+    {
+      "type": "text",
+      "id": "heading_company",
+      "label": "Company heading",
+      "default": "Company"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_company",
+      "label": "Company menu"
+    },
+    {
+      "type": "text",
+      "id": "contact_lead",
+      "label": "Contact lead",
+      "default": "Reach out to us on below details:"
+    },
+    {
+      "type": "text",
+      "id": "contact_phone",
+      "label": "Contact phone",
+      "default": "+61 411597261"
+    },
+    {
+      "type": "text",
+      "id": "contact_email",
+      "label": "Contact email",
+      "default": "contact@prettyandpractical.com.au"
+    },
+    {
+      "type": "text",
+      "id": "contact_hours",
+      "label": "Contact hours",
+      "default": "Mon–Fri: 9am–6pm · Sat: 10am–4pm AEST"
+    },
+    {
+      "type": "textarea",
+      "id": "contact_address",
+      "label": "Office address",
+      "default": "Suite 1.01, Level 1, 4 Burbank Place, Norwest NSW 2153"
+    },
+    {
+      "type": "url",
+      "id": "contact_maps_url",
+      "label": "Google Maps URL"
+    },
+    {
+      "type": "textarea",
+      "id": "acknowledgement_text",
+      "label": "Acknowledgement text",
+      "default": "We acknowledge the Traditional Owners and Custodians of Country throughout Australia. We pay our respect to all First Nations peoples and acknowledge Elders past and present."
+    },
+    {
+      "type": "url",
+      "id": "facebook_url",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "youtube_url",
+      "label": "YouTube URL"
+    },
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "TikTok URL"
+    },
+    {
+      "type": "url",
+      "id": "twitter_url",
+      "label": "X URL"
+    },
+    {
+      "type": "url",
+      "id": "linkedin_url",
+      "label": "LinkedIn URL"
+    },
+    {
+      "type": "url",
+      "id": "pinterest_url",
+      "label": "Pinterest URL"
+    }
+  ]
+}
+{% endschema %}

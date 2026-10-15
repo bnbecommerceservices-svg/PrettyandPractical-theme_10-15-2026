@@ -1,0 +1,58 @@
+{
+  "sections": {
+    "main": {
+      "type": "pp-about-us",
+      "blocks": {
+        "value_1": {
+          "type": "value_card",
+          "settings": {
+            "icon": "info",
+            "heading": "Quality and innovation",
+            "body": "We are committed to quality, sustainability, and innovation, ensuring that every item in our store is thoughtfully sourced and designed to fit seamlessly into your lifestyle."
+          }
+        },
+        "value_2": {
+          "type": "value_card",
+          "settings": {
+            "icon": "shield",
+            "heading": "Style with function",
+            "body": "From timeless classics to modern essentials, our furniture pieces are crafted to enhance your home while providing unmatched comfort and practicality that stands the test of time."
+          }
+        },
+        "value_3": {
+          "type": "value_card",
+          "settings": {
+            "icon": "location",
+            "heading": "Australian service",
+            "body": "Pretty and Practical is here to inspire and support your choices. Thank you for choosing us to be part of your journey in creating spaces that reflect your style and values."
+          }
+        }
+      },
+      "block_order": ["value_1", "value_2", "value_3"],
+      "settings": {
+        "page_title": "About Us",
+        "page_subtitle": "Your destination for stylish, functional, and high-quality home and lifestyle products across Australia.",
+        "story_heading": "What We Are",
+        "story_text_1": "Welcome to Pretty and Practical – your destination for stylish, functional, and high-quality home and lifestyle products. We believe that the perfect balance of beauty and utility can transform everyday living into something truly special.",
+        "story_text_2": "At Pretty and Practical, our carefully curated collections are designed to enhance your spaces and simplify your routines. From elegant home décor to versatile furniture and unique accessories, we bring you products that are not only aesthetically pleasing but also serve a purpose.",
+        "story_text_3": "We are committed to quality, sustainability, and innovation, ensuring that every item in our store is thoughtfully sourced and designed to fit seamlessly into your lifestyle. Whether you are revamping your home or looking for a thoughtful gift, Pretty and Practical is here to inspire and support your choices.",
+        "story_text_4": "Thank you for choosing us to be part of your journey in creating spaces that reflect your style and values. Explore our range and discover the art of blending beauty with practicality.",
+        "split_heading_1": "Furniture inspiration",
+        "split_body_1": "At Pretty and Practical, we specialize in furniture that combines style with function. Our curated collections are designed to spark creativity and inspire you to create living spaces that are uniquely yours. From timeless classics to modern essentials, our furniture pieces are crafted to enhance your home while providing unmatched comfort and practicality.",
+        "split_body_1b": "We look for pieces that earn their place every day: dining tables that host weeknights and weekends, storage that stays handsome with the doors closed, and seating that feels as good as it looks. Each range is chosen so rooms can evolve without needing a full redesign.",
+        "split_body_1c": "Delivery is available across Australia, with sizing, materials and care details listed on every product page so you can shop with confidence. If you are furnishing a first home or refreshing a lived-in space, our team is here to help you choose pieces that last.",
+        "split_heading_2": "Plant stands for every space",
+        "split_body_2": "Add life and charm to your interiors with our exquisite range of plant stands. Designed to elevate your greenery, our stands are both stylish and durable, perfect for showcasing your favorite plants. Whether you are a seasoned plant enthusiast or just starting your green journey, our plant stands are the perfect addition to any room.",
+        "split_body_2b": "Choose a compact stand for a kitchen herb pot, a tiered design for a bright corner, or a taller piece that lets trailing plants frame a window. Finishes are selected to sit comfortably with timber, metal and upholstered furniture already in the range.",
+        "split_body_2c": "Stands are easy to style indoors or on a sheltered balcony, and they make a thoughtful gift for anyone building a greener home. Pair them with our décor and storage pieces to keep plants looking considered rather than cluttered.",
+        "gallery_1_url": "/collections/bedroom-furniture",
+        "gallery_2_url": "/collections/plant-stands",
+        "gallery_3_url": "/collections/home-garden",
+        "cta_heading": "Explore our range",
+        "cta_text": "Discover the art of blending beauty with practicality — furniture, decor, plant stands and home goods made for Australian living.",
+        "cta_label": "Browse all products"
+      }
+    }
+  },
+  "order": ["main"]
+}

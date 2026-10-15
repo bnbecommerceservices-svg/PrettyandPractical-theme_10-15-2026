@@ -1,0 +1,111 @@
+{% liquid
+  assign utility_menu = section.settings.utility_menu
+%}
+
+<aside class="pp-announcement-bar" {{ section.shopify_attributes }}>
+  <div class="section section--{{ section.settings.section_width }}">
+    <div class="pp-announcement-bar__inner">
+      <div class="pp-announcement-bar__items" aria-label="{{ section.settings.announcements_label | escape }}">
+        {% for block in section.blocks %}
+          {% liquid
+            assign text_value = block.settings.text | strip
+            assign is_sale_message = false
+            assign downcase_text = text_value | downcase
+
+            if downcase_text contains 'sale' or downcase_text contains 'clearance'
+              assign is_sale_message = true
+            endif
+          %}
+          {% if text_value != blank %}
+            <div class="pp-announcement-bar__item{% if is_sale_message %} pp-announcement-bar__item--sale{% endif %}" {{ block.shopify_attributes }}>
+              <span class="pp-announcement-bar__item-icon" aria-hidden="true">
+                {{ 'icon-checkmark.svg' | inline_asset_content }}
+              </span>
+              {% if block.settings.link != blank %}
+                <a href="{{ block.settings.link }}" class="pp-announcement-bar__item-link">{{ text_value | escape }}</a>
+              {% else %}
+                <span>{{ text_value | escape }}</span>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {% if utility_menu != blank and linklists[utility_menu].links.size > 0 %}
+        <nav class="pp-announcement-bar__utility" aria-label="{{ section.settings.utility_menu_label | escape }}">
+          {% for link in linklists[utility_menu].links %}
+            <a
+              href="{{ link.url }}"
+              class="pp-announcement-bar__utility-link"
+              {% if link.current %}
+                aria-current="page"
+              {% endif %}
+            >
+              {{ link.title | escape }}
+            </a>
+          {% endfor %}
+        </nav>
+      {% endif %}
+    </div>
+  </div>
+</aside>
+
+{% schema %}
+{
+  "name": "t:names.announcement_bar",
+  "blocks": [
+    {
+      "type": "_announcement"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "link_list",
+      "id": "utility_menu",
+      "label": "Utility menu"
+    },
+    {
+      "type": "text",
+      "id": "announcements_label",
+      "label": "Announcements label",
+      "default": "Store updates"
+    },
+    {
+      "type": "text",
+      "id": "utility_menu_label",
+      "label": "Utility menu label",
+      "default": "Utility navigation"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.announcement_bar",
+      "blocks": {
+        "announcement_1": {
+          "type": "_announcement"
+        }
+      },
+      "block_order": ["announcement_1"]
+    }
+  ]
+}
+{% endschema %}

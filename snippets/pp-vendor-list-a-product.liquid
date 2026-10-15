@@ -1,0 +1,128 @@
+{% comment %}Live Pretty & Practical vendor widget, restyled by pp-vendor-portal.css{% endcomment %}
+<div class="pp-list-product">
+  <style>
+    .pp-list-product { max-width: 560px; margin: 0 auto; font-family: inherit; }
+    .pp-list-product .pp-lead { color: #6b6255; line-height: 1.6; margin-bottom: 24px; }
+    .pp-list-product label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px 0; }
+    .pp-list-product input[type=text],
+    .pp-list-product input[type=email],
+    .pp-list-product input[type=number],
+    .pp-list-product textarea {
+          width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e8e4de;
+          border-radius: 6px; background-color: #f8f6f3; color: #2b2620; font-family: inherit;
+          box-sizing: border-box;
+    }
+    .pp-list-product textarea { min-height: 96px; resize: vertical; }
+    .pp-list-product input[type=file] {
+          width: 100%; padding: 10px 0; font-size: 14px; font-family: inherit; color: #2b2620;
+    }
+    .pp-list-product input:focus,
+    .pp-list-product textarea:focus {
+          outline: 2px solid #2b2620; outline-offset: 1px;
+    }
+    .pp-list-product .pp-row { display: flex; gap: 16px; }
+    .pp-list-product .pp-row > div { flex: 1; }
+    .pp-list-product button {
+          margin-top: 24px; background-color: #2b2620; color: #ffffff; font-size: 14px;
+          font-weight: 600; border: none; padding: 12px 28px; border-radius: 6px; cursor: pointer;
+    }
+    .pp-list-product button:hover { opacity: 0.92; }
+    .pp-list-product button:disabled { opacity: 0.6; cursor: default; }
+    .pp-list-product .pp-footnote { font-size: 12px; color: #9a9284; margin-top: 16px; line-height: 1.6; }
+    .pp-list-product .pp-error { background-color: #fdecea; color: #a4262c; border: 1px solid #f3c1bd; border-radius: 6px; padding: 12px 14px; font-size: 13px; margin-bottom: 16px; }
+    </style>
+
+
+  <h2 id="pp-form-title">List a product</h2>
+  <p class="pp-lead">New listings and edits go to admin review before appearing for sale. Editing an approved product takes it off sale until re-approved.</p>
+  <p id="pp-auth-status">Checking your seller account…</p>
+  <div id="pp-list-error" class="pp-error" role="alert" style="display:none"></div>
+  <form id="pp-list-form" style="display:none">
+    <label for="pp-title">Product title</label><input type="text" id="pp-title" name="title" maxlength="255" required>
+    <label for="pp-category">Category (required)</label><select id="pp-category" name="category" required style="width:100%;padding:12px"><option value="">Choose a category</option>
+<option>Furniture</option>
+<option>Storage</option>
+<option>Textiles</option>
+<option>Home &amp; Garden</option>
+<option>Garden &amp; Outdoor</option>
+<option>Pets</option></select>
+<label for="pp-description">Description</label><textarea id="pp-description" name="description" required></textarea>
+    <div class="pp-row">
+<div>
+<label for="pp-cost-price">Cost price ($)</label><input type="number" id="pp-cost-price" name="cost_price" min="0.01" step="0.01" required>
+</div>
+<div>
+<label for="pp-sku">SKU</label><input type="text" id="pp-sku" name="sku" maxlength="255" required>
+</div>
+</div>
+    <div class="pp-row">
+<div>
+<label for="pp-quantity">Quantity in stock</label><input type="number" id="pp-quantity" name="quantity" min="0" step="1" required>
+</div>
+<div>
+<label for="pp-weight">Weight (kg)</label><input type="number" id="pp-weight" name="weight_kg" min="0.001" step="0.001" placeholder="e.g. 1.250">
+</div>
+</div>
+    <div class="pp-row">
+<div>
+<label for="pp-size">Size / dimensions</label><input type="text" id="pp-size" name="size" maxlength="100" placeholder="e.g. Large or 40 × 30 × 20 cm">
+</div>
+<div>
+<label for="pp-colour">Colour</label><input type="text" id="pp-colour" name="colour" maxlength="100" placeholder="e.g. Natural oak">
+</div>
+</div>
+    <label for="pp-image">Product photos (1–10)</label><input type="file" id="pp-image" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+    <p class="pp-footnote">You can select several photos or add them in batches. JPG, PNG, WebP or GIF. Up to 8 MB each and 32 MB of new photos in total.</p>
+    <div id="pp-photo-preview" style="display:flex;flex-wrap:wrap;gap:12px"></div>
+    <button type="submit" id="pp-submit-btn">Submit for review</button>
+  </form>
+  <p><a href="/pages/seller-dashboard?section=products">Back to Products</a></p>
+  <p class="pp-footnote">Pretty &amp; Practical sets the selling price. Your cost price is never shown to customers.</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  /* hostname lock removed so this theme storefront can host the portal */
+  var form=document.getElementById('pp-list-form'),status=document.getElementById('pp-auth-status'),box=document.getElementById('pp-list-error'),button=document.getElementById('pp-submit-btn');
+  function error(message){box.textContent=message;box.style.display='block';}
+  if(!window.supabase){error('Unable to load sign-in. Please refresh the page.');return;}
+  var remember=function(){try{return localStorage.getItem('pp-seller-remember')!=='0';}catch(e){return true;}};
+  var storage={getItem:function(k){try{return (remember()?localStorage:sessionStorage).getItem(k);}catch(e){return null;}},setItem:function(k,v){try{(remember()?localStorage:sessionStorage).setItem(k,v);(remember()?sessionStorage:localStorage).removeItem(k);}catch(e){}},removeItem:function(k){try{localStorage.removeItem(k);sessionStorage.removeItem(k);}catch(e){}}};
+  var client=window.supabase.createClient('https://ehorwahtrfuekejjxodi.supabase.co','sb_publishable_zxzv6GlrSrTXhtoHUWsOIg_kujSxxYn',{auth:{storage:storage}});
+  var endpoint='https://ehorwahtrfuekejjxodi.supabase.co/functions/v1/seller-product-request';
+  var productId=new URLSearchParams(location.search).get('edit')||'',kept=[],files=[],previewUrls=[];
+  async function request(body,isForm){
+    var session=(await client.auth.getSession()).data.session;
+    if(!session)throw new Error('Please log in to your seller account, then return to this form.');
+    var headers={Authorization:'Bearer '+session.access_token};if(!isForm)headers['Content-Type']='application/json';
+    var res=await fetch(endpoint,{method:'POST',headers:headers,body:isForm?body:JSON.stringify(body)});
+    var data=await res.json();if(!res.ok)throw new Error(data.error||'Could not save your listing.');return data;
+  }
+  function renderPhotos(){
+    previewUrls.forEach(function(u){URL.revokeObjectURL(u);});previewUrls=[];
+    var parent=document.getElementById('pp-photo-preview');parent.replaceChildren();
+    kept.map(function(url,i){return {url:url,index:i,old:true};}).concat(files.map(function(file,i){var u=URL.createObjectURL(file);previewUrls.push(u);return {url:u,index:i,old:false};})).forEach(function(item){
+      var card=document.createElement('div');card.style.width='120px';var img=document.createElement('img');img.src=item.url;img.alt='Product photo';img.style.cssText='width:120px;height:100px;object-fit:contain;border:1px solid #ddd';var remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.style.cssText='margin:4px 0;padding:5px 10px;font-size:12px';remove.onclick=function(){(item.old?kept:files).splice(item.index,1);renderPhotos();};card.append(img,remove);parent.append(card);
+    });
+  }
+  document.getElementById('pp-image').addEventListener('change',function(e){
+    box.style.display='none';var additions=Array.from(e.target.files||[]),next=files.concat(additions);
+    if(next.length+kept.length>10){error('Please select no more than 10 photos.');e.target.value='';return;}
+    if(next.some(function(f){return f.size>8*1024*1024;})||next.reduce(function(n,f){return n+f.size;},0)>32*1024*1024){error('Photos must be under 8 MB each and 32 MB total.');e.target.value='';return;}
+    files=next;e.target.value='';renderPhotos();
+  });
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();box.style.display='none';
+    if(!kept.length&&!files.length){error('Please add at least one product photo.');return;}
+    button.disabled=true;button.textContent='Saving…';
+    try{var body=new FormData(form);body.set('product_id',productId);body.set('keep_images',JSON.stringify(kept));files.forEach(function(f){body.append('image',f);});await request(body,true);location.assign('/pages/seller-dashboard?section=products&saved=1');}
+    catch(err){error(err.message);button.disabled=false;button.textContent='Submit for review';}
+  });
+  (async function(){try{
+    var auth=await client.auth.getUser();if(auth.error||!auth.data.user){status.innerHTML='Please <a href="/pages/seller-dashboard">log in to your seller account</a> before listing products.';return;}
+    status.textContent='Signed in as '+auth.data.user.email;
+    if(productId){var data=await request({action:'get',product_id:productId});var p=data.product;document.getElementById('pp-form-title').textContent='Edit product';['title','description','sku','cost_price','size','colour','weight_kg','category'].forEach(function(k){form.elements[k].value=p[k]==null?'':p[k];});form.elements.quantity.value=p.inventory_qty;kept=(p.images||[]).map(function(i){return typeof i==='string'?i:(i.url||i.src);}).filter(Boolean);renderPhotos();}
+    form.style.display='block';
+  }catch(err){error(err.message);}})();
+})();
+</script>

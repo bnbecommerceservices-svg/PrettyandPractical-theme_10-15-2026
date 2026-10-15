@@ -1,0 +1,57 @@
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+
+{% liquid
+  assign review_rating = product.metafields.reviews.rating.value.rating | default: product.metafields.judgeme.rating
+  assign review_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count | default: product.metafields.judgeme.review_count
+%}
+
+<section
+  class="pp-creviews"
+  id="reviews"
+  aria-labelledby="pp-creviews-heading"
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle | escape }}"
+  data-product-title="{{ product.title | escape }}"
+  data-product-type="{{ product.type | escape }}"
+  data-review-rating="{{ review_rating | default: '' }}"
+  data-review-count="{{ review_count | default: '' }}"
+  data-reviews-src="{{ 'pp-reviews-data.json' | asset_url }}"
+>
+  <div class="pp-wrap">
+    <h2 id="pp-creviews-heading" class="pp-creviews__heading">
+      <span class="pp-creviews__bar" aria-hidden="true"></span>
+      Customer reviews
+    </h2>
+
+    <div class="pp-creviews__summary" data-creviews-summary></div>
+
+    <div class="pp-creviews__filters" data-creviews-filters hidden>
+      <span class="pp-creviews__filter-label">Filter:</span>
+      <div class="pp-creviews__pills" role="tablist" aria-label="Filter reviews by rating"></div>
+    </div>
+
+    <div class="pp-creviews__list" id="pp-creviews-list" data-creviews-list></div>
+
+    <div class="pp-creviews__more-wrap">
+      <button type="button" class="pp-creviews__more" data-creviews-more hidden></button>
+    </div>
+  </div>
+
+  <div
+    id="judgeme_product_reviews"
+    class="jdgm-widget jdgm-review-widget pp-creviews__jdgm-source"
+    data-id="{{ product.id }}"
+    data-product-title="{{ product.title | escape }}"
+    aria-hidden="true"
+  >
+    {{ product.metafields.judgeme.widget }}
+  </div>
+</section>
+<script src="{{ 'pp-reviews-fallback.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Judge.me reviews",
+  "settings": []
+}
+{% endschema %}

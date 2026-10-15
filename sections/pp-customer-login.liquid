@@ -1,0 +1,83 @@
+{{ 'pp-account.css' | asset_url | stylesheet_tag }}
+
+<section class="pp-account pp-account-body" {{ section.shopify_attributes }}>
+  <div class="pp-wrap">
+    <div class="pp-account-auth">
+      <div class="pp-account-auth__banner pp-account-auth__banner--media">
+        <span class="pp-account-auth__media" aria-hidden="true">
+          {% if section.settings.image != blank %}
+            {{ section.settings.image | image_url: width: 1200 | image_tag: loading: 'eager', alt: '' }}
+          {% else %}
+            <img src="{{ 'pp-banner-account.jpg' | asset_url }}" alt="" width="1200" height="900" loading="eager">
+          {% endif %}
+        </span>
+        <div class="pp-account-auth__banner-copy">
+          <p class="pp-account-hero__brand" style="margin-bottom:18px">pretty<span>&amp;</span>practical</p>
+          <h1>{{ section.settings.heading | default: 'Your Australian home store account' }}</h1>
+          <p>{{ section.settings.lead | default: 'Track orders, save addresses, and checkout faster on furniture, décor and outdoor essentials.' }}</p>
+        </div>
+      </div>
+
+      <div class="pp-account-auth__form">
+        <h2>Sign in</h2>
+        <p class="pp-account-panel__sub">Use the email linked to your Pretty &amp; Practical orders.</p>
+
+        {% form 'customer_login' %}
+          {% if form.errors %}
+            <div class="pp-account-errors" role="alert">{{ form.errors | default_errors }}</div>
+          {% endif %}
+
+          <div class="pp-account-field">
+            <label for="pp-login-email">Email</label>
+            <input id="pp-login-email" type="email" name="customer[email]" autocomplete="email" required value="{{ form.email | escape }}">
+          </div>
+
+          <div class="pp-account-field">
+            <label for="pp-login-password">Password</label>
+            <input id="pp-login-password" type="password" name="customer[password]" autocomplete="current-password" required>
+          </div>
+
+          <button type="submit" class="pp-account-btn pp-account-btn--primary" style="width:100%;justify-content:center">Sign in</button>
+        {% endform %}
+
+        <div class="pp-account-auth__links">
+          {% if shop.customer_accounts_enabled %}
+            <a href="{{ routes.account_register_url }}">Create an account</a>
+            <span aria-hidden="true"> · </span>
+          {% endif %}
+          <a href="{{ routes.account_login_url }}#recover">Forgot password?</a>
+        </div>
+
+        <div id="recover" style="margin-top:36px;padding-top:28px;border-top:1px solid #e5e7eb">
+          <h2 style="font-size:20px;margin:0 0 8px;font-family:Sora,sans-serif">Reset password</h2>
+          <p class="pp-account-panel__sub">We’ll email you a link to choose a new password.</p>
+          {% form 'recover_customer_password' %}
+            {% if form.posted_successfully? %}
+              <p style="color:#047857;font-size:14px;margin-bottom:12px">Check your inbox for the reset link.</p>
+            {% endif %}
+            {% if form.errors %}
+              <div class="pp-account-errors" role="alert">{{ form.errors | default_errors }}</div>
+            {% endif %}
+            <div class="pp-account-field">
+              <label for="pp-recover-email">Email</label>
+              <input id="pp-recover-email" type="email" name="email" autocomplete="email" required>
+            </div>
+            <button type="submit" class="pp-account-btn pp-account-btn--outline">Send reset link</button>
+          {% endform %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PP Customer Login",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Banner image" },
+    { "type": "text", "id": "heading", "label": "Banner heading", "default": "Your Australian home store account" },
+    { "type": "textarea", "id": "lead", "label": "Banner text", "default": "Track orders, save addresses, and checkout faster on furniture, décor and outdoor essentials." }
+  ],
+  "presets": [{ "name": "PP Customer Login" }]
+}
+{% endschema %}

@@ -1,0 +1,206 @@
+.pp-toc-list,
+.toc-list {
+  position: relative;
+}
+
+.pp-toc-indicator {
+  display: none !important;
+}
+
+.pp-privacy-policy .toc-list a,
+.pp-privacy-policy .mobile-toc-list a,
+.pp-terms-of-service .toc-list a,
+.pp-terms-of-service .toc-link,
+.pp-terms-of-service .mobile-toc-list a,
+.pp-refund-policy .toc-list a,
+.pp-shipping-policy .toc-list a,
+.pp-shipping-policy .toc-list li a,
+.pp-shipping-policy .jump-nav ul li a,
+.pp-faq .toc-list a {
+  display: block;
+  padding: 8px 12px;
+  border-left: 3px solid transparent;
+  border-radius: 0 8px 8px 0;
+  box-shadow: none;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.pp-privacy-policy .toc-list a:hover,
+.pp-privacy-policy .mobile-toc-list a:hover,
+.pp-terms-of-service .toc-list a:hover,
+.pp-terms-of-service .toc-link:hover,
+.pp-terms-of-service .mobile-toc-list a:hover,
+.pp-refund-policy .toc-list a:hover,
+.pp-shipping-policy .toc-list a:hover,
+.pp-shipping-policy .toc-list li a:hover,
+.pp-shipping-policy .jump-nav ul li a:hover,
+.pp-faq .toc-list a:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.pp-privacy-policy .toc-list a.active,
+.pp-privacy-policy .toc-list a.is-active,
+.pp-terms-of-service .toc-list a.active,
+.pp-terms-of-service .toc-list a.is-active,
+.pp-terms-of-service .toc-link.is-active,
+.pp-terms-of-service .toc-link.active,
+.pp-refund-policy .toc-list a.active,
+.pp-refund-policy .toc-list a.is-active,
+.pp-shipping-policy .toc-list a.active,
+.pp-shipping-policy .toc-list a.is-active,
+.pp-shipping-policy .toc-list li a.active,
+.pp-shipping-policy .toc-list li a.is-active,
+.pp-faq .toc-list a.active,
+.pp-faq .toc-list a.is-active {
+  color: #e8532a;
+  background: #fff1ec;
+  border-left-color: #e8532a;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.pp-privacy-policy .content-section,
+.pp-terms-of-service .content-section,
+.pp-refund-policy .content-section,
+.pp-shipping-policy .content h2,
+.pp-faq .faq-category {
+  scroll-margin-top: 120px;
+}
+
+.pp-privacy-policy .content-section h2,
+.pp-terms-of-service .content-section h2,
+.pp-refund-policy .content-section h2,
+.pp-shipping-policy .content h2 {
+  padding: 4px 10px;
+  margin-left: -10px;
+}
+
+.pp-privacy-policy .content-section h2:hover,
+.pp-terms-of-service .content-section h2:hover,
+.pp-refund-policy .content-section h2:hover,
+.pp-shipping-policy .content h2:hover,
+.pp-faq .category-heading h2:hover,
+.pp-faq .accordion-button:hover .accordion-question {
+  background: #f3f4f6;
+}
+
+.pp-privacy-policy .page-header h1,
+.pp-terms-of-service .page-header h1,
+.pp-shipping-policy .page-header h1,
+.pp-refund-policy .page-header h1,
+.pp-faq .faq-header h1 {
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.pp-privacy-policy .page-header .lead,
+.pp-terms-of-service .page-header .lead,
+.pp-shipping-policy .page-header .lead,
+.pp-faq .faq-header .lead {
+  max-width: none;
+}
+
+.pp-privacy-policy .content,
+.pp-terms-of-service .content,
+.pp-shipping-policy .content,
+.pp-refund-policy .page-content,
+.pp-faq .faq-main {
+  max-width: none;
+  padding-bottom: 80px;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.pp-privacy-policy .toc-sidebar,
+.pp-terms-of-service .sidebar,
+.pp-refund-policy .sidebar,
+.pp-shipping-policy .sidebar,
+.pp-faq .sidebar {
+  --pp-sticky-sidebar-top: calc(var(--pp-header-group-height, var(--header-group-height, 96px)) + 16px);
+  position: sticky;
+  top: var(--pp-sticky-sidebar-top);
+  align-self: start;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  overscroll-behavior: auto;
+  scrollbar-width: none;
+}
+
+.pp-privacy-policy *::-webkit-scrollbar,
+.pp-terms-of-service *::-webkit-scrollbar,
+.pp-refund-policy *::-webkit-scrollbar,
+.pp-shipping-policy *::-webkit-scrollbar,
+.pp-faq *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.pp-toc-scroll-spacer {
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.pp-brand-nowrap {
+  white-space: nowrap;
+}
+
+.pp-content-scroll-wrap {
+  display: contents;
+}
+
+.pp-content-scroll {
+  max-height: none !important;
+  overflow: visible !important;
+  padding-right: 0;
+}
+
+.pp-content-rail {
+  display: none !important;
+}
+
+body > .pp-page-progress,
+body > .pp-page-progress-rail,
+.pp-page-progress,
+.pp-page-progress-rail {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .pp-privacy-policy .toc-sidebar,
+  .pp-terms-of-service .sidebar,
+  .pp-refund-policy .sidebar,
+  .pp-shipping-policy .sidebar,
+  .pp-faq .sidebar {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+
+  .pp-privacy-policy .page-header h1,
+  .pp-terms-of-service .page-header h1,
+  .pp-shipping-policy .page-header h1,
+  .pp-refund-policy .page-header h1,
+  .pp-faq .faq-header h1 {
+    font-size: 26px;
+  }
+
+  .pp-content-scroll {
+    max-height: none !important;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .pp-content-rail {
+    display: none;
+  }
+
+  .pp-content-scroll-wrap {
+    display: contents;
+  }
+}

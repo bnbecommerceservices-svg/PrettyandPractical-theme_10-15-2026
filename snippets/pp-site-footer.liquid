@@ -1,0 +1,743 @@
+{% doc %}
+Renders the Pretty & Practical black multi-column footer.
+@param {section} [section] - The footer section instance.
+@param {string} [container_class] - Optional container class override.
+{% enddoc %}
+
+{% liquid
+  assign footer_section = section
+  assign footer_container_class = container_class | default: 'pp-wrap'
+  if footer_section.settings.section_width == 'full-width'
+    assign footer_container_class = 'pp-wrap pp-wrap--full'
+  endif
+
+  assign facebook_url = footer_section.settings.facebook_url
+  if facebook_url == 'https://www.facebook.com/' or facebook_url == 'https://facebook.com/' or facebook_url == 'http://www.facebook.com/' or facebook_url == 'http://facebook.com/'
+    assign facebook_url = blank
+  endif
+
+  assign instagram_url = footer_section.settings.instagram_url
+  if instagram_url == 'https://www.instagram.com/' or instagram_url == 'https://instagram.com/' or instagram_url == 'http://www.instagram.com/' or instagram_url == 'http://instagram.com/'
+    assign instagram_url = blank
+  endif
+
+  assign legal_menu = footer_section.settings.menu_legal
+  assign legal_links = blank
+  if legal_menu != blank and legal_menu.links != blank and legal_menu.links.size > 0
+    assign legal_links = legal_menu.links
+  endif
+
+  assign help_menu = footer_section.settings.menu_help
+  assign help_links = blank
+  if help_menu != blank and help_menu.links != blank and help_menu.links.size > 0
+    assign help_links = help_menu.links
+  endif
+
+  assign help_faq_page = pages['faq']
+  if help_faq_page == blank
+    assign help_faq_page = pages['faqs']
+  endif
+  assign help_about_page = pages['about-us']
+  if help_about_page == blank
+    assign help_about_page = pages['about']
+  endif
+  assign help_contact_page = pages['contact']
+  if help_contact_page == blank
+    assign help_contact_page = pages['contact-us']
+  endif
+  assign help_track_page = pages['track-your-order']
+  if help_track_page == blank
+    assign help_track_page = pages['track-order']
+  endif
+  if help_track_page == blank
+    assign help_track_page = pages['order-tracking']
+  endif
+
+  assign privacy_policy_url = shop.privacy_policy.url | default: '/policies/privacy-policy'
+  assign refund_policy_url = shop.refund_policy.url | default: '/policies/refund-policy'
+  assign shipping_policy_url = shop.shipping_policy.url | default: '/policies/shipping-policy'
+  assign terms_policy_url = shop.terms_of_service.url | default: '/policies/terms-of-service'
+  assign contact_information_url = '/policies/contact-information'
+
+  if footer_section.settings.privacy_policy_url != blank
+    capture privacy_policy_url
+      render 'pp-policy-href', url: footer_section.settings.privacy_policy_url
+    endcapture
+    assign privacy_policy_url = privacy_policy_url | strip
+  endif
+  if footer_section.settings.refund_policy_url != blank
+    capture refund_policy_url
+      render 'pp-policy-href', url: footer_section.settings.refund_policy_url
+    endcapture
+    assign refund_policy_url = refund_policy_url | strip
+  endif
+  if footer_section.settings.shipping_policy_url != blank
+    capture shipping_policy_url
+      render 'pp-policy-href', url: footer_section.settings.shipping_policy_url
+    endcapture
+    assign shipping_policy_url = shipping_policy_url | strip
+  endif
+  if footer_section.settings.terms_policy_url != blank
+    capture terms_policy_url
+      render 'pp-policy-href', url: footer_section.settings.terms_policy_url
+    endcapture
+    assign terms_policy_url = terms_policy_url | strip
+  endif
+  if footer_section.settings.contact_information_url != blank
+    capture contact_information_url
+      render 'pp-policy-href', url: footer_section.settings.contact_information_url
+    endcapture
+    assign contact_information_url = contact_information_url | strip
+  endif
+
+  if privacy_policy_url == blank or privacy_policy_url contains '/pages/'
+    assign privacy_policy_url = '/policies/privacy-policy'
+  endif
+  if refund_policy_url == blank or refund_policy_url contains '/pages/'
+    assign refund_policy_url = '/policies/refund-policy'
+  endif
+  if shipping_policy_url == blank or shipping_policy_url contains '/pages/'
+    assign shipping_policy_url = '/policies/shipping-policy'
+  endif
+  if terms_policy_url == blank or terms_policy_url contains '/pages/'
+    assign terms_policy_url = '/policies/terms-of-service'
+  endif
+  if contact_information_url == blank or contact_information_url contains '/pages/'
+    assign contact_information_url = '/policies/contact-information'
+  endif
+
+  if help_contact_page != blank
+    assign help_contact_url = help_contact_page.url
+  elsif footer_section.settings.help_contact_url != blank
+    assign help_contact_url = footer_section.settings.help_contact_url
+  else
+    assign help_contact_url = '/pages/contact-us'
+  endif
+
+  if help_faq_page != blank
+    assign help_faq_url = help_faq_page.url
+  elsif footer_section.settings.help_faq_url != blank
+    assign help_faq_url = footer_section.settings.help_faq_url
+  else
+    assign help_faq_url = '/pages/faq'
+  endif
+
+  if help_about_page != blank
+    assign help_about_url = help_about_page.url
+  elsif footer_section.settings.help_about_url != blank
+    assign help_about_url = footer_section.settings.help_about_url
+  else
+    assign help_about_url = '/pages/about-us'
+  endif
+
+  assign help_search_url = footer_section.settings.help_search_url
+  if help_search_url == blank
+    assign help_search_url = routes.search_url
+  endif
+
+  assign help_blogs_url = footer_section.settings.help_blogs_url
+  if help_blogs_url == blank and blogs.news != blank
+    assign help_blogs_url = blogs.news.url
+  endif
+  if help_blogs_url == blank
+    assign help_blogs_url = '/blogs/news'
+  endif
+
+  assign help_track_url = routes.account_url | default: '/account'
+
+  assign brand_tagline = footer_section.settings.logo_tagline | default: "Australia's Home Store"
+  assign brand_description = footer_section.settings.footer_brand_description | default: "We believe that your home is more than just a place; it's a reflection of your style, personality, and the memories you create within its walls. That's why we're dedicated to helping you transform your living spaces into functional and beautiful sanctuaries, one piece of furniture or decor item at a time."
+  assign contact_lead = footer_section.settings.contact_lead | default: 'Reach out to us on below details:'
+  assign contact_phone = footer_section.settings.contact_phone | default: '+61 411597261'
+  assign contact_phone_tel = contact_phone | replace: ' ', '' | replace: '-', ''
+  assign contact_email = footer_section.settings.contact_email | default: 'contact@prettyandpractical.com.au'
+  assign contact_hours = footer_section.settings.contact_hours | default: 'Mon-Fri: 9am-6pm AEST'
+  assign contact_address = footer_section.settings.contact_address | default: 'Suite 1.01, Level 1, 4 Burbank Place, Norwest NSW 2153'
+  assign contact_maps_url = footer_section.settings.contact_maps_url | default: 'https://www.google.com/maps/place/Pretty+and+Practical/@-33.7330975,150.9580407,17z'
+  assign acknowledgement_text = footer_section.settings.acknowledgement_text | default: 'We acknowledge the Traditional Owners and Custodians of Country throughout Australia. We pay our respect to all First Nations peoples and acknowledge Elders past and present.'
+
+  assign twitter_url = footer_section.settings.twitter_url
+  if twitter_url == 'https://twitter.com/' or twitter_url == 'https://x.com/' or twitter_url == 'https://www.twitter.com/' or twitter_url == 'https://www.x.com/'
+    assign twitter_url = blank
+  endif
+
+  assign shop_labels = 'New Arrival|Home & Garden|Garden & Outdoor|Furniture|TV Trolley / Stand|Pets' | split: '|'
+  assign shop_handles = 'new-arrival|home-garden|garden-outdoor|furniture|tv-stands|pets' | split: '|'
+  assign pp_tv_url = '/collections/tv-stands'
+  if collections['tv-stands'].url != blank
+    assign pp_tv_url = collections['tv-stands'].url
+  elsif collections['tv-trolley-stand'].url != blank
+    assign pp_tv_url = collections['tv-trolley-stand'].url
+  endif
+  assign pp_garden_url = blank
+  assign pp_garden_try = 'garden-outdoor,garden-and-outdoor,outdoor-garden,garden,home-garden,home-and-garden' | split: ','
+  for h in pp_garden_try
+    if pp_garden_url == blank and collections[h].url != blank
+      assign pp_garden_url = collections[h].url
+    endif
+  endfor
+  if pp_garden_url == blank
+    for c in collections
+      assign ct = c.title | downcase
+      if pp_garden_url == blank and ct == 'garden & outdoor'
+        assign pp_garden_url = c.url
+      endif
+    endfor
+  endif
+  if pp_garden_url == blank
+    assign pp_garden_url = routes.all_products_collection_url
+  endif
+  assign pp_outdoor_url = pp_garden_url
+  if collections['outdoor'].products_count > 0
+    assign pp_outdoor_url = collections['outdoor'].url
+  endif
+%}
+
+<div class="pp-site-footer" {{ footer_section.shopify_attributes }}>
+  <footer class="pp-foot" aria-label="Site footer">
+    <div class="{{ footer_container_class }}">
+      <div class="pp-foot__grid">
+        <div class="pp-foot__brand">
+          <a href="{{ routes.root_url }}" class="pp-foot__logo" aria-label="Pretty and Practical home">
+            pretty<span>&amp;</span>practical
+          </a>
+          {% if brand_tagline != blank %}
+            <h2 class="pp-foot__tagline">{{ brand_tagline | escape }}</h2>
+          {% endif %}
+          {% if brand_description != blank %}
+            <p class="pp-foot__desc">{{ brand_description | escape }}</p>
+          {% endif %}
+
+          <div class="pp-foot__contact">
+            {% if contact_lead != blank %}
+              <p class="pp-foot__contact-lead">{{ contact_lead | escape }}</p>
+            {% endif %}
+            {% if contact_address != blank %}
+              <a class="pp-foot__contact-line" href="{{ contact_maps_url }}" target="_blank" rel="noopener">{{ contact_address | escape | newline_to_br }}</a>
+            {% endif %}
+            {% if contact_phone != blank %}
+              <a class="pp-foot__contact-line" href="tel:{{ contact_phone_tel }}">{{ contact_phone | escape }}</a>
+            {% endif %}
+            {% if contact_email != blank %}
+              <a class="pp-foot__contact-line" href="mailto:{{ contact_email }}">{{ contact_email | escape }}</a>
+            {% endif %}
+          </div>
+
+          <div class="pp-foot__signup">
+            <h3 class="pp-foot__signup-title">{{ footer_section.settings.newsletter_heading | default: 'Sign up for our newsletter and be the first to know about coupons and special promotions' | escape }}</h3>
+            {% if footer_section.settings.newsletter_subtext != blank %}
+              <p class="pp-foot__signup-copy">{{ footer_section.settings.newsletter_subtext | escape }}</p>
+            {% else %}
+              <p class="pp-foot__signup-copy">New arrivals and quiet offers. No spam, we promise.</p>
+            {% endif %}
+
+            {% form 'customer', class: 'pp-foot__form' %}
+              <input type="hidden" name="contact[tags]" value="newsletter">
+              <label class="sr-only" for="FooterEmail-{{ footer_section.id }}">Email address</label>
+              <input
+                id="FooterEmail-{{ footer_section.id }}"
+                class="pp-foot__input"
+                type="email"
+                name="contact[email]"
+                value="{{ form.email }}"
+                autocorrect="off"
+                autocapitalize="off"
+                autocomplete="email"
+                placeholder="{{ footer_section.settings.newsletter_placeholder | default: 'you@email.com' | escape }}"
+                required
+              >
+              <button class="pp-foot__join" type="submit">
+                {{ footer_section.settings.newsletter_button_label | default: 'Join' | escape }}
+              </button>
+
+              {% if form.errors %}
+                <p class="pp-foot__status" role="alert">
+                  {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+                </p>
+              {% elsif form.posted_successfully? %}
+                <p class="pp-foot__status" role="status">
+                  {{ 'blocks.email_signup.success' | t }}
+                </p>
+              {% endif %}
+            {% endform %}
+          </div>
+        </div>
+
+        <nav class="pp-foot__col" aria-label="Shop">
+          <h3 class="pp-foot__heading">Shop</h3>
+          <ul class="pp-foot__links">
+            {% for label in shop_labels %}
+              {% liquid
+                assign shop_handle = shop_handles[forloop.index0]
+                assign shop_url = blank
+                assign label_down = label | downcase
+                assign label_handle = label | handleize
+                if shop_handle == 'tv-stands' or shop_handle == 'tv-trolley-stand' or label_handle == 'tv-trolley-stand'
+                  assign shop_url = pp_tv_url
+                elsif shop_handle == 'outdoor' or label_handle == 'outdoor'
+                  assign shop_url = pp_outdoor_url
+                elsif shop_handle == 'garden-outdoor' or label_handle == 'garden-outdoor'
+                  assign shop_url = pp_garden_url
+                endif
+
+                assign candidate = collections[shop_handle]
+                if candidate != blank
+                  assign shop_url = candidate.url
+                endif
+
+                if shop_url == blank
+                  assign candidate = collections[label_handle]
+                  if candidate != blank
+                    assign shop_url = candidate.url
+                  endif
+                endif
+
+                if shop_url == blank
+                  for c in collections
+                    assign c_title = c.title | downcase
+                    assign c_handle = c.handle
+                    if shop_url == blank
+                      if c_handle == shop_handle or c_handle == label_handle or c_title == label_down
+                        assign shop_url = c.url
+                      elsif c_title contains label_down or label_down contains c_title
+                        assign shop_url = c.url
+                      endif
+                    endif
+                  endfor
+                endif
+
+                if shop_url == blank and linklists['main-menu'] != blank
+                  for link in linklists['main-menu'].links
+                    assign link_title = link.title | downcase
+                    if shop_url == blank and link_title == label_down
+                      assign shop_url = link.url
+                    endif
+                  endfor
+                endif
+
+                if shop_url == blank
+                  assign shop_url = '/collections/' | append: shop_handle
+                endif
+              %}
+              <li><a href="{{ shop_url }}">{{ label | escape }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+
+        <nav class="pp-foot__col" aria-label="Our policies">
+          <h3 class="pp-foot__heading">Our Policies</h3>
+          <ul class="pp-foot__links">
+            <li><a href="{{ privacy_policy_url }}">Privacy Policy</a></li>
+            <li><a href="{{ refund_policy_url }}">Return Policy</a></li>
+            <li><a href="{{ shipping_policy_url }}">Shipping Policy</a></li>
+            <li><a href="{{ terms_policy_url }}">Terms &amp; Conditions</a></li>
+            {% if help_faq_url != blank %}
+              <li><a href="{{ help_faq_url }}">FAQ</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+
+        <nav class="pp-foot__col" aria-label="Help">
+          <h3 class="pp-foot__heading">Help</h3>
+          <ul class="pp-foot__links">
+            {% if help_about_url != blank %}
+              <li><a href="{{ help_about_url }}">About Us</a></li>
+            {% endif %}
+            {% if help_contact_url != blank %}
+              <li><a href="{{ help_contact_url }}">Contact Us</a></li>
+            {% endif %}
+            {% if help_blogs_url != blank %}
+              <li><a href="{{ help_blogs_url }}">Blogs</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+
+        {% if facebook_url != blank or instagram_url != blank or twitter_url != blank %}
+          <div class="pp-foot__col pp-foot__col--social">
+            <h3 class="pp-foot__heading">Follow us on</h3>
+            <div class="pp-foot__socials">
+              {% if facebook_url != blank %}
+                <a href="{{ facebook_url }}" class="pp-foot__social pp-foot__social--facebook" aria-label="Follow us on Facebook" target="_blank" rel="noopener">
+                  <svg viewBox="7 4 11 19" aria-hidden="true"><path fill="#e8532a" d="M14.6 8H17V4.6c-.5-.1-1.5-.3-2.4-.3C11.7 4.3 10 6 10 8.9V11H7.5v3.4H10V22h3.6v-7.6h2.9l.5-3.4h-3.4V9.2c0-.7.3-1.2 1-1.2Z"/></svg>
+                </a>
+              {% endif %}
+              {% if instagram_url != blank %}
+                <a href="{{ instagram_url }}" class="pp-foot__social pp-foot__social--instagram" aria-label="Follow us on Instagram" target="_blank" rel="noopener">
+                  <svg viewBox="3 3 18 18" fill="none" aria-hidden="true">
+                    <rect x="4.2" y="4.2" width="15.6" height="15.6" rx="4.4" stroke="#e8532a" stroke-width="1.6"/>
+                    <circle cx="12" cy="12" r="3.5" stroke="#e8532a" stroke-width="1.6"/>
+                    <circle cx="16.55" cy="7.45" r="1.05" fill="#e8532a"/>
+                  </svg>
+                </a>
+              {% endif %}
+              {% if twitter_url != blank %}
+                <a href="{{ twitter_url }}" class="pp-foot__social pp-foot__social--x" aria-label="Follow us on X" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#e8532a" d="M16.7 5.2h2.1l-4.6 5.25L19.6 18.8h-3.55l-2.78-3.64-3.18 3.64H8.02l4.9-5.6L6.4 5.2h3.64l2.51 3.32 2.15-3.32Z"/></svg>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if acknowledgement_text != blank %}
+        <p class="pp-foot__ack">{{ acknowledgement_text | escape }}</p>
+      {% endif %}
+    </div>
+
+    <div class="pp-foot__bottom">
+      <div class="{{ footer_container_class }} pp-foot__bottom-inner">
+        <p class="pp-foot__copy">&copy; {{ 'now' | date: '%Y' }} Pretty &amp; Practical. All rights reserved.</p>
+
+        <nav class="pp-foot__policy-links" aria-label="Store policies">
+          <a href="{{ refund_policy_url }}">Refund policy</a>
+          <a href="{{ privacy_policy_url }}">Privacy policy</a>
+          <a href="{{ terms_policy_url }}">Terms of service</a>
+          <a href="{{ shipping_policy_url }}">Shipping policy</a>
+          <a href="{{ contact_information_url }}">Contact information</a>
+        </nav>
+
+        {% liquid
+          assign pp_payment_types = 'american_express,apple_pay,google_pay,master,paypal,shopify_pay,unionpay,visa' | split: ','
+        %}
+        <div class="pp-foot__payments" aria-label="Accepted payment methods">
+          {% for type in pp_payment_types %}
+            <span class="pp-foot__pay">{{ type | payment_type_svg_tag }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+{% stylesheet %}
+  .pp-site-footer .pp-foot {
+    width: 100%;
+    background: #000000;
+    color: #ffffff;
+    padding: 56px 0 0;
+    font-family: var(--pp-font-body);
+  }
+
+  .pp-site-footer .pp-foot a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .pp-site-footer .pp-foot__grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(140px, 0.85fr)) minmax(140px, 0.7fr);
+    gap: 40px 32px;
+    align-items: start;
+    padding-bottom: 36px;
+  }
+
+  .pp-site-footer .pp-foot__logo {
+    display: inline-block;
+    font-family: var(--pp-font-heading);
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+
+  .pp-site-footer .pp-foot__logo span {
+    color: var(--pp-primary);
+  }
+
+  .pp-site-footer .pp-foot__tagline {
+    margin: 18px 0 8px;
+    font-family: var(--pp-font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #ffffff;
+  }
+
+  .pp-site-footer .pp-foot__desc {
+    margin: 0;
+    max-width: 320px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .pp-site-footer .pp-foot__contact {
+    margin-top: 20px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pp-site-footer .pp-foot__contact-lead {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__contact-line {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__contact-line:hover {
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .pp-site-footer .pp-foot__signup {
+    margin-top: 28px;
+    max-width: 340px;
+  }
+
+  .pp-site-footer .pp-foot__signup-title {
+    margin: 0 0 6px;
+    font-family: var(--pp-font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .pp-site-footer .pp-foot__signup-copy {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .pp-site-footer .pp-foot__form {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pp-site-footer .pp-foot__input {
+    flex: 1 1 160px;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+    background: #111111;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .pp-site-footer .pp-foot__input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .pp-site-footer .pp-foot__input:focus {
+    outline: none;
+    border-color: var(--pp-primary);
+  }
+
+  .pp-site-footer .pp-foot__join {
+    height: 42px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--pp-primary);
+    color: #ffffff;
+    font-family: var(--pp-font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .pp-site-footer .pp-foot__join:hover {
+    background: var(--pp-primary-dark);
+  }
+
+  .pp-site-footer .pp-foot__status {
+    width: 100%;
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: #ffffff;
+  }
+
+  .pp-site-footer .pp-foot__heading {
+    margin: 0 0 16px;
+    font-family: var(--pp-font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .pp-site-footer .pp-foot__col--social .pp-foot__heading {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 13px;
+  }
+
+  .pp-site-footer .pp-foot__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pp-site-footer .pp-foot__links a {
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .pp-site-footer .pp-foot__links a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .pp-site-footer .pp-foot__socials {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: visible;
+    background: #ffffff;
+    color: #e8532a;
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__social:hover {
+    background: #fff7f3;
+    color: #e8532a;
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__social svg {
+    display: block;
+    width: 26px;
+    height: 26px;
+    color: #e8532a;
+    fill: #e8532a;
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__social--instagram svg {
+    fill: none;
+  }
+
+  .pp-site-footer .pp-foot a.pp-foot__social--facebook svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .pp-site-footer .pp-foot__ack {
+    margin: 0;
+    padding: 8px 0 28px;
+    max-width: 720px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.38);
+  }
+
+  .pp-site-footer .pp-foot__bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 18px 0 22px;
+  }
+
+  .pp-site-footer .pp-foot__bottom-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .pp-site-footer .pp-foot__copy {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .pp-site-footer .pp-foot__policy-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .pp-site-footer .pp-foot__policy-links a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .pp-site-footer .pp-foot__payments {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pp-site-footer .pp-foot__pay {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .pp-site-footer .pp-foot__pay svg,
+  .pp-site-footer .pp-foot__pay .icon-svg {
+    display: block;
+    height: 24px;
+    width: auto;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 1100px) {
+    .pp-site-footer .pp-foot__grid {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+
+    .pp-site-footer .pp-foot__brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pp-site-footer .pp-foot {
+      padding-top: 40px;
+    }
+
+    .pp-site-footer .pp-foot__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px 20px;
+    }
+
+    .pp-site-footer .pp-foot__bottom-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .pp-site-footer .pp-foot__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+{% endstylesheet %}

@@ -1,0 +1,7 @@
+{% assign nexus_seller_href = nexus_seller_href | default: pages['seller-dashboard'].url | default: '/pages/seller-dashboard' %}
+
+<div class="pp-status-card">
+  <h2>Application received</h2>
+  <p>Thanks — we’ve received your application. If it’s approved, Nexus will email you a seller login so you can list products and fulfil orders.</p>
+  <a class="pp-vendor-btn" href="{{ nexus_seller_href }}">Seller login</a>
+</div>

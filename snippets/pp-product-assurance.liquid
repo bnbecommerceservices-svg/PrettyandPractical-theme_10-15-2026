@@ -1,0 +1,71 @@
+{%- comment -%}One centered row: shipping, returns, checkout, share.{%- endcomment -%}
+<div class="pp-assurance" role="list">
+  <div class="pp-assurance__item" role="listitem">
+    <span class="pp-assurance__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="3" width="15" height="13" rx="1.5"></rect>
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+      </svg>
+    </span>
+    <span class="pp-assurance__text">Australia wide shipping</span>
+  </div>
+  <div class="pp-assurance__item" role="listitem">
+    <span class="pp-assurance__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+        <polyline points="21 4 21 9 16 9"></polyline>
+      </svg>
+    </span>
+    <span class="pp-assurance__text">30 day returns</span>
+  </div>
+  <div class="pp-assurance__item" role="listitem">
+    <span class="pp-assurance__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2.5l8 3v7c0 5-3.6 7.8-8 9.5-4.4-1.7-8-4.5-8-9.5v-7z"></path>
+        <polyline points="9 12 11 14 15 10"></polyline>
+      </svg>
+    </span>
+    <span class="pp-assurance__text">Secure checkout</span>
+  </div>
+  <div class="pp-assurance__share" aria-label="Share this product">
+    <span class="pp-assurance__share-label">Share</span>
+    <div class="pp-assurance__share-icons">
+      <a
+        class="pp-share-btn"
+        href="https://www.facebook.com/sharer/sharer.php?u={{ shop.url | append: product.url | url_encode }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share on Facebook"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.25-1.5 1.55-1.5H16.7V4.6a22 22 0 0 0-2.42-.13c-2.4 0-4.03 1.46-4.03 4.14V10.9H7.5V14h2.75v8h3.25Z"/></svg>
+      </a>
+      <a
+        class="pp-share-btn"
+        href="https://twitter.com/intent/tweet?url={{ shop.url | append: product.url | url_encode }}&text={{ product.title | url_encode }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share on X"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21l-6.53 7.46L22 22h-6.828l-5.346-6.986L3.348 22H1l7.027-8.03L2 2h7.016l4.833 6.39L18.244 2Zm-1.195 18.09h1.896L7.03 3.81H4.996l12.053 16.28Z"/></svg>
+      </a>
+      <a
+        class="pp-share-btn"
+        href="mailto:?subject={{ product.title | url_encode }}&body={{ shop.url | append: product.url | url_encode }}"
+        aria-label="Share by email"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+      </a>
+      <button
+        type="button"
+        class="pp-share-btn"
+        data-pp-copy-link
+        data-url="{{ shop.url }}{{ product.url }}"
+        aria-label="Copy product link"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+    </div>
+  </div>
+</div>

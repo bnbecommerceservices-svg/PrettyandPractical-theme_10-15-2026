@@ -1,0 +1,67 @@
+{%- comment -%}
+  Prints compact promo flags: |sale |new |bestseller
+
+  Sale: compare-at is higher AND the product is tagged sale / on-sale.
+  The catalog was imported with a compare-at price on every product, so
+  compare-at alone is not a real sale.
+
+  New: published in the last N days, or tagged just-in / new-in.
+  Ignore bulk tags "new" and "New Arrival" — those were applied to the whole catalog.
+{%- endcomment -%}
+{%- liquid
+  if price != blank
+    assign price_check = price
+  else
+    assign price_check = product.selected_or_first_available_variant.price | default: product.price
+  endif
+
+  if compare_at != blank
+    assign compare_check = compare_at
+  else
+    assign compare_check = product.selected_or_first_available_variant.compare_at_price | default: product.compare_at_price
+  endif
+
+  assign has_sale_tag = false
+  assign has_bestseller_tag = false
+  assign has_just_in_tag = false
+  for tag in product.tags
+    assign tag_l = tag | strip | downcase
+    if tag_l == 'sale' or tag_l == 'on-sale' or tag_l == 'on sale' or tag_l == 'onsale'
+      assign has_sale_tag = true
+    elsif tag_l == 'bestseller' or tag_l == 'best seller' or tag_l == 'best-seller'
+      assign has_bestseller_tag = true
+    elsif tag_l == 'just-in' or tag_l == 'just in' or tag_l == 'new-in' or tag_l == 'new in'
+      assign has_just_in_tag = true
+    endif
+  endfor
+
+  assign show_sale = false
+  if compare_check > price_check and has_sale_tag
+    assign show_sale = true
+  endif
+
+  assign new_days = settings.new_badge_days | default: 14 | times: 1
+  assign show_new = false
+  if has_just_in_tag
+    assign show_new = true
+  elsif new_days > 0 and product.published_at != blank
+    assign published_ts = product.published_at | date: '%s' | times: 1
+    assign now_ts = 'now' | date: '%s' | times: 1
+    assign age_days = now_ts | minus: published_ts | divided_by: 86400
+    if age_days < new_days
+      assign show_new = true
+    endif
+  endif
+
+  assign flags = ''
+  if show_sale
+    assign flags = flags | append: '|sale'
+  endif
+  if show_new
+    assign flags = flags | append: '|new'
+  endif
+  if has_bestseller_tag
+    assign flags = flags | append: '|bestseller'
+  endif
+  echo flags
+-%}

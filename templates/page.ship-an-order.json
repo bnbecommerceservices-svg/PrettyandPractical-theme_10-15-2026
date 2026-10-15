@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "pp-vendor-portal",
+      "settings": {
+        "portal_page": "ship_order"
+      }
+    }
+  },
+  "order": ["main"]
+}

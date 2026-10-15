@@ -1,0 +1,80 @@
+{%- liquid
+  assign pp_use_manual = true
+
+  assign pp_types = '|'
+  assign pp_in_stock = false
+  assign pp_preorder = false
+  assign pp_price_min = blank
+  assign pp_price_max = blank
+  assign pp_rating = 0
+  assign pp_page = 1
+  assign pp_active = 0
+  assign pp_query_base = ''
+
+  assign qs_parts = request.query_string | default: '' | url_decode | split: '&'
+  for part in qs_parts
+    if part == blank
+      continue
+    endif
+
+    assign pair = part | split: '='
+    assign key = pair | first
+    assign val = ''
+    if pair.size > 1
+      assign val = pair[1]
+    endif
+
+    if key == 'filter.p.product_type' and val != blank
+      assign pp_types = pp_types | append: val | append: '|'
+      assign pp_active = pp_active | plus: 1
+    elsif key == 'filter.v.availability' and val == '1'
+      assign pp_in_stock = true
+      assign pp_active = pp_active | plus: 1
+    elsif key == 'filter.p.tag'
+      assign tag_val = val | downcase | replace: '+', '-'
+      if tag_val == 'pre-order' or tag_val == 'preorder'
+        assign pp_preorder = true
+        assign pp_active = pp_active | plus: 1
+      endif
+    elsif key == 'filter.v.price.gte' and val != blank
+      assign pp_price_min = val
+      assign pp_active = pp_active | plus: 1
+    elsif key == 'filter.v.price.lte' and val != blank
+      assign pp_price_max = val
+      assign pp_active = pp_active | plus: 1
+    elsif key == 'filter.p.m.reviews.rating' and val != blank
+      assign pp_rating = val | plus: 0
+      assign pp_active = pp_active | plus: 1
+    elsif key == 'pp_page' and val != blank
+      assign pp_page = val | plus: 0
+    endif
+
+    unless key == 'page' or key == 'pp_page'
+      if pp_query_base != blank
+        assign pp_query_base = pp_query_base | append: '&'
+      endif
+      assign pp_query_base = pp_query_base | append: part
+    endunless
+  endfor
+
+  if pp_types == '|'
+    assign pp_types = ''
+  endif
+  if pp_page < 1
+    assign pp_page = 1
+  endif
+
+  assign pp_price_min_cents = 0
+  assign pp_price_max_cents = 0
+  if pp_price_min != blank
+    assign pp_price_min_cents = pp_price_min | times: 100
+  endif
+  if pp_price_max != blank
+    assign pp_price_max_cents = pp_price_max | times: 100
+  endif
+
+  assign pp_page_url_base = collection.url
+  if pp_query_base != blank
+    assign pp_page_url_base = collection.url | append: '?' | append: pp_query_base
+  endif
+-%}

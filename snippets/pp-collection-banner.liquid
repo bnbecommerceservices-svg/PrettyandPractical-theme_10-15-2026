@@ -1,0 +1,213 @@
+{% liquid
+  assign banner_handle = collection.handle | default: ''
+  assign banner_title = collection.title | default: 'Collection'
+  assign banner_img = blank
+  assign use_curated = false
+
+  assign banner_label = 'Shop the collection'
+  assign banner_blurb = blank
+  assign banner_photo = 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=2000&q=80'
+  assign banner_count = collection.all_products_count | default: collection.products_count | default: 0
+
+  case banner_handle
+    when 'new-arrival'
+      assign use_curated = true
+      assign banner_label = 'Just landed'
+      assign banner_blurb = 'Fresh décor, furniture and outdoor pieces for Australian homes.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=2000&q=80'
+    when 'home-garden'
+      assign banner_label = 'Indoor living'
+      assign banner_blurb = 'Plant stands, kitchen pieces and storage that keep the house tidy and welcoming.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=2000&q=80'
+    when 'garden-outdoor'
+      assign banner_label = 'Outdoor living'
+      assign banner_blurb = 'Patio, balcony and garden-ready pieces made for Australian weather.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2000&q=80'
+    when 'furniture'
+      assign banner_label = 'For every room'
+      assign banner_blurb = 'Shelves, tables, TV units and storage that work in real homes.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=2000&q=80'
+    when 'pets', 'animals-pets'
+      assign use_curated = true
+      assign banner_label = 'Pet accessories'
+      assign banner_blurb = 'Bowls, beds, carriers, toys and everyday pet accessories for cats and dogs.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=2000&q=80'
+    when 'under-50'
+      assign banner_label = 'Smart value'
+      assign banner_blurb = 'Useful home upgrades and extras, all under $50.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=2000&q=80'
+    when 'bedroom-furniture'
+      assign banner_label = 'Rest easy'
+      assign banner_blurb = 'Bedroom storage and stands that keep the room calm and useful.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2000&q=80'
+    when 'living-room-furniture'
+      assign banner_label = 'Everyday living'
+      assign banner_blurb = 'Tables, shelves and TV furniture for the room you use most.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=2000&q=80'
+    when 'dining-furniture'
+      assign banner_label = 'Gather around'
+      assign banner_blurb = 'Dining tables and pieces for everyday meals and guests.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=2000&q=80'
+    when 'office-furniture'
+      assign banner_label = 'Work from home'
+      assign banner_blurb = 'Shelves, desks and storage that keep work spaces organised.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=2000&q=80'
+    when 'home-decor'
+      assign banner_label = 'Finishing touches'
+      assign banner_blurb = 'Mirrors, wall pieces and décor that define the room.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2000&q=80'
+    when 'kitchenware'
+      assign banner_label = 'Kitchen ready'
+      assign banner_blurb = 'Racks, stands and helpers that earn their spot on the bench.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=2000&q=80'
+    when 'plant-stands'
+      assign use_curated = true
+      assign banner_label = 'Show the plants'
+      assign banner_blurb = 'Indoor and outdoor stands that lift plants without crowding the room.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=2000&q=80'
+    when 'metal-plant-stand'
+      assign use_curated = true
+      assign banner_label = 'Metal plant stands'
+      assign banner_blurb = 'Durable metal stands and tiered shelves to display plants indoors or outdoors.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=2000&q=80'
+    when 'lighting'
+      assign banner_label = 'Set the mood'
+      assign banner_blurb = 'Lamps and lights that add warmth without a full renovation.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=2000&q=80'
+    when 'tv-trolley-stand', 'tv-stands'
+      assign banner_label = 'TV & media'
+      assign banner_blurb = 'TV trolleys, floor stands and wall mounts ready for Australian living rooms.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=2000&q=80'
+    when 'outdoor'
+      assign banner_label = 'Outdoor ready'
+      assign banner_blurb = 'Outdoor and sporting pieces, shown as their own shop for marketplace partners.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=2000&q=80'
+    when 'all'
+      assign banner_label = 'Shop everything'
+      assign banner_blurb = 'Furniture, garden, pets and home extras — the full Pretty & Practical range.'
+      assign banner_photo = 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=2000&q=80'
+    else
+      assign key = banner_title | downcase | append: ' ' | append: banner_handle
+      if key contains 'pet' or key contains 'animal'
+        assign use_curated = true
+        assign banner_label = 'Pet accessories'
+        assign banner_blurb = 'Bowls, beds, carriers, toys and everyday pet accessories for cats and dogs.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'tv' or key contains 'trolley'
+        assign banner_label = 'TV & media'
+        assign banner_blurb = 'TV trolleys, floor stands and wall mounts for the living room.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'outdoor' or key contains 'garden'
+        assign banner_label = 'Outdoor living'
+        assign banner_blurb = 'Patio, balcony and garden-ready pieces for Australian homes.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'metal' and key contains 'plant'
+        assign use_curated = true
+        assign banner_label = 'Metal plant stands'
+        assign banner_blurb = 'Durable metal stands and tiered shelves for compact plant displays.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'plant'
+        assign use_curated = true
+        assign banner_label = 'Show the plants'
+        assign banner_blurb = 'Stands and holders that show plants off without taking over.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'kitchen'
+        assign banner_label = 'Kitchen ready'
+        assign banner_blurb = 'Practical kitchen pieces that work hard every day.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'light'
+        assign banner_label = 'Set the mood'
+        assign banner_blurb = 'Lighting that adds warmth to bedrooms, living rooms and hallways.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'bedroom'
+        assign banner_label = 'Rest easy'
+        assign banner_blurb = 'Bedroom furniture and storage for a calmer room.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'living'
+        assign banner_label = 'Everyday living'
+        assign banner_blurb = 'Furniture and extras for the room you use most.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'dining'
+        assign banner_label = 'Gather around'
+        assign banner_blurb = 'Dining-ready pieces for everyday meals and guests.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'office'
+        assign banner_label = 'Work from home'
+        assign banner_blurb = 'Desks, shelves and storage for organised work spaces.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'decor' or key contains 'mirror'
+        assign banner_label = 'Finishing touches'
+        assign banner_blurb = 'Mirrors, wall pieces and décor for Australian homes.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'furniture'
+        assign banner_label = 'For every room'
+        assign banner_blurb = 'Practical furniture that looks good and works hard.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=2000&q=80'
+      elsif key contains 'under' or key contains '50'
+        assign banner_label = 'Smart value'
+        assign banner_blurb = 'Useful home extras without the big spend.'
+        assign banner_photo = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=2000&q=80'
+      endif
+      if banner_blurb == blank
+        assign banner_blurb = 'Practical, well made pieces for Australian homes.'
+      endif
+  endcase
+
+  if use_curated == false
+    assign banner_img = collection.image | default: collection.featured_image
+  endif
+
+  assign banner_h = banner_height | default: 200
+  assign overlay_color = overlay_color | default: '#111827'
+  assign banner_extra_class = ''
+  assign banner_key = banner_handle | append: ' ' | append: banner_title | downcase
+  if banner_handle == 'pets' or banner_handle == 'animals-pets' or banner_key contains 'pet' or banner_key contains 'animal'
+    unless banner_key contains 'plant'
+      assign banner_extra_class = ' pp-collection-hero--pets'
+      assign banner_h = 320
+    endunless
+  elsif banner_handle == 'plant-stands' or banner_handle == 'metal-plant-stand' or banner_key contains 'plant'
+    assign banner_extra_class = ' pp-collection-hero--plants'
+    assign banner_h = 280
+  endif
+%}
+
+<section class="pp-collection-hero{{ banner_extra_class }}" aria-labelledby="collection-title" data-collection-banner="{{ banner_handle | escape }}" style="--pp-banner-height: {{ banner_h }}px;">
+  <div class="pp-collection-hero__media" aria-hidden="true">
+    {% if banner_img != blank %}
+      {{
+        banner_img
+        | image_url: width: 2400
+        | image_tag:
+          class: 'pp-collection-hero__img',
+          widths: '800, 1200, 1600, 2000, 2400',
+          sizes: '100vw',
+          loading: 'eager',
+          alt: banner_title
+      }}
+    {% else %}
+      <img class="pp-collection-hero__img" src="{{ banner_photo }}" alt="{{ banner_title | escape }}" width="2000" height="700" loading="eager">
+    {% endif %}
+  </div>
+  <div class="pp-collection-hero__overlay">
+    <div class="pp-wrap">
+      <nav class="pp-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+        <span class="pp-breadcrumb__current" aria-current="page">{{ banner_title | escape }}</span>
+      </nav>
+      <div class="pp-collection-hero__content">
+        <p class="pp-collection-hero__label">{{ banner_label | escape }}</p>
+        <h1 id="collection-title" class="pp-collection-title">{{ banner_title | escape }}</h1>
+        {% if banner_blurb != blank %}
+          <p class="pp-collection-desc">{{ banner_blurb | escape }}</p>
+        {% endif %}
+        {% if banner_count > 0 %}
+          <p class="pp-collection-hero__count">{{ banner_count }} products</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>

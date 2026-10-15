@@ -1,0 +1,23 @@
+{% comment %}
+  Shopify legal URLs (/policies/*). JSON templates are not allowed for this type.
+  Designed layouts are also rendered from layout/theme.liquid so the legal route
+  keeps the same look as /pages/* even if Shopify injects default policy HTML.
+{% endcomment %}
+{% liquid
+  assign pp_path = request.path | default: '' | downcase
+  assign pp_policy_url = policy.url | default: '' | downcase
+  assign haystack = pp_path | append: '|' | append: pp_policy_url
+%}
+{% if haystack contains 'privacy' %}
+  {% section 'pp-privacy-policy' %}
+{% elsif haystack contains 'refund' or haystack contains 'return' %}
+  {% section 'pp-refund-policy' %}
+{% elsif haystack contains 'shipping' %}
+  {% section 'pp-shipping-policy' %}
+{% elsif haystack contains 'terms' %}
+  {% section 'pp-terms-of-service' %}
+{% elsif haystack contains 'contact' %}
+  {% section 'pp-contact-us' %}
+{% else %}
+  {% section 'pp-policy' %}
+{% endif %}

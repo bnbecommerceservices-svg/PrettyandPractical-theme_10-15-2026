@@ -1,0 +1,22 @@
+{%- liquid
+  assign pp_href = url | default: ''
+  assign pp_href_down = pp_href | downcase
+  if pp_href_down contains '/pages/your-privacy-choices' or pp_href_down contains '/pages/privacy-choices'
+    assign pp_href = pp_href
+  elsif pp_href_down contains '/pages/privacy-policy' or pp_href_down contains '/pages/privacy'
+    assign pp_href = '/policies/privacy-policy'
+  elsif pp_href_down contains '/pages/refund-policy' or pp_href_down contains '/pages/return-policy' or pp_href_down contains '/pages/returns' or pp_href_down contains '/pages/refunds'
+    assign pp_href = '/policies/refund-policy'
+  elsif pp_href_down contains '/pages/shipping-policy'
+    assign pp_href = '/policies/shipping-policy'
+  elsif pp_href_down contains '/pages/shipping'
+    unless pp_href_down contains 'ship-an-order'
+      assign pp_href = '/policies/shipping-policy'
+    endunless
+  elsif pp_href_down contains '/pages/terms-of-service' or pp_href_down contains '/pages/terms-and-conditions' or pp_href_down contains '/pages/terms'
+    assign pp_href = '/policies/terms-of-service'
+  elsif pp_href_down contains '/pages/contact-information'
+    assign pp_href = '/policies/contact-information'
+  endif
+-%}
+{{- pp_href -}}

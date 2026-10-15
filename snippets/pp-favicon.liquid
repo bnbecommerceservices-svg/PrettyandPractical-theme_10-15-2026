@@ -1,0 +1,10 @@
+{%- liquid
+  assign favicon_png = 'pp-favicon.png' | asset_url
+  if settings.favicon != blank
+    assign favicon_png = settings.favicon | image_url: width: 192
+  endif
+-%}
+<link rel="icon" type="image/svg+xml" href="{{ 'pp-favicon.svg' | asset_url }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ favicon_png }}">
+<link rel="apple-touch-icon" href="{{ favicon_png }}">
+<link rel="shortcut icon" href="{{ favicon_png }}">

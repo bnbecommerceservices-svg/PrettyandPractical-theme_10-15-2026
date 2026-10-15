@@ -1,0 +1,146 @@
+{{ 'pp-vendor-portal.css' | asset_url | stylesheet_tag }}
+
+{% liquid
+  assign nexus_login = settings.nexus_seller_login_url | strip
+  if nexus_login == blank
+    assign nexus_login = 'https://nexus.marmeto.org/login'
+  endif
+  assign nexus_register = settings.nexus_seller_register_url | strip
+  if nexus_register == blank
+    assign nexus_register = 'https://nexus.marmeto.org/registration-page/794354c4-2f85-48ca-8d3f-aefb28129aca'
+  endif
+  assign nexus_embed = settings.nexus_register_embed | strip
+  assign nexus_admin = settings.nexus_admin_url | strip
+  if nexus_admin == blank
+    assign shop_handle = shop.permanent_domain | split: '.' | first
+    assign nexus_admin = 'https://admin.shopify.com/store/' | append: shop_handle | append: '/apps'
+  endif
+  assign nexus_seller_page = pages['seller-dashboard'].url | default: '/pages/seller-dashboard'
+  if nexus_login != blank
+    assign nexus_seller_href = nexus_login
+  else
+    assign nexus_seller_href = nexus_seller_page
+  endif
+  assign nexus_apply_href = nexus_register
+
+  assign portal = section.settings.portal_page
+  if portal == blank
+    assign h = page.handle | default: ''
+    if h == 'seller-dashboard'
+      assign portal = 'seller_dashboard'
+    elsif h == 'list-a-product'
+      assign portal = 'list_product'
+    elsif h == 'bulk-list-products'
+      assign portal = 'bulk_list'
+    elsif h == 'admin-dashboard'
+      assign portal = 'admin_dashboard'
+    elsif h == 'product-listed'
+      assign portal = 'product_listed'
+    elsif h == 'sell-with-us'
+      assign portal = 'sell_with_us'
+    elsif h == 'ship-an-order'
+      assign portal = 'ship_order'
+    elsif h == 'bulk-upload-status'
+      assign portal = 'bulk_status'
+    elsif h == 'shipment-recorded'
+      assign portal = 'shipment_recorded'
+    elsif h == 'application-received'
+      assign portal = 'application_received'
+    else
+      assign portal = 'sell_with_us'
+    endif
+  endif
+
+  assign titles = portal | replace: '_', ' ' | capitalize
+  case portal
+    when 'seller_dashboard'
+      assign titles = 'Seller Dashboard'
+      assign intro = 'Log in to Nexus to manage products, orders and shipping.'
+    when 'list_product'
+      assign titles = 'List a Product'
+      assign intro = 'New listings are created in your Nexus seller portal, then reviewed before they go live.'
+    when 'bulk_list'
+      assign titles = 'Bulk List Products'
+      assign intro = 'Upload and manage catalogues from your Nexus seller portal.'
+    when 'admin_dashboard'
+      assign titles = 'Admin Dashboard'
+      assign intro = 'Approve sellers, products and payouts in the Nexus app inside Shopify Admin.'
+    when 'product_listed'
+      assign titles = 'Product listed'
+      assign intro = ''
+    when 'sell_with_us'
+      assign titles = 'Sell With Us'
+      assign intro = 'This page is for invited suppliers. If we have asked you to join Pretty & Practical, you can apply here and we will be in touch.'
+    when 'ship_order'
+      assign titles = 'Ship an Order'
+      assign intro = 'Mark orders shipped and add tracking in your Nexus seller portal.'
+    when 'bulk_status'
+      assign titles = 'Bulk Upload Status'
+      assign intro = 'Track catalogue uploads in your Nexus seller portal.'
+    when 'shipment_recorded'
+      assign titles = 'Shipment recorded'
+      assign intro = ''
+    when 'application_received'
+      assign titles = 'Application received'
+      assign intro = ''
+  endcase
+%}
+
+<section class="pp-vendor-portal" data-portal="{{ portal }}">
+  <div class="pp-wrap">
+    <header class="pp-page-header">
+      <nav class="pp-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ routes.root_url }}">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ titles }}</span>
+      </nav>
+      <h1>{{ page.title | default: titles }}</h1>
+      {% if intro != blank %}
+        <p>{{ intro }}</p>
+      {% endif %}
+    </header>
+
+    {% case portal %}
+      {% when 'seller_dashboard' %}
+        {% render 'pp-vendor-seller-dashboard', nexus_login: nexus_login, nexus_seller_href: nexus_seller_href, nexus_apply_href: nexus_apply_href %}
+      {% when 'list_product', 'bulk_list', 'bulk_status', 'ship_order' %}
+        {% render 'pp-vendor-nexus-tools', portal: portal, nexus_login: nexus_login, nexus_seller_href: nexus_seller_href %}
+      {% when 'admin_dashboard' %}
+        {% render 'pp-vendor-admin-dashboard', nexus_admin: nexus_admin, nexus_seller_href: nexus_seller_href %}
+      {% when 'product_listed' %}
+        {% render 'pp-vendor-product-listed', nexus_seller_href: nexus_seller_href %}
+      {% when 'shipment_recorded' %}
+        {% render 'pp-vendor-shipment-recorded', nexus_seller_href: nexus_seller_href %}
+      {% when 'application_received' %}
+        {% render 'pp-vendor-application-received', nexus_seller_href: nexus_seller_href %}
+      {% else %}
+        {% render 'pp-vendor-sell-with-us', nexus_register: nexus_register, nexus_embed: nexus_embed, nexus_seller_href: nexus_seller_href %}
+    {% endcase %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PP Vendor portal",
+  "settings": [
+    {
+      "type": "select",
+      "id": "portal_page",
+      "label": "Portal screen",
+      "default": "sell_with_us",
+      "options": [
+        { "value": "sell_with_us", "label": "Sell With Us" },
+        { "value": "seller_dashboard", "label": "Seller Dashboard" },
+        { "value": "list_product", "label": "List a Product" },
+        { "value": "bulk_list", "label": "Bulk List Products" },
+        { "value": "bulk_status", "label": "Bulk Upload Status" },
+        { "value": "admin_dashboard", "label": "Admin Dashboard" },
+        { "value": "product_listed", "label": "Product Listed" },
+        { "value": "ship_order", "label": "Ship an Order" },
+        { "value": "shipment_recorded", "label": "Shipment Recorded" },
+        { "value": "application_received", "label": "Application Received" }
+      ]
+    }
+  ]
+}
+{% endschema %}

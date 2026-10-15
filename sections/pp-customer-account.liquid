@@ -1,0 +1,77 @@
+{{ 'pp-account.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign paginate_by = section.settings.orders_per_page | default: 20
+-%}
+
+<section class="pp-account pp-account-body" {{ section.shopify_attributes }}>
+  <div class="pp-wrap">
+    <div class="pp-account-layout">
+      {% render 'pp-account-nav', current: 'orders' %}
+
+      <div class="pp-account-panel" id="orders">
+        <div class="pp-account-panel__head">
+          <div>
+            <h2>Orders</h2>
+            <p class="pp-account-panel__sub">Order history for Pretty &amp; Practical purchases.</p>
+          </div>
+          <a class="pp-account-btn pp-account-btn--outline" href="{{ routes.all_products_collection_url }}">Continue shopping</a>
+        </div>
+
+        {% paginate customer.orders by paginate_by %}
+          {% if customer.orders.size > 0 %}
+            <div class="pp-account-order-list">
+              {% for order in customer.orders %}
+                <article class="pp-account-order-card">
+                  <div class="pp-account-order-card__top">
+                    <a class="pp-account-order-card__id" href="{{ order.customer_url }}">{{ order.name }}</a>
+                    <span class="pp-account-status">{{ order.financial_status_label }}</span>
+                  </div>
+                  <p class="pp-account-order-card__meta">
+                    {{ order.created_at | date: '%d %b %Y' }}
+                    <span aria-hidden="true">·</span>
+                    {{ order.fulfillment_status_label | default: 'Unfulfilled' }}
+                  </p>
+                  <div class="pp-account-order-card__foot">
+                    <strong>{{ order.total_net_amount | money }}</strong>
+                    <a class="pp-account-btn pp-account-btn--outline" href="{{ order.customer_url }}">View order</a>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+            {% if paginate.pages > 1 %}
+              <div class="pp-account-pagination">{{ paginate | default_pagination }}</div>
+            {% endif %}
+          {% else %}
+            <div class="pp-account-empty">
+              <span class="pp-account-empty__icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h12v4H6zM4 6h16v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"/></svg>
+              </span>
+              <h3>No orders yet</h3>
+              <p>When you place an order, it will show up here with tracking and status updates.</p>
+              <a class="pp-account-btn pp-account-btn--primary" href="{{ routes.all_products_collection_url }}">Shop now</a>
+            </div>
+          {% endif %}
+        {% endpaginate %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PP Customer Account",
+  "settings": [
+    {
+      "type": "range",
+      "id": "orders_per_page",
+      "label": "Orders per page",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "default": 20
+    }
+  ],
+  "presets": [{ "name": "PP Customer Account" }]
+}
+{% endschema %}
