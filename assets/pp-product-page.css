@@ -4497,27 +4497,25 @@
   padding-top: 0;
 }
 
+/* Title bullets show in full: no scroll area, no line clamp, no item limit. */
 .pp-pdp-v2 .pp-feature-points {
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: min(240px, 32vh);
-  overflow-y: auto;
-  /* Keep each bullet at full height when the list shrinks; it scrolls instead. */
+  flex: 0 0 auto;
   grid-auto-rows: max-content;
   gap: 6px;
   margin: 4px 0 0;
-  scrollbar-width: thin;
 }
 
 .pp-pdp-v2 .pp-feature-points li {
+  display: list-item;
   white-space: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow: visible;
   text-overflow: unset;
   color: #4b5563;
   line-height: 1.35;
+}
+
+.pp-pdp-v2 .pp-feature-points li:nth-child(n+8) {
+  display: list-item;
 }
 
 .pp-pdp-v2 .pp-feature-points li::before {
