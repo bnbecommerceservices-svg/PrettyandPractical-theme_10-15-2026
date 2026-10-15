@@ -331,6 +331,18 @@
   endfor
 
   assign desc_html = product.description | replace: '&nbsp;', ' '
+
+  # Descriptions authored with headings are rendered as written so the merchant's
+  # <h2>/<h3> structure is kept; plain-text descriptions use the parsed layout below.
+  assign desc_is_rich = false
+  assign desc_heading_tags = '<h1,<h2,<h3,<h4,<h5,<h6,<H1,<H2,<H3,<H4,<H5,<H6' | split: ','
+  for desc_heading_tag in desc_heading_tags
+    if desc_html contains desc_heading_tag
+      assign desc_is_rich = true
+      break
+    endif
+  endfor
+
   assign desc_body_html = desc_html
   if desc_body_html contains 'Specifications:'
     assign desc_body_html = desc_body_html | split: 'Specifications:' | first
@@ -1019,11 +1031,15 @@
             {{ pp_accordion_chevron }}
           </summary>
           <div class="pp-accordion__body">
-            {% if desc_intro_markup != blank or desc_detail_count > 0 or package_count > 0 %}
+            {% if desc_is_rich %}
+              <div class="pp-description-text pp-description-text--rich rte">
+                {{ desc_html }}
+              </div>
+            {% elsif desc_intro_markup != blank or desc_detail_count > 0 or package_count > 0 %}
               <div class="pp-description-text">
                 {{ desc_intro_markup }}
                 {% if desc_detail_count > 0 %}
-                  <p class="pp-desc-kicker">Details</p>
+                  <p class="pp-desc-kicker">Features</p>
                   <ul class="pp-desc-features">
                     {{ desc_detail_items }}
                   </ul>
