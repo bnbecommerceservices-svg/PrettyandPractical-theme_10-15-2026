@@ -3733,6 +3733,14 @@
   color: var(--pp-navy);
 }
 
+.pp-product-page .pp-accordion__body .pp-faq-item .pp-faq-q {
+  margin-bottom: 4px;
+}
+
+.pp-product-page .pp-accordion__body .pp-faq-a + .pp-faq-a {
+  margin-top: 8px;
+}
+
 .pp-product-page .pp-reviews {
   padding-top: 32px;
 }

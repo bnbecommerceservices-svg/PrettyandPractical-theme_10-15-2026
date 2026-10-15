@@ -128,7 +128,74 @@
     assign short_blurb = product.description | strip_html | truncate: 220
   endif
   assign care_content = product.metafields.custom.care_guide.value | default: product.metafields.custom.care.value
-  assign faq_content = product.metafields.custom.faqs.value | default: product.metafields.custom.faq.value
+
+  # FAQs from the custom.faqs metafield (custom.faq as a fallback). Multi-line
+  # text or rich text definitions. A question is a line starting with "Q:" or
+  # ending with "?"; the lines after it (with or without "A:") are its answer,
+  # each shown as its own paragraph.
+  assign faq_items = ''
+  assign faq_count = 0
+  assign faq_unstructured_html = ''
+  assign faq_metafield = product.metafields.custom.faqs
+  if faq_metafield == blank
+    assign faq_metafield = product.metafields.custom.faq
+  endif
+  if faq_metafield != blank
+    if faq_metafield.type == 'rich_text_field'
+      assign faq_raw = faq_metafield | metafield_tag
+    else
+      assign faq_raw = faq_metafield.value | newline_to_br
+    endif
+    # The trailing "Q:" sentinel flushes the last question inside the loop.
+    assign faq_lines = faq_raw | replace: '&nbsp;', ' ' | replace: '<br />', '|||' | replace: '<br/>', '|||' | replace: '<br>', '|||' | replace: '</p>', '|||' | replace: '</li>', '|||' | replace: '</h2>', '|||' | replace: '</h3>', '|||' | append: '|||Q:' | strip_html | split: '|||'
+    assign faq_question = ''
+    assign faq_answer_html = ''
+    for faq_line in faq_lines
+      assign faq_text = faq_line | strip
+      if faq_text == blank
+        continue
+      endif
+      assign faq_prefix = faq_text | slice: 0, 2 | downcase
+      assign faq_last_char = faq_text | slice: -1
+      if faq_prefix == 'q:' or faq_prefix != 'a:' and faq_last_char == '?'
+        if faq_question != blank
+          capture faq_items
+            echo faq_items
+            echo '<div class="pp-faq-item"><p class="pp-faq-q">'
+            echo faq_question | escape_once
+            echo '</p>'
+            echo faq_answer_html
+            echo '</div>'
+          endcapture
+          assign faq_count = faq_count | plus: 1
+        endif
+        if faq_prefix == 'q:'
+          assign faq_question = faq_text | slice: 2, faq_text.size | strip
+        else
+          assign faq_question = faq_text
+        endif
+        assign faq_answer_html = ''
+      elsif faq_question != blank
+        if faq_prefix == 'a:'
+          assign faq_answer_text = faq_text | slice: 2, faq_text.size | strip | escape_once
+        else
+          assign faq_answer_text = faq_text | escape_once
+        endif
+        if faq_answer_text != blank
+          assign faq_answer_html = faq_answer_html | append: '<p class="pp-faq-a">' | append: faq_answer_text | append: '</p>'
+        endif
+      endif
+    endfor
+
+    # Content with no recognisable questions is shown as written rather than dropped.
+    if faq_count == 0
+      if faq_metafield.type == 'rich_text_field'
+        assign faq_unstructured_html = faq_metafield | metafield_tag
+      else
+        assign faq_unstructured_html = faq_metafield.value | escape | newline_to_br
+      endif
+    endif
+  endif
   assign spec_material = product.metafields.custom.material.value | default: product.metafields.descriptors.material.value
   assign spec_finish = product.metafields.custom.finish.value
   assign spec_colour = product.metafields.custom.colour.value | default: product.metafields.custom.color.value
@@ -1156,27 +1223,23 @@
           </div>
         </details>
 
-        <details class="pp-accordion">
-          <summary class="pp-accordion__summary">
-            FAQs
-            {{ pp_accordion_chevron }}
-          </summary>
-          <div class="pp-accordion__body">
-            {% if faq_content != blank %}
-              {{ faq_content }}
-            {% else %}
-              <div class="pp-faq-item">
-                <p><span class="pp-faq-q">Is assembly required?</span> Most stands assemble in minutes with the simple hardware included.</p>
-              </div>
-              <div class="pp-faq-item">
-                <p><span class="pp-faq-q">Can I use this outdoors?</span> Yes — designed for indoor and covered outdoor spaces. Protect from prolonged heavy weather when possible.</p>
-              </div>
-              <div class="pp-faq-item">
-                <p><span class="pp-faq-q">Need help?</span> Our team responds within one business day. <a href="/pages/contact" class="pp-link-primary">Contact us</a>.</p>
-              </div>
-            {% endif %}
-          </div>
-        </details>
+        {% if faq_count > 0 or faq_unstructured_html != blank %}
+          <details class="pp-accordion">
+            <summary class="pp-accordion__summary">
+              FAQs
+              {{ pp_accordion_chevron }}
+            </summary>
+            <div class="pp-accordion__body">
+              {% if faq_count > 0 %}
+                {{ faq_items }}
+              {% else %}
+                <div class="pp-description-text pp-description-text--rich">
+                  {{ faq_unstructured_html }}
+                </div>
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}
       </div>
     </div>
   </section>
