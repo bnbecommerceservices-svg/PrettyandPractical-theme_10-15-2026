@@ -2602,8 +2602,8 @@ body.is-locked {
 
 @media (max-width: 768px) {
   .shopify-section .pp-collection-template #product-grid.pp-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 16px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
   }
 }
 
@@ -2960,7 +2960,7 @@ body.is-locked {
 @media (max-width: 768px) {
   .pp-collection-template .pp-grid,
   .shopify-section .pp-collection-template #product-grid.pp-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   .pp-collection-trust__grid {
