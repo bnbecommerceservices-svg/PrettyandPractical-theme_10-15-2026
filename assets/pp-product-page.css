@@ -4502,6 +4502,8 @@
   min-height: 0;
   max-height: min(240px, 32vh);
   overflow-y: auto;
+  /* Keep each bullet at full height when the list shrinks; it scrolls instead. */
+  grid-auto-rows: max-content;
   gap: 6px;
   margin: 4px 0 0;
   scrollbar-width: thin;
