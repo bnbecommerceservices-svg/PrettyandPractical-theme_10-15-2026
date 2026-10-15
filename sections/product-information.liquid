@@ -133,8 +133,6 @@
   assign spec_finish = product.metafields.custom.finish.value
   assign spec_colour = product.metafields.custom.colour.value | default: product.metafields.custom.color.value
   assign spec_use = product.metafields.custom.use.value
-  assign spec_assembly = product.metafields.custom.assembly.value
-  assign spec_care = product.metafields.custom.care_summary.value
   assign spec_feature = product.metafields.custom.feature.value
   assign spec_suitable = product.metafields.custom.suitable_for.value
   assign product_sku = current_variant.sku | default: product.variants.first.sku
@@ -184,6 +182,50 @@
 
   if spec_use == blank and current_collection != blank
     assign spec_use = current_collection.title
+  endif
+
+  # Free-form specifications from the custom.specifications metafield, one
+  # "Label: value" per line. Accepts multi-line text or rich text definitions.
+  # These are the only rows shown in the Specifications accordion.
+  assign spec_custom_rows = ''
+  assign spec_custom_metafield = product.metafields.custom.specifications
+  if spec_custom_metafield != blank
+    if spec_custom_metafield.type == 'rich_text_field'
+      assign spec_custom_raw = spec_custom_metafield | metafield_tag
+    else
+      assign spec_custom_raw = spec_custom_metafield.value | newline_to_br
+    endif
+    assign spec_custom_lines = spec_custom_raw | replace: '&nbsp;', ' ' | replace: '<br />', '|||' | replace: '<br/>', '|||' | replace: '<br>', '|||' | replace: '</p>', '|||' | replace: '</li>', '|||' | replace: '</h2>', '|||' | replace: '</h3>', '|||' | strip_html | split: '|||'
+    for spec_custom_line in spec_custom_lines
+      assign spec_custom_text = spec_custom_line | strip
+      if spec_custom_text == blank
+        continue
+      endif
+      if spec_custom_text contains ':'
+        assign spec_custom_label = spec_custom_text | split: ':' | first | strip
+        assign spec_custom_value = spec_custom_text | remove_first: spec_custom_label | remove_first: ':' | strip
+      else
+        assign spec_custom_label = ''
+        assign spec_custom_value = spec_custom_text
+      endif
+      if spec_custom_label == blank and spec_custom_value == blank
+        continue
+      endif
+      capture spec_custom_rows
+        echo spec_custom_rows
+        if spec_custom_label == blank
+          echo '<dd class="pp-specs__note">'
+          echo spec_custom_value | escape_once
+          echo '</dd>'
+        else
+          echo '<dt>'
+          echo spec_custom_label | escape_once
+          echo '</dt><dd>'
+          echo spec_custom_value | escape_once
+          echo '</dd>'
+        endif
+      endcapture
+    endfor
   endif
 
   if product.description contains '</li>'
@@ -1057,39 +1099,19 @@
           </div>
         </details>
 
-        <details class="pp-accordion">
-          <summary class="pp-accordion__summary">
-            Specifications
-            {{ pp_accordion_chevron }}
-          </summary>
-          <div class="pp-accordion__body">
-            <dl class="pp-specs">
-              {% if spec_material != blank %}
-                <dt>Material</dt><dd>{{ spec_material | escape }}</dd>
-              {% endif %}
-              {% if spec_colour != blank %}
-                <dt>Colour</dt><dd>{{ spec_colour | escape }}</dd>
-              {% endif %}
-              {% if spec_use != blank %}
-                <dt>Use</dt><dd>{{ spec_use | escape }}</dd>
-              {% endif %}
-              {% if spec_assembly != blank %}
-                <dt>Assembly</dt><dd>{{ spec_assembly | escape }}</dd>
-              {% else %}
-                <dt>Assembly</dt><dd>Simple setup</dd>
-              {% endif %}
-              {% if spec_care != blank %}
-                <dt>Care</dt><dd>{{ spec_care | escape }}</dd>
-              {% else %}
-                <dt>Care</dt><dd>Wipe clean with a damp cloth</dd>
-              {% endif %}
-              <dt>Warranty</dt>
-              <dd>{% if product.metafields.custom.warranty.value != blank %}{{ product.metafields.custom.warranty.value | escape }}{% else %}12 months{% endif %}</dd>
-              <dt>Delivery</dt>
-              <dd>Australia wide</dd>
-            </dl>
-          </div>
-        </details>
+        {% if spec_custom_rows != blank %}
+          <details class="pp-accordion">
+            <summary class="pp-accordion__summary">
+              Specifications
+              {{ pp_accordion_chevron }}
+            </summary>
+            <div class="pp-accordion__body">
+              <dl class="pp-specs">
+                {{ spec_custom_rows }}
+              </dl>
+            </div>
+          </details>
+        {% endif %}
       </div>
 
       <div class="pp-accordions">
