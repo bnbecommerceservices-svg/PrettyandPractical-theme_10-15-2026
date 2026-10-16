@@ -3675,43 +3675,77 @@
   display: none;
 }
 
+/* Specifications: two columns of label/value rows so long lists stay short. */
 .pp-product-page .pp-accordion__body dl.pp-specs {
   display: grid;
-  grid-template-columns: 130px 1fr;
-  gap: 0 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
   width: 100%;
   margin: 0;
 }
 
+.pp-product-page .pp-accordion__body .pp-specs__row {
+  display: grid;
+  grid-template-columns: minmax(96px, 42%) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  align-content: start;
+  padding: 10px 0;
+  border-top: 1px solid var(--pp-border);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pp-product-page .pp-accordion__body .pp-specs__row--note {
+  grid-column: 1 / -1;
+  grid-template-columns: 1fr;
+}
+
 .pp-product-page .pp-accordion__body dl.pp-specs dt,
 .pp-product-page .pp-accordion__body dl.pp-specs dd {
-  padding: 11px 0;
-  border-bottom: 1px solid var(--pp-border-light);
-  font-size: 14px;
+  padding: 0;
+  border: 0;
 }
 
 .pp-product-page .pp-accordion__body dl.pp-specs dt {
   margin: 0;
   font-weight: 500;
   color: var(--pp-text-muted);
-  padding-right: 0;
 }
 
 .pp-product-page .pp-accordion__body dl.pp-specs dd {
   margin: 0;
   font-weight: 700;
   color: var(--pp-navy);
+  overflow-wrap: anywhere;
 }
 
-.pp-product-page .pp-accordion__body dl.pp-specs dd.pp-specs__note {
-  grid-column: 1 / -1;
+.pp-product-page .pp-accordion__body dl.pp-specs .pp-specs__row--note dd {
   font-weight: 500;
   color: var(--pp-text-secondary);
 }
 
-.pp-product-page .pp-accordion__body dl.pp-specs dt:last-of-type,
-.pp-product-page .pp-accordion__body dl.pp-specs dd:last-of-type {
-  border-bottom: 0;
+.pp-product-page .pp-accordion__body .pp-specs--collapsible:not(.is-expanded) .pp-specs__row:nth-child(n + 13) {
+  display: none;
+}
+
+.pp-product-page .pp-accordion__body .pp-specs__toggle {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pp-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.pp-product-page .pp-accordion__body .pp-specs__toggle:focus-visible {
+  outline: 2px solid var(--pp-primary);
+  outline-offset: 3px;
 }
 
 .pp-product-page .pp-accordion__body .pp-faq-item {
@@ -4259,9 +4293,18 @@
     padding: 0 18px 18px;
   }
 
+  /* Phones: keep two columns, with each label stacked above its value. */
   .pp-product-page .pp-accordion__body dl.pp-specs {
-    grid-template-columns: 110px 1fr;
-    gap: 0 12px;
+    column-gap: 16px;
+  }
+
+  .pp-product-page .pp-accordion__body .pp-specs__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .pp-product-page .pp-accordion__body dl.pp-specs dt {
+    font-size: 12.5px;
   }
 
   .pp-product-page .pp-static-reviews__head {

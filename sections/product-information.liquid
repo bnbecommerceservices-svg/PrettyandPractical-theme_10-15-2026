@@ -259,6 +259,9 @@
   # "Label: value" per line. Accepts multi-line text or rich text definitions.
   # These are the only rows shown in the Specifications accordion.
   assign spec_custom_rows = ''
+  assign spec_custom_count = 0
+  # Lists longer than this start collapsed behind a "Show all" button.
+  assign spec_collapse_after = 12
   assign spec_custom_metafield = product.metafields.custom.specifications
   if spec_custom_metafield != blank
     if spec_custom_metafield.type == 'rich_text_field'
@@ -285,17 +288,18 @@
       capture spec_custom_rows
         echo spec_custom_rows
         if spec_custom_label == blank
-          echo '<dd class="pp-specs__note">'
+          echo '<div class="pp-specs__row pp-specs__row--note"><dd>'
           echo spec_custom_value | escape_once
-          echo '</dd>'
+          echo '</dd></div>'
         else
-          echo '<dt>'
+          echo '<div class="pp-specs__row"><dt>'
           echo spec_custom_label | escape_once
           echo '</dt><dd>'
           echo spec_custom_value | escape_once
-          echo '</dd>'
+          echo '</dd></div>'
         endif
       endcapture
+      assign spec_custom_count = spec_custom_count | plus: 1
     endfor
   endif
 
@@ -1050,9 +1054,36 @@
               {{ pp_accordion_chevron }}
             </summary>
             <div class="pp-accordion__body">
-              <dl class="pp-specs">
+              <dl class="pp-specs{% if spec_custom_count > spec_collapse_after %} pp-specs--collapsible{% endif %}" id="pp-specs-{{ section.id }}">
                 {{ spec_custom_rows }}
               </dl>
+              {% if spec_custom_count > spec_collapse_after %}
+                <button
+                  type="button"
+                  class="pp-specs__toggle"
+                  aria-controls="pp-specs-{{ section.id }}"
+                  aria-expanded="false"
+                  data-pp-specs-toggle
+                  data-label-more="Show all {{ spec_custom_count }} specifications"
+                  data-label-less="Show fewer specifications"
+                >
+                  Show all {{ spec_custom_count }} specifications
+                </button>
+                <script>
+                  if (!window.ppSpecsToggleBound) {
+                    window.ppSpecsToggleBound = true;
+                    document.addEventListener('click', function (event) {
+                      var button = event.target.closest('[data-pp-specs-toggle]');
+                      if (!button) return;
+                      var list = document.getElementById(button.getAttribute('aria-controls'));
+                      if (!list) return;
+                      var expanded = list.classList.toggle('is-expanded');
+                      button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                      button.textContent = expanded ? button.dataset.labelLess : button.dataset.labelMore;
+                    });
+                  }
+                </script>
+              {% endif %}
             </div>
           </details>
         {% endif %}
