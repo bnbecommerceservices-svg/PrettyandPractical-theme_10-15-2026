@@ -1,3 +1,7 @@
+html {
+  overflow-x: clip;
+}
+
 .pp-site-header,
 .pp-site-footer {
   --pp-primary: #e8532a;
@@ -980,8 +984,10 @@ body.pp-header-locked .content-for-layout {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 22px;
-  overflow: visible;
+  gap: clamp(12px, 1.6vw, 22px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 
 .pp-category-nav__inner::-webkit-scrollbar {
@@ -2290,12 +2296,12 @@ span.pp-nav-link {
 
 @media (max-width: 1100px) {
   .pp-header__inner {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
   }
 
   .pp-category-nav__inner {
     justify-content: flex-start;
-    overflow: visible;
   }
 
   .pp-footer__top {
@@ -2959,11 +2965,12 @@ span.pp-nav-link {
 .pp-welcome {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 2147483640;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: max(12px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
+  overflow-y: auto;
 }
 
 .pp-welcome[hidden] {
@@ -2971,7 +2978,7 @@ span.pp-nav-link {
 }
 
 .pp-welcome__backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgb(17 24 39 / 0.62);
   backdrop-filter: blur(6px);
@@ -2981,7 +2988,9 @@ span.pp-nav-link {
   position: relative;
   z-index: 1;
   width: min(460px, 100%);
-  overflow: hidden;
+  max-height: calc(100dvh - 24px);
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #fffaf6;
   color: var(--pp-navy);
   border-radius: 28px;
@@ -3235,18 +3244,87 @@ span.pp-nav-link {
 }
 
 @media (max-width: 600px) {
-  .pp-welcome__hero,
+  .pp-welcome {
+    padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .pp-welcome__dialog {
+    max-height: calc(100dvh - 20px);
+    border-radius: 22px;
+  }
+
+  .pp-welcome__hero {
+    min-height: 98px;
+    padding: 18px 18px 42px;
+  }
+
+  .pp-welcome__brand {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+
+  .pp-welcome__close {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .pp-welcome__stamp {
+    width: 72px;
+    height: 72px;
+    margin: -36px auto 12px;
+  }
+
+  .pp-welcome__stamp span {
+    font-size: 22px;
+  }
+
   .pp-welcome__offer,
   .pp-welcome__done {
-    padding-inline: 20px;
+    padding: 0 18px 18px;
   }
 
   .pp-welcome__dialog h2 {
-    font-size: 22px;
+    font-size: 20px;
+  }
+
+  .pp-welcome__text {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .pp-welcome__perks {
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .pp-welcome__perks li {
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .pp-welcome__form {
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .pp-welcome__input,
+  .pp-welcome__submit,
+  .pp-welcome__copy-btn,
+  .pp-welcome__shop {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  .pp-welcome__skip {
+    margin-top: 8px;
   }
 
   .pp-welcome__code-row {
     flex-direction: column;
+    margin-top: 14px;
   }
 }
 

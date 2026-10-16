@@ -2602,17 +2602,17 @@ body.is-locked {
 
 @media (max-width: 768px) {
   .shopify-section .pp-collection-template #product-grid.pp-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 16px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
   }
 }
 
 /* ===== Collection redesign ===== */
 .pp-collection-hero {
   position: relative;
-  height: var(--pp-banner-height, 180px);
-  min-height: 140px;
-  max-height: 180px;
+  height: clamp(168px, 24vw, 320px);
+  min-height: 0;
+  max-height: none;
   display: flex;
   align-items: center;
   background: linear-gradient(135deg, #1f2937 0%, #374151 55%, #4b5563 100%);
@@ -2726,9 +2726,9 @@ body.is-locked {
 
 .pp-collection-hero--pets,
 .pp-collection-hero--plants {
-  height: var(--pp-banner-height, 320px);
-  min-height: 240px;
-  max-height: 380px;
+  height: clamp(220px, 34vw, 460px);
+  min-height: 0;
+  max-height: none;
 }
 
 .pp-collection-hero--pets .pp-collection-hero__img {
@@ -2941,15 +2941,15 @@ body.is-locked {
   }
 
   .pp-collection-hero {
-    height: 168px;
-    max-height: 180px;
+    height: clamp(150px, 38vw, 240px);
+    max-height: none;
   }
 
   .pp-collection-hero--pets,
   .pp-collection-hero--plants {
-    height: 220px;
-    min-height: 200px;
-    max-height: 240px;
+    height: clamp(190px, 52vw, 320px);
+    min-height: 0;
+    max-height: none;
   }
 
   .pp-collection-hero__overlay {
@@ -2960,7 +2960,7 @@ body.is-locked {
 @media (max-width: 768px) {
   .pp-collection-template .pp-grid,
   .shopify-section .pp-collection-template #product-grid.pp-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   .pp-collection-trust__grid {
