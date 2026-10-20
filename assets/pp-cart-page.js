@@ -59,13 +59,6 @@
     return [];
   }
 
-  function hasSaleTag(product) {
-    if (product && product.has_sale_tag === true) return true;
-    return tagList(product && product.tags).some(function (tag) {
-      return tag === 'sale' || tag === 'on-sale' || tag === 'on sale' || tag === 'onsale';
-    });
-  }
-
   function isNewProduct(product, newDays) {
     if (product && product.is_new === true) return true;
     var tags = tagList(product && product.tags);
@@ -132,7 +125,7 @@
       rating: typeof product.rating === 'number' ? product.rating : null,
       rating_count: typeof product.rating_count === 'number' ? product.rating_count : null,
       is_new: isNewProduct(product, newDays),
-      has_sale: typeof compareAtPrice === 'number' && compareAtPrice > price && hasSaleTag(product),
+      has_sale: typeof compareAtPrice === 'number' && compareAtPrice > price,
     };
   }
 

@@ -257,7 +257,7 @@
                     if item.original_price > item.final_price
                       assign unit_compare_price = item.original_price | money_with_currency
                       assign line_compare_price = item.original_line_price | money_with_currency
-                    elsif item.product.tags contains 'sale' or item.product.tags contains 'Sale' or item.product.tags contains 'on-sale'
+                    elsif item.variant.compare_at_price > item.final_price
                       assign unit_compare_price = item.variant.compare_at_price | money_with_currency
                       assign line_compare_price = item.variant.compare_at_price | times: item.quantity | money_with_currency
                     endif
@@ -269,7 +269,7 @@
                     if item.original_price > item.final_price
                       assign unit_compare_price = item.original_price | money
                       assign line_compare_price = item.original_line_price | money
-                    elsif item.product.tags contains 'sale' or item.product.tags contains 'Sale' or item.product.tags contains 'on-sale'
+                    elsif item.variant.compare_at_price > item.final_price
                       assign unit_compare_price = item.variant.compare_at_price | money
                       assign line_compare_price = item.variant.compare_at_price | times: item.quantity | money
                     endif

@@ -1,9 +1,8 @@
 {%- comment -%}
   Prints compact promo flags: |sale |new |bestseller
 
-  Sale: compare-at is higher AND the product is tagged sale / on-sale.
-  The catalog was imported with a compare-at price on every product, so
-  compare-at alone is not a real sale.
+  Sale: the compare-at price is higher than the price. No tag is needed;
+  clear a product's compare-at price to take it off sale.
 
   New: published in the last N days, or tagged just-in / new-in.
   Ignore bulk tags "new" and "New Arrival" — those were applied to the whole catalog.
@@ -21,14 +20,11 @@
     assign compare_check = product.selected_or_first_available_variant.compare_at_price | default: product.compare_at_price
   endif
 
-  assign has_sale_tag = false
   assign has_bestseller_tag = false
   assign has_just_in_tag = false
   for tag in product.tags
     assign tag_l = tag | strip | downcase
-    if tag_l == 'sale' or tag_l == 'on-sale' or tag_l == 'on sale' or tag_l == 'onsale'
-      assign has_sale_tag = true
-    elsif tag_l == 'bestseller' or tag_l == 'best seller' or tag_l == 'best-seller'
+    if tag_l == 'bestseller' or tag_l == 'best seller' or tag_l == 'best-seller'
       assign has_bestseller_tag = true
     elsif tag_l == 'just-in' or tag_l == 'just in' or tag_l == 'new-in' or tag_l == 'new in'
       assign has_just_in_tag = true
@@ -36,7 +32,7 @@
   endfor
 
   assign show_sale = false
-  if compare_check > price_check and has_sale_tag
+  if compare_check > price_check
     assign show_sale = true
   endif
 

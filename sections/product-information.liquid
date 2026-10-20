@@ -576,8 +576,10 @@
         {% for variant in product.variants %}
           {% liquid
             assign variant_savings = 0
+            assign variant_percent_off = 0
             if variant.compare_at_price > variant.price
               assign variant_savings = variant.compare_at_price | minus: variant.price
+              assign variant_percent_off = variant_savings | times: 100.0 | divided_by: variant.compare_at_price | round | at_least: 1
             endif
           %}
           {
@@ -590,6 +592,7 @@
             "compareAtPrice": {{ variant.compare_at_price | money | json }},
             "compareAtPriceValue": {{ variant.compare_at_price | json }},
             "savingsMoney": {{ variant_savings | money | json }},
+            "percentOff": {{ variant_percent_off | json }},
             "featuredMediaId": {{ variant.featured_media.id | json }},
             "options": {{ variant.options | json }}
           }{% unless forloop.last %},{% endunless %}
@@ -898,12 +901,17 @@
                 {%- if on_sale -%}
                   <span class="pp-price-compare" id="pp-price-compare">{{ compare_at_price | money }}</span>
                   {%- assign savings = compare_at_price | minus: current_variant.price -%}
-                  <span class="pp-save-pill" id="pp-save-pill">Save {{ savings | money }}</span>
+                  {%- assign percent_off = savings | times: 100.0 | divided_by: compare_at_price | round | at_least: 1 -%}
+                  <span class="pp-save-pill" id="pp-save-pill">{{ percent_off }}% off</span>
                 {%- else -%}
                   <span class="pp-price-compare" id="pp-price-compare" hidden></span>
                   <span class="pp-save-pill" id="pp-save-pill" hidden></span>
                 {%- endif -%}
               </div>
+              <p class="pp-offer-line" id="pp-offer-line"{% unless on_sale %} hidden{% endunless %}>
+                <svg class="pp-offer-line__icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+                Limited time offer
+              </p>
               <p class="pp-price-note">
                 <span class="pp-tax-line">{{ product_tax_note | strip }}</span>
                 <span aria-hidden="true"> · </span>

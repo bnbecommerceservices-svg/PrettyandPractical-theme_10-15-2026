@@ -461,19 +461,25 @@
       stockLine.classList.remove('is-out');
     }
 
-    if (productData?.saleTagged && variant.compareAtPrice && variant.compareAtPrice !== variant.price) {
+    const offerLine = document.getElementById('pp-offer-line');
+    const variantOnSale =
+      typeof variant.compareAtPriceValue === 'number' &&
+      variant.compareAtPriceValue > variant.priceValue;
+    if (variantOnSale) {
       if (priceCompare) {
         priceCompare.hidden = false;
         priceCompare.textContent = variant.compareAtPrice;
       }
       if (priceSave) {
         priceSave.hidden = false;
-        priceSave.textContent = `Save ${variant.savingsMoney}`;
+        priceSave.textContent = `${variant.percentOff}% off`;
       }
+      if (offerLine) offerLine.hidden = false;
       if (saleBadge) saleBadge.hidden = false;
     } else {
       if (priceCompare) priceCompare.hidden = true;
       if (priceSave) priceSave.hidden = true;
+      if (offerLine) offerLine.hidden = true;
       if (saleBadge) saleBadge.hidden = true;
     }
 
