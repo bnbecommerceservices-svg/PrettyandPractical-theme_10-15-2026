@@ -1,6 +1,14 @@
 {% liquid
   assign current_variant = product.selected_or_first_available_variant
   assign compare_at_price = current_variant.compare_at_price
+
+  # In stock = Shopify says it can be bought AND, when Shopify tracks its
+  # inventory, at least 1 is left. 0 or less shows Sold out, even if
+  # "Continue selling when out of stock" is turned on.
+  assign current_in_stock = current_variant.available
+  if current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity < 1
+    assign current_in_stock = false
+  endif
   assign on_sale = false
   capture pp_promo
     render 'pp-product-promo', product: product, price: current_variant.price, compare_at: compare_at_price
@@ -126,8 +134,6 @@
     endif
   endfor
 
-  assign installment_cents = current_variant.price | divided_by: 4
-  assign installment_money = installment_cents | money
   assign short_blurb = product.metafields.custom.short_description.value | default: product.metafields.custom.subtitle.value
   if short_blurb == blank and product.description != blank
     assign short_blurb = product.description | strip_html | truncate: 220
@@ -200,60 +206,8 @@
       endif
     endif
   endif
-  assign spec_material = product.metafields.custom.material.value | default: product.metafields.descriptors.material.value
-  assign spec_finish = product.metafields.custom.finish.value
-  assign spec_colour = product.metafields.custom.colour.value | default: product.metafields.custom.color.value
-  assign spec_use = product.metafields.custom.use.value
-  assign spec_feature = product.metafields.custom.feature.value
-  assign spec_suitable = product.metafields.custom.suitable_for.value
-  assign product_sku = current_variant.sku | default: product.variants.first.sku
   assign feature_items = ''
   assign feature_count = 0
-
-  if product.description contains 'Specifications'
-    assign desc_spec_block = product.description
-    if product.description contains 'Specifications:'
-      assign desc_spec_block = product.description | split: 'Specifications:' | last
-    else
-      assign desc_spec_block = product.description | split: 'Specifications' | last
-    endif
-    if desc_spec_block contains 'Package Included'
-      assign desc_spec_block = desc_spec_block | split: 'Package Included' | first
-    endif
-    if desc_spec_block contains 'Note:'
-      assign desc_spec_block = desc_spec_block | split: 'Note:' | first
-    endif
-    assign spec_lines = desc_spec_block | replace: '</p>', '|' | replace: '<br />', '|' | replace: '<br/>', '|' | replace: '<br>', '|' | strip_html | split: '|'
-    for spec_line in spec_lines
-      assign spec_line_clean = spec_line | strip
-      if spec_line_clean contains ':'
-        assign spec_parts = spec_line_clean | split: ':'
-        assign spec_key = spec_parts | first | strip | downcase
-        assign spec_val = spec_parts | last | strip
-        if spec_val != blank and spec_val.size < 90
-          if spec_key == 'material' and spec_material == blank
-            assign spec_material = spec_val
-          elsif spec_key == 'color' or spec_key == 'colour'
-            if spec_colour == blank
-              assign spec_colour = spec_val
-            endif
-          elsif spec_key == 'type' and spec_use == blank
-            unless spec_val contains 'UPC' or spec_val contains 'SKU'
-              assign spec_use = spec_val
-            endunless
-          elsif spec_key == 'feature' and spec_feature == blank
-            assign spec_feature = spec_val
-          elsif spec_key == 'suitable for' and spec_suitable == blank
-            assign spec_suitable = spec_val
-          endif
-        endif
-      endif
-    endfor
-  endif
-
-  if spec_use == blank and current_collection != blank
-    assign spec_use = current_collection.title
-  endif
 
   # Free-form specifications from the custom.specifications metafield, one
   # "Label: value" per line. Accepts multi-line text or rich text definitions.
@@ -411,21 +365,6 @@
     endif
   endif
 
-  if desc_intro.size < 80
-    assign desc_intro = product.title | append: ' is designed for everyday Australian homes — practical, well finished, and easy to live with. Use it to refresh a living room, entry, bedroom, or covered outdoor corner without adding clutter. '
-    if spec_material != blank
-      assign desc_intro = desc_intro | append: 'It is made from ' | append: spec_material | append: ', chosen for day-to-day durability and a clean look. '
-    endif
-    if spec_colour != blank
-      assign desc_intro = desc_intro | append: 'The colour is ' | append: spec_colour | append: ', so it sits comfortably with timber, stone, and neutral interiors. '
-    endif
-    if spec_use != blank
-      assign desc_intro = desc_intro | append: 'Best suited to ' | append: spec_use | append: '. '
-    else
-      assign desc_intro = desc_intro | append: 'Built for real homes, not showrooms. '
-    endif
-    assign desc_intro = desc_intro | append: 'Read the full details below, including what is in the box, specifications, shipping, care, and common questions, so you can check fit and finish before you buy.'
-  endif
 
   assign desc_intro_markup = ''
   assign desc_sentence_chunk = ''
@@ -575,6 +514,10 @@
       "variants": [
         {% for variant in product.variants %}
           {% liquid
+            assign variant_in_stock = variant.available
+            if variant.inventory_management == 'shopify' and variant.inventory_quantity < 1
+              assign variant_in_stock = false
+            endif
             assign variant_savings = 0
             assign variant_percent_off = 0
             if variant.compare_at_price > variant.price
@@ -586,6 +529,7 @@
             "id": {{ variant.id | json }},
             "title": {{ variant.title | json }},
             "available": {{ variant.available | json }},
+            "inStock": {{ variant_in_stock | json }},
             "sku": {{ variant.sku | json }},
             "price": {{ variant.price | money | json }},
             "priceValue": {{ variant.price | json }},
@@ -818,9 +762,14 @@
                   assign is_swatch_option = false
                   assign is_size_option = false
 
-                  if option_name_l == 'colour' or option_name_l == 'color' or option_name_l == 'frame' or option_name_l == 'colourway'
+                  if option_name_l contains 'colour' or option_name_l contains 'color' or option_name_l == 'frame' or option_name_l == 'finish' or option_name_l == 'shade'
                     assign is_swatch_option = true
                   endif
+                  for value in option.values
+                    if value.swatch
+                      assign is_swatch_option = true
+                    endif
+                  endfor
 
                   for value in option.values
                     if value != blank and value != 'Default Title'
@@ -848,24 +797,15 @@
                     >
                       {% for value in option.values %}
                         {% if value != blank and value != 'Default Title' %}
-                          {% liquid
-                            assign value_handle = value | handleize
+                          {%- liquid
                             assign swatch_style = ''
-                            case value_handle
-                              when 'white-marble'
-                                assign swatch_style = 'background: linear-gradient(135deg, #f5f5f0 0%, #e8e6dd 100%);'
-                              when 'dark-marble'
-                                assign swatch_style = 'background: linear-gradient(135deg, #2d2d2d 0%, #4a4a4a 100%);'
-                              when 'charcoal'
-                                assign swatch_style = 'background: #36454f;'
-                              when 'black'
-                                assign swatch_style = 'background: #111827;'
-                              when 'white'
-                                assign swatch_style = 'background: #ffffff;'
-                              else
-                                assign swatch_style = 'background: #d1d5db;'
-                            endcase
-                          %}
+                            if is_swatch_option
+                              capture swatch_style
+                                render 'pp-swatch-style', value: value
+                              endcapture
+                              assign swatch_style = swatch_style | strip
+                            endif
+                          -%}
                           <button
                             type="button"
                             class="pp-variant-pill{% if value == option.selected_value %} is-selected{% endif %}"
@@ -874,8 +814,8 @@
                             title="{{ value | escape }}"
                             aria-pressed="{% if value == option.selected_value %}true{% else %}false{% endif %}"
                           >
-                            {% if is_swatch_option %}
-                              <span class="pp-variant-swatch" style="{{ swatch_style }}"></span>
+                            {% if swatch_style != blank %}
+                              <span class="pp-variant-swatch" style="{{ swatch_style }}" aria-hidden="true"></span>
                             {% endif %}
                             <span class="pp-variant-pill__label">{{ value }}</span>
                           </button>
@@ -914,13 +854,11 @@
               </p>
               <p class="pp-price-note">
                 <span class="pp-tax-line">{{ product_tax_note | strip }}</span>
-                <span aria-hidden="true"> · </span>
-                <span class="pp-installments" id="pp-installments">Or 4 payments of {{ installment_money }}</span>
               </p>
             </div>
 
-            <p class="pp-stock is-in" id="pp-stock-line">
-              In stock, ready to ship
+            <p class="pp-stock {% if current_in_stock %}is-in{% else %}is-out{% endif %}" id="pp-stock-line">
+              {% if current_in_stock %}In stock, ready to ship{% else %}Sold out{% endif %}
             </p>
 
             <div class="pp-purchase-stack">
@@ -934,10 +872,10 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
               </div>
-              <button type="submit" class="pp-atc{% unless current_variant.available %} pp-atc--soldout{% endunless %}" id="add-to-cart" name="add">
-                {% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}
+              <button type="submit" class="pp-atc{% unless current_in_stock %} pp-atc--soldout{% endunless %}" id="add-to-cart" name="add"{% unless current_in_stock %} disabled{% endunless %}>
+                {% if current_in_stock %}Add to cart{% else %}Sold out{% endif %}
               </button>
-              <div class="pp-buy-now-wrap pp-buy-now-wrap--navy">
+              <div class="pp-buy-now-wrap pp-buy-now-wrap--navy" id="pp-buy-now-wrap"{% unless current_in_stock %} hidden{% endunless %}>
                 {{ form | payment_button }}
               </div>
             </div>
@@ -1023,6 +961,7 @@
       {%- endcapture -%}
 
       <div class="pp-accordions">
+        {% if desc_is_rich or desc_intro_markup != blank or desc_detail_count > 0 or package_count > 0 %}
         <details class="pp-accordion" open>
           <summary class="pp-accordion__summary">
             Description
@@ -1049,11 +988,10 @@
                   </ul>
                 {% endif %}
               </div>
-            {% else %}
-              <p class="pp-empty-copy">Full product details will be added soon.</p>
             {% endif %}
           </div>
         </details>
+        {% endif %}
 
         {% if spec_custom_rows != blank %}
           <details class="pp-accordion">
@@ -1237,9 +1175,9 @@
         <span class="pp-sticky-title">{{ product.title }}</span>
         <span class="pp-sticky-price" id="sticky-price">{{ current_variant.price | money }}</span>
       </div>
-      <button class="pp-sticky-atc{% unless current_variant.available %} pp-atc--soldout{% endunless %}" id="sticky-atc">
+      <button type="button" class="pp-sticky-atc{% unless current_in_stock %} pp-atc--soldout{% endunless %}" id="sticky-atc"{% unless current_in_stock %} disabled{% endunless %}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span id="sticky-atc-label">{% if current_variant.available %}Add to Cart{% else %}Sold out{% endif %}</span>
+        <span id="sticky-atc-label">{% if current_in_stock %}Add to Cart{% else %}Sold out{% endif %}</span>
       </button>
     </div>
   </div>

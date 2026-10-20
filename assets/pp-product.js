@@ -439,26 +439,16 @@
     if (itemNo) itemNo.textContent = variant.sku || productData.title;
     if (specSku) specSku.textContent = variant.sku || productData.title;
     if (specVariant) specVariant.textContent = getMeaningfulSelectionLabel();
-    if (specAvailability) specAvailability.textContent = variant.available ? 'In stock' : 'Sold out';
+    const inStock = variant.inStock !== false && variant.available !== false;
+    if (specAvailability) specAvailability.textContent = inStock ? 'In stock' : 'Sold out';
     if (priceCurrent) priceCurrent.textContent = variant.price;
     if (stickyPrice) stickyPrice.textContent = variant.price;
 
-    const installmentsEl = document.getElementById('pp-installments');
-    if (installmentsEl && typeof variant.priceValue === 'number') {
-      const installment = (variant.priceValue / 4 / 100).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-      const currencyMatch = String(variant.price || '').match(/^[^\d]*/);
-      const prefix = currencyMatch ? currencyMatch[0] : '$';
-      installmentsEl.textContent = `Or 4 payments of ${prefix}${installment}`;
-    }
-
     const stockLine = document.getElementById('pp-stock-line');
     if (stockLine) {
-      stockLine.textContent = 'In stock, ready to ship';
-      stockLine.classList.add('is-in');
-      stockLine.classList.remove('is-out');
+      stockLine.textContent = inStock ? 'In stock, ready to ship' : 'Sold out';
+      stockLine.classList.toggle('is-in', inStock);
+      stockLine.classList.toggle('is-out', !inStock);
     }
 
     const offerLine = document.getElementById('pp-offer-line');
@@ -485,20 +475,20 @@
 
     const atc = document.getElementById('add-to-cart');
     const stickyAtc = document.getElementById('sticky-atc');
-    const buyNow = document.getElementById('buy-now');
-    const soldOut = variant.available === false;
+    const buyNowWrap = document.getElementById('pp-buy-now-wrap');
+    const soldOut = !inStock;
     if (atc) {
-      atc.disabled = false;
+      atc.disabled = soldOut;
       atc.classList.toggle('pp-atc--soldout', soldOut);
       atc.textContent = soldOut ? 'Sold out' : 'Add to cart';
     }
     if (stickyAtc) {
-      stickyAtc.disabled = false;
+      stickyAtc.disabled = soldOut;
       stickyAtc.classList.toggle('pp-atc--soldout', soldOut);
       const stickyLabel = document.getElementById('sticky-atc-label');
       if (stickyLabel) stickyLabel.textContent = soldOut ? 'Sold out' : 'Add to Cart';
     }
-    if (buyNow) buyNow.disabled = false;
+    if (buyNowWrap) buyNowWrap.hidden = soldOut;
 
     if (variant.featuredMediaId) {
       const targetIndex = Array.from(slides).findIndex((slide) => String(slide.dataset.mediaId) === String(variant.featuredMediaId));
@@ -604,6 +594,10 @@
   async function submitAddToCart() {
     const matchingVariant = findMatchingVariant();
     if (!matchingVariant) return;
+    if (matchingVariant.inStock === false || matchingVariant.available === false) {
+      syncVariantDetails(matchingVariant);
+      return;
+    }
 
     if (variantIdInput) variantIdInput.value = matchingVariant.id;
     updateQty(qty);

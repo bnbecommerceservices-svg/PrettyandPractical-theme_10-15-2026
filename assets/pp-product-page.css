@@ -194,7 +194,8 @@
 .pp-variant-pill { padding: 10px 18px; border: 1px solid var(--pp-border); box-shadow: 0 0 0 0 transparent; border-radius: var(--pp-radius-pill); font-weight: 600; font-size: 14px; color: var(--pp-text); background: var(--pp-white); transition: background-color var(--pp-transition), color var(--pp-transition), border-color var(--pp-transition), box-shadow var(--pp-transition); display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; }
 .pp-variant-pill:hover:not(.is-selected) { border-color: var(--pp-text-secondary); }
 .pp-variant-pill.is-selected { border: 1px solid var(--pp-primary); box-shadow: 0 0 0 2px var(--pp-primary); background: var(--pp-primary-light); color: var(--pp-primary-dark); }
-.pp-variant-swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+.pp-variant-swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); flex-shrink: 0; }
+.pp-buy-now-wrap[hidden] { display: none !important; }
 .pp-selection-line { font-size: 13px; color: var(--pp-text-secondary); margin-top: 4px; }
 .pp-selection-line strong { color: var(--pp-text); font-weight: 600; }
 
@@ -1227,7 +1228,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 1px solid rgba(0,0,0,.08);
+  border: 1px solid rgba(0,0,0,.2);
 }
 
 .pp-product-page .pp-buybox .pp-selection-line {
