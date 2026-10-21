@@ -5092,3 +5092,18 @@
 .pp-product-page .pp-recommended[hidden] {
   display: none;
 }
+
+/* "Similar products" below the product details: full-width grey band. */
+product-recommendations.product-recommendations {
+  display: block;
+}
+
+product-recommendations.product-recommendations:has(.pp-recommend) {
+  background: var(--pp-bg-subtle, #f7f8fa);
+  border-top: 1px solid var(--pp-border-light, #f3f4f6);
+}
+
+product-recommendations.product-recommendations .pp-recommend {
+  background: transparent;
+  border-top: 0;
+}
