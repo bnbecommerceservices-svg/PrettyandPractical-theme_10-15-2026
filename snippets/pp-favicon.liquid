@@ -1,12 +1,15 @@
 {%- comment -%}
-  Browser tab, bookmark and home-screen icons.
+  Browser tab, search result, bookmark and home-screen icons.
 
   Uses the favicon uploaded in Theme settings > Logo and favicon when there
-  is one; otherwise the P&P icons in assets (made from pp-favicon.png).
+  is one; otherwise the P&P icons in assets. Google Search shows a site's
+  favicon from these links on the homepage and wants a square icon at a
+  multiple of 48px (48, 96, 192), so those sizes are listed.
 {%- endcomment -%}
 {%- if settings.favicon != blank -%}
   <link rel="icon" type="image/png" sizes="32x32" href="{{ settings.favicon | image_url: width: 32, height: 32, crop: 'center' }}">
   <link rel="icon" type="image/png" sizes="48x48" href="{{ settings.favicon | image_url: width: 48, height: 48, crop: 'center' }}">
+  <link rel="icon" type="image/png" sizes="96x96" href="{{ settings.favicon | image_url: width: 96, height: 96, crop: 'center' }}">
   <link rel="icon" type="image/png" sizes="192x192" href="{{ settings.favicon | image_url: width: 192, height: 192, crop: 'center' }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ settings.favicon | image_url: width: 180, height: 180, crop: 'center' }}">
 {%- else -%}
@@ -17,4 +20,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="{{ 'pp-favicon-192.png' | asset_url }}">
   <link rel="icon" type="image/png" sizes="512x512" href="{{ 'pp-favicon-512.png' | asset_url }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ 'pp-apple-touch-icon.png' | asset_url }}">
+  <link rel="manifest" href="{{ 'pp-site.webmanifest.json' | asset_url }}">
 {%- endif -%}
+<meta name="application-name" content="{{ shop.name | escape }}">
+<meta name="apple-mobile-web-app-title" content="{{ shop.name | escape }}">

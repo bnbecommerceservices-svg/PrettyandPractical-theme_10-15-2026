@@ -19,7 +19,7 @@
 >
 <meta
   name="theme-color"
-  content=""
+  content="#ffffff"
 >
 
 {%- liquid
@@ -111,24 +111,48 @@
   content="{{ og_description | escape }}"
 >
 
-{%- if page_image -%}
-  <meta
-    property="og:image"
-    content="http:{{ page_image | image_url }}"
-  >
-  <meta
-    property="og:image:secure_url"
-    content="https:{{ page_image | image_url }}"
-  >
-  <meta
-    property="og:image:width"
-    content="{{ page_image.width }}"
-  >
-  <meta
-    property="og:image:height"
-    content="{{ page_image.height }}"
-  >
-{%- endif -%}
+{%- comment -%}
+  Share image: Shopify's page image (product, collection or article image,
+  or the Social sharing image in Online Store > Preferences). Pages without
+  one use the logo image pp-og-image.jpg (1200 x 630).
+{%- endcomment -%}
+{%- liquid
+  if page_image
+    assign og_image_url = page_image | image_url: width: 1200 | prepend: 'https:'
+    assign og_image_width = 1200
+    assign og_image_height = 1200 | times: page_image.height | divided_by: page_image.width
+    if page_image.width < 1200
+      assign og_image_width = page_image.width
+      assign og_image_height = page_image.height
+    endif
+    assign og_image_alt = page_image.alt | default: og_title
+  else
+    assign og_image_url = 'pp-og-image.jpg' | asset_url | prepend: 'https:'
+    assign og_image_width = 1200
+    assign og_image_height = 630
+    assign og_image_alt = shop.name
+  endif
+-%}
+<meta
+  property="og:image"
+  content="{{ og_image_url }}"
+>
+<meta
+  property="og:image:secure_url"
+  content="{{ og_image_url }}"
+>
+<meta
+  property="og:image:width"
+  content="{{ og_image_width }}"
+>
+<meta
+  property="og:image:height"
+  content="{{ og_image_height }}"
+>
+<meta
+  property="og:image:alt"
+  content="{{ og_image_alt | escape }}"
+>
 
 {%- if request.page_type == 'product' -%}
   <meta
@@ -158,6 +182,10 @@
 <meta
   name="twitter:description"
   content="{{ og_description | escape }}"
+>
+<meta
+  name="twitter:image"
+  content="{{ og_image_url }}"
 >
 
 <title>
