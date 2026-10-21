@@ -3257,3 +3257,37 @@ body.is-locked {
     order: 3;
   }
 }
+
+/* ───── Native Shopify filtering ───── */
+.pp-collection-template .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pp-collection-template.is-loading .pp-grid,
+.pp-collection-template.is-loading .pp-pagination,
+.pp-collection-template.is-loading .pp-toolbar__count {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.pp-collection-template .pp-fopt__swatch {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.pp-collection-template .pp-filters-empty {
+  font-size: 13px;
+  color: var(--pp-text-muted);
+}

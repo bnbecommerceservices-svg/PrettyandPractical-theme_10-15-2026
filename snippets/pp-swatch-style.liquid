@@ -7,7 +7,7 @@
   2. Otherwise the colour name is matched against the table below. Two-colour
      names such as "Black/Oak" or "White & Natural" show both colours.
 
-  @param {object} value - Product option value (or plain string)
+  @param {object} value - Product option value, filter value, or plain string
 {% enddoc %}
 {%- liquid
   assign swatch_out = ''
@@ -23,7 +23,7 @@
     # Most specific names first: the first keyword found in the name wins.
     assign swatch_table = 'white-marble:#efece4;dark-marble:#3a3a3a;black-marble:#2b2b2b;grey-marble:#a9a9a9;gray-marble:#a9a9a9;marble:#e6e3db;rose-gold:#b76e79;light-grey:#d4d7dc;light-gray:#d4d7dc;dark-grey:#4b5563;dark-gray:#4b5563;off-white:#f5f2ea;natural-oak:#c8a165;light-oak:#d9b98a;dark-oak:#6f4e37;light-wood:#d9b98a;dark-wood:#5c4033;sky-blue:#87ceeb;light-blue:#a7c7e7;baby-blue:#a7c7e7;dusty-blue:#7d9bb5;royal-blue:#2a52be;navy-blue:#1f2a44;dark-blue:#1f3a6e;forest-green:#2e5e3e;dark-green:#24502f;light-green:#a8d5a2;sage-green:#9caf88;olive-green:#708238;light-pink:#f6c9d4;dusty-pink:#d8a7a7;hot-pink:#e0457b;dark-brown:#4a2f23;light-brown:#a47551;charcoal:#36454f;anthracite:#383e42;graphite:#3f4246;gunmetal:#53565a;slate:#5f6b73;ivory:#fffff0;cream:#f3ead3;beige:#e8dcc4;sand:#d8c7a6;stone:#c2b8a3;taupe:#8b7d6b;khaki:#b5a77a;oatmeal:#d9cdb4;linen:#ece3d2;greige:#bdb5a6;mocha:#7b5e4a;oak:#c8a165;walnut:#5c4033;teak:#a0703c;mahogany:#4e1f1a;cherry:#7b2d26;pine:#d6b57c;acacia:#b07d48;bamboo:#d8b97c;rattan:#c9a06b;wicker:#b88a4f;jute:#c9ad7f;timber:#b5895a;wood:#b5895a;natural:#c9a87c;espresso:#3b2a20;chocolate:#4a2f23;coffee:#6f4e37;brown:#7b5232;tan:#d2b48c;caramel:#b8763e;camel:#c19a6b;cognac:#9a4e1d;terracotta:#c8643b;rust:#b7472a;copper:#b87333;bronze:#8c6239;brass:#b5a642;gold:#c9a227;silver:#c0c0c0;chrome:#dfe3e8;nickel:#a7a9ac;steel:#8a9097;black:#111827;white:#ffffff;grey:#9ca3af;gray:#9ca3af;sage:#9caf88;olive:#708238;emerald:#2e8b57;mint:#b8e2c8;green:#3f8f4f;teal:#0f766e;turquoise:#40c4c4;aqua:#7fdbdb;navy:#1f2a44;denim:#3b5f8a;cobalt:#0047ab;blue:#2f5fb3;lavender:#c9b6e4;lilac:#c8a2c8;mauve:#b784a7;purple:#6b3fa0;violet:#7f4fc9;plum:#6e3a5a;burgundy:#800020;maroon:#7a1f2b;wine:#722f37;red:#c62828;coral:#f08070;blush:#f1c6c1;pink:#f2a6b8;peach:#f6c3a1;apricot:#f4b183;orange:#e8792b;mustard:#d4a72c;yellow:#f2c94c' | split: ';'
 
-    assign swatch_name = value | append: ''
+    assign swatch_name = value.label | default: value.name | default: value | append: ''
     assign swatch_parts = swatch_name | replace: ' & ', '/' | replace: ' and ', '/' | replace: ' with ', '/' | replace: '+', '/' | replace: ',', '/' | split: '/'
     assign swatch_found = ''
     assign swatch_found_count = 0

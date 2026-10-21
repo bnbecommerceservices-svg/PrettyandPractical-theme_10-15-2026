@@ -57,9 +57,9 @@
           <section class="pp-catmega__col">
             <h3>Shop by</h3>
             <ul>
-              <li><a href="{{ all_url }}?pp_type={{ 'Shelves' | url_encode }}">Shelves</a></li>
-              <li><a href="{{ all_url }}?pp_type={{ 'Tables' | url_encode }}">Tables</a></li>
-              <li><a href="{{ all_url }}?pp_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
+              <li><a href="{{ all_url }}?filter.p.product_type={{ 'Shelves' | url_encode }}">Shelves</a></li>
+              <li><a href="{{ all_url }}?filter.p.product_type={{ 'Tables' | url_encode }}">Tables</a></li>
+              <li><a href="{{ all_url }}?filter.p.product_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
               <li><a href="{{ new_url }}">View all new</a></li>
             </ul>
           </section>
@@ -69,19 +69,19 @@
           <section class="pp-catmega__col">
             <h3>Shop by type</h3>
             <ul>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Kitchen' | url_encode }}">Kitchen</a></li>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Lighting' | url_encode }}">Lighting</a></li>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Mirrors & decor' | url_encode }}">Mirrors &amp; decor</a></li>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Storage' | url_encode }}">Storage</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Kitchen' | url_encode }}">Kitchen</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Lighting' | url_encode }}">Lighting</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Mirrors & decor' | url_encode }}">Mirrors &amp; decor</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Storage' | url_encode }}">Storage</a></li>
             </ul>
           </section>
           <section class="pp-catmega__col">
             <h3>Popular spaces</h3>
             <ul>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Plant stands' | url_encode }}">Indoor plants</a></li>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Kitchen' | url_encode }}">Kitchen &amp; dining</a></li>
-              <li><a href="{{ home_garden_url }}?pp_type={{ 'Mirrors & decor' | url_encode }}">Wall decor</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Plant stands' | url_encode }}">Indoor plants</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Kitchen' | url_encode }}">Kitchen &amp; dining</a></li>
+              <li><a href="{{ home_garden_url }}?filter.p.product_type={{ 'Mirrors & decor' | url_encode }}">Wall decor</a></li>
             </ul>
           </section>
           <section class="pp-catmega__col">
@@ -98,8 +98,8 @@
           <section class="pp-catmega__col">
             <h3>Shop outdoor</h3>
             <ul>
-              <li><a href="{{ outdoor_garden_url }}?pp_type={{ 'Outdoor' | url_encode }}">Outdoor furniture</a></li>
-              <li><a href="{{ outdoor_garden_url }}?pp_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
+              <li><a href="{{ outdoor_garden_url }}?filter.p.product_type={{ 'Outdoor' | url_encode }}">Outdoor furniture</a></li>
+              <li><a href="{{ outdoor_garden_url }}?filter.p.product_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
               <li><a href="{{ outdoor_garden_url }}">Patio &amp; balcony</a></li>
             </ul>
           </section>
@@ -124,19 +124,19 @@
           <section class="pp-catmega__col">
             <h3>Shop by type</h3>
             <ul>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'Shelves' | url_encode }}">Shelves</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'Tables' | url_encode }}">Tables</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'TV stands & mounts' | url_encode }}">TV stands &amp; mounts</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'Clothing storage' | url_encode }}">Clothing storage</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'Shelves' | url_encode }}">Shelves</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'Tables' | url_encode }}">Tables</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'TV stands & mounts' | url_encode }}">TV stands &amp; mounts</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'Clothing storage' | url_encode }}">Clothing storage</a></li>
             </ul>
           </section>
           <section class="pp-catmega__col">
             <h3>Shop by room</h3>
             <ul>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'Tables' | url_encode }}">Living room</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'Clothing storage' | url_encode }}">Bedroom</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'Tables' | url_encode }}">Dining</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'TV stands & mounts' | url_encode }}">TV &amp; media</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'Tables' | url_encode }}">Living room</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'Clothing storage' | url_encode }}">Bedroom</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'Tables' | url_encode }}">Dining</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'TV stands & mounts' | url_encode }}">TV &amp; media</a></li>
             </ul>
           </section>
           <section class="pp-catmega__col">
@@ -154,8 +154,8 @@
             <h3>TV Trolley / Stand</h3>
             <ul>
               <li><a href="{{ tv_url }}">All TV stands</a></li>
-              <li><a href="{{ tv_url }}?pp_type={{ 'TV stands & mounts' | url_encode }}">Trolleys &amp; floor stands</a></li>
-              <li><a href="{{ furniture_url }}?pp_type={{ 'TV stands & mounts' | url_encode }}">TV &amp; media furniture</a></li>
+              <li><a href="{{ tv_url }}?filter.p.product_type={{ 'TV stands & mounts' | url_encode }}">Trolleys &amp; floor stands</a></li>
+              <li><a href="{{ furniture_url }}?filter.p.product_type={{ 'TV stands & mounts' | url_encode }}">TV &amp; media furniture</a></li>
             </ul>
           </section>
           <section class="pp-catmega__col">
@@ -180,7 +180,7 @@
             <h3>Shop pets</h3>
             <ul>
               <li><a href="{{ pets_url }}">All pet products</a></li>
-              <li><a href="{{ pets_url }}?pp_type={{ 'Pet products' | url_encode }}">Beds, bowls &amp; more</a></li>
+              <li><a href="{{ pets_url }}?filter.p.product_type={{ 'Pet products' | url_encode }}">Beds, bowls &amp; more</a></li>
               <li><a href="{{ under_url }}">Pets under $50</a></li>
             </ul>
           </section>
@@ -223,9 +223,9 @@
           <section class="pp-catmega__col">
             <h3>Shop by type</h3>
             <ul>
-              <li><a href="{{ all_url }}?pp_type={{ 'Shelves' | url_encode }}">Shelves</a></li>
-              <li><a href="{{ all_url }}?pp_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
-              <li><a href="{{ all_url }}?pp_type={{ 'Lighting' | url_encode }}">Lighting</a></li>
+              <li><a href="{{ all_url }}?filter.p.product_type={{ 'Shelves' | url_encode }}">Shelves</a></li>
+              <li><a href="{{ all_url }}?filter.p.product_type={{ 'Plant stands' | url_encode }}">Plant stands</a></li>
+              <li><a href="{{ all_url }}?filter.p.product_type={{ 'Lighting' | url_encode }}">Lighting</a></li>
               <li><a href="{{ under_url }}">View all</a></li>
             </ul>
           </section>
