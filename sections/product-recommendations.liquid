@@ -9,7 +9,7 @@
 <product-recommendations
   id="product-recommendations-{{ section.id }}"
   class="product-recommendations"
-  data-url="{{ routes.product_recommendations_url }}?limit=4"
+  data-url="{{ routes.product_recommendations_url }}?limit=5"
   data-section-id="{{ section.id }}"
   data-product-id="{{ product.id }}"
   data-intent="{{ section.settings.intent }}"
@@ -125,16 +125,9 @@
       <section class="pp-recommend" aria-labelledby="related-heading">
         <div class="pp-section-head">
           <div class="pp-section-head__text">
-            <h2 id="related-heading">You may also like</h2>
-            <p class="pp-section-head__sub">More pieces you might love</p>
+            <h2 id="related-heading">Similar products</h2>
+            <p class="pp-section-head__sub">Pieces like the one you're viewing</p>
           </div>
-          <a href="{{ routes.all_products_collection_url }}" class="pp-view-all">
-            <span>View all</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M5 12h14"></path>
-              <path d="m12 5 7 7-7 7"></path>
-            </svg>
-          </a>
         </div>
         <div class="pp-recommend__grid">
           {{ related_cards }}

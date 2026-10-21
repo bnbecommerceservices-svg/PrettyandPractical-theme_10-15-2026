@@ -5088,3 +5088,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+.pp-product-page .pp-recommended[hidden] {
+  display: none;
+}
