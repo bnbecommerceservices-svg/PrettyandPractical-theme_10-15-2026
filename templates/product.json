@@ -22,11 +22,16 @@
       "settings": {
         "intent": "related"
       }
+    },
+    "category_products": {
+      "type": "pp-category-products",
+      "settings": {}
     }
   },
   "order": [
     "main",
+    "product_recommendations",
     "judgeme_reviews",
-    "product_recommendations"
+    "category_products"
   ]
 }
