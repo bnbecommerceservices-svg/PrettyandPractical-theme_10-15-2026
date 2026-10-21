@@ -2339,18 +2339,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "Sale shows only on products tagged “sale” (compare-at price alone is ignored, because the catalog import set a compare-at on every item). New shows on products published in the last N days, or tagged “just-in”. The bulk “new” / “New Arrival” tags are ignored."
-      },
-      {
-        "type": "range",
-        "id": "new_badge_days",
-        "min": 0,
-        "max": 60,
-        "step": 1,
-        "unit": "d",
-        "label": "Show New badge for this many days after publish",
-        "default": 14,
-        "info": "0 hides New unless the product is tagged just-in."
+        "content": "Sale shows when a product's compare-at price is higher than its price; clear the compare-at price to take it off sale. Bestseller shows on products tagged “bestseller”."
       }
     ]
   },

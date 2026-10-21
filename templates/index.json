@@ -365,8 +365,6 @@
         "bestsellers_link_label": "View all",
         "products_per_row": 4,
         "sale_badge_label": "Sale",
-        "new_badge_tag": "new",
-        "new_badge_label": "New",
         "bestseller_badge_tag": "bestseller",
         "bestseller_badge_label": "Bestseller",
         "quick_add_label": "Quick add",

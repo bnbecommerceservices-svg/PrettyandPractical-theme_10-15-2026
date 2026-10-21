@@ -9,7 +9,6 @@
   assign card_compare_at_price = card_variant.compare_at_price
   assign card_on_sale = false
   assign show_quick_add = false
-  assign show_new_badge = false
   assign card_image = related_product.featured_image
   capture pp_promo
     render 'pp-product-promo', product: related_product, price: card_variant.price, compare_at: card_compare_at_price
@@ -17,9 +16,6 @@
   assign pp_promo = pp_promo | strip
   if pp_promo contains '|sale'
     assign card_on_sale = true
-  endif
-  if pp_promo contains '|new'
-    assign show_new_badge = true
   endif
 
   if related_product.variants.size == 1 and card_variant != blank and card_variant.available
@@ -31,9 +27,6 @@
     <div class="pp-card__badges">
       {% if card_on_sale %}
         <span class="pp-pill pp-pill--sale">Sale</span>
-      {% endif %}
-      {% if show_new_badge %}
-        <span class="pp-pill pp-pill--new">New</span>
       {% endif %}
     </div>
     <button

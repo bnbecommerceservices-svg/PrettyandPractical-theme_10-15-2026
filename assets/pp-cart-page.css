@@ -1039,11 +1039,6 @@
   color: var(--pp-white);
 }
 
-.pp-main .pp-pill--new {
-  background: var(--pp-navy);
-  color: var(--pp-white);
-}
-
 .pp-main .pp-wishlist {
   position: absolute;
   top: 12px;

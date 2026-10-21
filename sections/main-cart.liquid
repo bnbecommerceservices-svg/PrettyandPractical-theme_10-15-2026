@@ -66,7 +66,6 @@
   if fallback_recommendations_collection == blank
     assign fallback_recommendations_collection = settings.empty_state_collection
   endif
-  assign recommendation_new_badge_tag = section.settings.recommendation_new_badge_tag | strip
   for cart_item in cart.items
     if cart_item.product.id != blank
       if first_recommendation_product_id == blank
@@ -527,8 +526,6 @@
         data-pp-cart-recommendations
         data-product-ids="{{ recommendation_product_ids }}"
         data-base-url="{{ routes.product_recommendations_url }}"
-        data-new-tag="{{ recommendation_new_badge_tag | escape }}"
-        data-new-days="{{ settings.new_badge_days | default: 14 }}"
         {% if first_recommendation_product_id == blank %}
           hidden
         {% endif %}
@@ -560,16 +557,12 @@
                   assign variant = product.selected_or_first_available_variant
                   assign rating = product.metafields.reviews.rating.value.rating
                   assign rating_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count
-                  assign product_is_new = false
                   assign product_has_sale = false
                   assign available_variant_count = 0
                   capture pp_promo
                     render 'pp-product-promo', product: product, price: variant.price, compare_at: variant.compare_at_price
                   endcapture
                   assign pp_promo = pp_promo | strip
-                  if pp_promo contains '|new'
-                    assign product_is_new = true
-                  endif
                   if pp_promo contains '|sale'
                     assign product_has_sale = true
                   endif
@@ -593,7 +586,6 @@
                   "available_variant_count": {{ available_variant_count | json }},
                   "rating": {{ rating | json }},
                   "rating_count": {{ rating_count | json }},
-                  "is_new": {{ product_is_new | json }},
                   "has_sale_tag": {{ product_has_sale | json }},
                   "published_at": {{ product.published_at | json }}
                 }{% unless forloop.last %},{% endunless %}
@@ -695,12 +687,6 @@
       "type": "collection",
       "id": "recommendations_collection",
       "label": "Recommendation fallback collection"
-    },
-    {
-      "type": "text",
-      "id": "recommendation_new_badge_tag",
-      "label": "New badge tag",
-      "info": "Optional merchant-controlled product tag that shows the New badge when matched."
     }
   ]
 }

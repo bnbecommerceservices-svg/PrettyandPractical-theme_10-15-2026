@@ -41,13 +41,10 @@
   data-pp-reviews="{{ review_count | default: 0 }}"
 >
   <div class="pp-card__image">
-    {% if pp_promo contains '|sale' or pp_promo contains '|new' or pp_promo contains '|bestseller' %}
+    {% if pp_promo contains '|sale' or pp_promo contains '|bestseller' %}
       <div class="pp-card__badges">
         {% if pp_promo contains '|sale' %}
           <span class="pp-pill pp-pill--sale">Sale</span>
-        {% endif %}
-        {% if pp_promo contains '|new' %}
-          <span class="pp-pill pp-pill--new">New</span>
         {% endif %}
         {% if pp_promo contains '|bestseller' %}
           <span class="pp-pill pp-pill--bestseller">Bestseller</span>

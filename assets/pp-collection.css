@@ -995,19 +995,9 @@ body.is-locked {
   color: var(--pp-white);
 }
 
-.pp-pill--new,
 .pp-pill--bestseller {
   background: var(--pp-navy);
   color: var(--pp-white);
-}
-
-.pp-pill--new::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--pp-primary);
 }
 
 .pp-wishlist {

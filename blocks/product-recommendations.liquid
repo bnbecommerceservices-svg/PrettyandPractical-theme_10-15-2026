@@ -62,7 +62,6 @@
               assign card_compare_at_price = card_variant.compare_at_price
               assign card_on_sale = false
               assign show_quick_add = false
-              assign show_new_badge = false
               assign card_image = recommended_product.featured_image
               assign rating = recommended_product.metafields.reviews.rating.value.rating
               assign rating_count = recommended_product.metafields.reviews.rating_count.value | default: recommended_product.metafields.reviews.rating_count
@@ -74,9 +73,6 @@
               if pp_promo contains '|sale'
                 assign card_on_sale = true
               endif
-              if pp_promo contains '|new'
-                assign show_new_badge = true
-              endif
 
               if recommended_product.variants.size == 1 and card_variant != blank and card_variant.available
                 assign show_quick_add = true
@@ -87,9 +83,6 @@
                 <div class="pp-card__badges">
                   {% if card_on_sale %}
                     <span class="pp-pill pp-pill--sale">Sale</span>
-                  {% endif %}
-                  {% if show_new_badge %}
-                    <span class="pp-pill pp-pill--new">New</span>
                   {% endif %}
                 </div>
                 <button type="button" class="pp-wishlist" aria-label="Add {{ recommended_product.title | escape }} to wishlist" aria-pressed="false">

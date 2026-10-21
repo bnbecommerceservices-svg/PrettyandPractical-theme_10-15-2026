@@ -59,26 +59,9 @@
     return [];
   }
 
-  function isNewProduct(product, newDays) {
-    if (product && product.is_new === true) return true;
-    var tags = tagList(product && product.tags);
-    if (tags.some(function (tag) {
-      return tag === 'just-in' || tag === 'just in' || tag === 'new-in' || tag === 'new in';
-    })) {
-      return true;
-    }
-    var raw = product && (product.published_at || product.publishedAt || product.created_at);
-    if (!raw || !newDays) return false;
-    var then = Date.parse(raw);
-    if (!then) return false;
-    return Date.now() - then < newDays * 86400000;
-  }
-
   function normalizeProduct(product, options) {
     if (!product || !product.url || !product.title) return null;
     options = options || {};
-    var newDays = Number(options.newDays);
-    if (!Number.isFinite(newDays)) newDays = 14;
 
     var variants = Array.isArray(product.variants) ? product.variants : [];
     var availableVariants = variants.filter(function (variant) {
@@ -124,7 +107,6 @@
       available_variant_count: availableVariantCount,
       rating: typeof product.rating === 'number' ? product.rating : null,
       rating_count: typeof product.rating_count === 'number' ? product.rating_count : null,
-      is_new: isNewProduct(product, newDays),
       has_sale: typeof compareAtPrice === 'number' && compareAtPrice > price,
     };
   }
@@ -147,10 +129,9 @@
     var category = product.type || product.vendor || '';
     var showSale = Boolean(product.has_sale);
     var badgesHtml = '';
-    if (showSale || product.is_new) {
+    if (showSale) {
       badgesHtml = '<div class="pp-card__badges">';
       if (showSale) badgesHtml += '<span class="pp-pill pp-pill--sale">Sale</span>';
-      if (product.is_new) badgesHtml += '<span class="pp-pill pp-pill--new">New</span>';
       badgesHtml += '</div>';
     }
 
@@ -274,8 +255,7 @@
       .split(',')
       .map(function (value) { return value.trim(); })
       .filter(Boolean);
-    var newDays = Number(section.dataset.newDays || 14);
-    var options = { newDays: Number.isFinite(newDays) ? newDays : 14 };
+    var options = {};
     var fallbackProducts = parseFallbackProducts(section, options);
 
     fetchRecommendations(section, ids, options).then(function (products) {

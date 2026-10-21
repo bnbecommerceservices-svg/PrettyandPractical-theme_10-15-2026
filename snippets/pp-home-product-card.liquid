@@ -12,10 +12,7 @@
     assign has_sale = true
   endif
   if has_sale == false
-    if pp_promo contains '|new'
-      assign special_badge = section.settings.new_badge_label | default: 'New'
-      assign special_badge_class = ' pp-card__badge--new'
-    elsif pp_promo contains '|bestseller'
+    if pp_promo contains '|bestseller'
       assign special_badge = section.settings.bestseller_badge_label | default: 'Bestseller'
       assign special_badge_class = ' pp-card__badge--new'
     endif
