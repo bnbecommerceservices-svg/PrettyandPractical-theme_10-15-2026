@@ -4503,6 +4503,19 @@
   display: flex;
 }
 
+.pp-product-page .pp-brand-line {
+  margin: -4px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--pp-text-secondary, #4b5563);
+}
+
+.pp-product-page .pp-brand-line__name {
+  font-family: var(--pp-font-heading);
+  font-weight: 600;
+  color: var(--pp-primary, #e8532a);
+}
+
 .pp-pdp-v2 .pp-info-actions {
   display: flex;
   align-items: center;
