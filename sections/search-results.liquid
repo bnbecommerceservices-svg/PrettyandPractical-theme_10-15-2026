@@ -1,35 +1,35 @@
+{{ 'pp-collection.css' | asset_url | stylesheet_tag }}
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pp-collection-page.js' | asset_url }}" defer></script>
+
+{%- comment -%}
+  Search results. Uses the collection page's layout, filters, product cards,
+  pagination and script (pp-collection-page.js) so both pages look and work
+  the same; the filters come from search.filters.
+{%- endcomment -%}
+
 {% liquid
   assign products_per_page = section.settings.products_per_page | default: 24
   assign current_sort = search.sort_by | default: search.default_sort_by
   assign search_terms = search.terms | default: ''
   assign search_terms_escaped = search_terms | escape
-  assign search_terms_query = search_terms | url_encode
-  assign clear_url = routes.search_url | append: '?type=product&q=' | append: search_terms_query
-  assign total_active_values = 0
-  assign current_sort_label = 'Relevance'
-  assign current_sort_key = 'relevance'
-  assign sort_relevance_value = blank
-  assign sort_best_value = blank
-  assign sort_price_asc_value = blank
-  assign sort_price_desc_value = blank
-  assign sort_newest_value = blank
-  assign sort_rating_value = blank
+  assign clear_url = routes.search_url | append: '?type=product&q=' | append: search_terms_escaped
   assign support_url = section.settings.support_page.url | default: pages['contact'].url | default: pages['contact-us'].url | default: '/pages/contact'
-  assign browse_menu = section.settings.empty_state_menu
-  assign browse_links = blank
-
-  if browse_menu != blank
-    assign browse_links = browse_menu.links
-  elsif linklists['main-menu'] != blank
+  assign browse_links = section.settings.empty_state_menu.links
+  if browse_links == blank
     assign browse_links = linklists['main-menu'].links
-  elsif linklists['main-menu-2'] != blank
-    assign browse_links = linklists['main-menu-2'].links
   endif
-
+  assign current_sort_key = 'relevance'
+  assign sort_relevance_value = ''
+  assign sort_best_value = ''
+  assign sort_price_asc_value = ''
+  assign sort_price_desc_value = ''
+  assign sort_newest_value = ''
   if current_sort != blank and current_sort != search.default_sort_by
     assign clear_url = clear_url | append: '&sort_by=' | append: current_sort
   endif
 
+  assign total_active_values = 0
   for filter in search.filters
     case filter.type
       when 'price_range'
@@ -42,8 +42,6 @@
   endfor
 
   for option in search.sort_options
-    assign option_name_downcase = option.name | strip | downcase
-
     case option.value
       when search.default_sort_by, 'relevance'
         assign sort_relevance_value = option.value
@@ -57,10 +55,6 @@
         assign sort_newest_value = option.value
     endcase
 
-    if option_name_downcase contains 'rating'
-      assign sort_rating_value = option.value
-    endif
-
     if option.value == current_sort
       case option.value
         when search.default_sort_by, 'relevance'
@@ -73,10 +67,6 @@
           assign current_sort_key = 'price-desc'
         when 'created-descending'
           assign current_sort_key = 'newest'
-        else
-          if option_name_downcase contains 'rating'
-            assign current_sort_key = 'rating'
-          endif
       endcase
     endif
   endfor
@@ -86,8 +76,6 @@
   endif
 
   case current_sort_key
-    when 'relevance'
-      assign current_sort_label = 'Relevance'
     when 'best'
       assign current_sort_label = 'Best selling'
     when 'price-asc'
@@ -96,60 +84,38 @@
       assign current_sort_label = 'Price: High to low'
     when 'newest'
       assign current_sort_label = 'Newest'
-    when 'rating'
-      assign current_sort_label = 'Rating'
+    else
+      assign current_sort_label = 'Relevance'
   endcase
-
-  capture active_filter_inputs
-    for filter in search.filters
-      if filter.type == 'price_range'
-        if filter.min_value.value != null
-          echo '<input type="hidden" name="'
-          echo filter.min_value.param_name
-          echo '" value="'
-          echo filter.min_value.value | money_without_currency | escape
-          echo '">'
-        endif
-        if filter.max_value.value != null
-          echo '<input type="hidden" name="'
-          echo filter.max_value.param_name
-          echo '" value="'
-          echo filter.max_value.value | money_without_currency | escape
-          echo '">'
-        endif
-      else
-        for value in filter.active_values
-          echo '<input type="hidden" name="'
-          echo value.param_name
-          echo '" value="'
-          echo value.value | escape
-          echo '">'
-        endfor
-      endif
-    endfor
-  endcapture
 %}
-
-{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
 
 {% paginate search.results by products_per_page %}
   {% liquid
     assign product_results = search.results | where: 'object_type', 'product'
     assign total_results = paginate.items
-    assign shown_results = paginate.current_offset | plus: product_results.size
+    assign shown_from = 0
+    assign shown_to = 0
+    if total_results > 0
+      assign shown_from = paginate.current_offset | plus: 1
+      assign shown_to = paginate.current_offset | plus: search.results.size
+    endif
     assign show_chips = false
-    assign is_empty = false
-
     if total_active_values > 0
       assign show_chips = true
     endif
-
-    if search.performed and total_results == 0
-      assign is_empty = true
+    assign no_results = false
+    if total_results == 0 and total_active_values == 0
+      assign no_results = true
     endif
   %}
 
-  <div data-pp-search-page>
+  <div
+    class="pp-collection-template pp-search-template"
+    data-pp-collection-page
+    data-section-id="{{ section.id }}"
+    data-total-results="{{ total_results }}"
+    data-clear-url="{{ clear_url }}"
+  >
     <main id="main">
       <section class="pp-search-head" aria-labelledby="search-title">
         <div class="pp-wrap">
@@ -160,1860 +126,379 @@
             </svg>
             <span class="pp-breadcrumb__current" aria-current="page">Search</span>
           </nav>
-
-          <h1 id="search-title" class="pp-search-title">Results for &ldquo;{{ search_terms_escaped }}&rdquo;</h1>
-          <p class="pp-search-count"><strong>{{ total_results }}</strong> results</p>
+          {% if search.performed %}
+            <h1 id="search-title" class="pp-search-title">Results for &ldquo;{{ search_terms_escaped }}&rdquo;</h1>
+            <p class="pp-search-count"><strong>{{ total_results }}</strong> {% if total_results == 1 %}result{% else %}results{% endif %}</p>
+          {% else %}
+            <h1 id="search-title" class="pp-search-title">Search</h1>
+          {% endif %}
         </div>
       </section>
 
-      <section class="pp-toolbar" aria-label="Filters and sort">
-        <div class="pp-wrap">
-          <div class="pp-toolbar__row">
-            <div class="pp-toolbar__left">
-              <button type="button" class="pp-filterbtn" data-open-drawer aria-label="Open filters" aria-controls="filter-drawer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <line x1="4" y1="6" x2="20" y2="6"></line>
-                  <line x1="7" y1="12" x2="17" y2="12"></line>
-                  <line x1="10" y1="18" x2="14" y2="18"></line>
-                </svg>
-                Filters
-                <span class="pp-filterbtn__count" data-filterbtn-count{% if total_active_values == 0 %} hidden{% endif %}>{{ total_active_values }}</span>
-              </button>
-            </div>
-
-            <div class="pp-toolbar__right">
-              <form method="get" action="{{ routes.search_url }}">
-                <input type="hidden" name="type" value="product">
-                <input type="hidden" name="q" value="{{ search_terms_escaped }}">
-                {{ active_filter_inputs }}
-                <input type="hidden" name="sort_by" value="{{ current_sort }}" data-sort-input>
-                <div class="pp-sort" data-sort>
-                  <button type="button" class="pp-sort__btn" data-sort-btn aria-haspopup="listbox" aria-expanded="false">
-                    <span class="pp-sort__label-key">Sort:</span>
-                    <span class="pp-sort__label-val" data-sort-current>{{ current_sort_label }}</span>
-                    <svg class="pp-sort__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  </button>
-                  <div class="pp-sort__menu" role="listbox" aria-label="Sort options">
-                    <button type="button" class="pp-sort__option{% if current_sort_key == 'relevance' %} is-active{% endif %}" data-sort-option="{{ sort_relevance_value }}" role="option" aria-selected="{% if current_sort_key == 'relevance' %}true{% else %}false{% endif %}">Relevance <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                    <button type="button" class="pp-sort__option{% if current_sort_key == 'best' %} is-active{% endif %}" data-sort-option="{{ sort_best_value }}" role="option" aria-selected="{% if current_sort_key == 'best' %}true{% else %}false{% endif %}">Best selling <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                    <button type="button" class="pp-sort__option{% if current_sort_key == 'price-asc' %} is-active{% endif %}" data-sort-option="{{ sort_price_asc_value }}" role="option" aria-selected="{% if current_sort_key == 'price-asc' %}true{% else %}false{% endif %}">Price: Low to high <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                    <button type="button" class="pp-sort__option{% if current_sort_key == 'price-desc' %} is-active{% endif %}" data-sort-option="{{ sort_price_desc_value }}" role="option" aria-selected="{% if current_sort_key == 'price-desc' %}true{% else %}false{% endif %}">Price: High to low <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                    <button type="button" class="pp-sort__option{% if current_sort_key == 'newest' %} is-active{% endif %}" data-sort-option="{{ sort_newest_value }}" role="option" aria-selected="{% if current_sort_key == 'newest' %}true{% else %}false{% endif %}">Newest <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                    <button type="button" class="pp-sort__option{% if current_sort_key == 'rating' %} is-active{% endif %}" data-sort-option="{{ sort_rating_value }}" role="option" aria-selected="{% if current_sort_key == 'rating' %}true{% else %}false{% endif %}">Rating <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div class="pp-chips{% if show_chips %} is-visible{% endif %}" data-chips aria-label="Active filters">
-            {% for filter in search.filters %}
-              {% if filter.type == 'price_range' %}
-                {% if filter.min_value.value != null or filter.max_value.value != null %}
-                  <a href="{{ filter.url_to_remove }}" class="pp-chip">
-                    {% if filter.min_value.value != null and filter.max_value.value != null %}
-                      {{ filter.min_value.value | money_without_trailing_zeros }} - {{ filter.max_value.value | money_without_trailing_zeros }}
-                    {% elsif filter.min_value.value != null %}
-                      From {{ filter.min_value.value | money_without_trailing_zeros }}
-                    {% else %}
-                      Up to {{ filter.max_value.value | money_without_trailing_zeros }}
-                    {% endif %}
-                    <span class="pp-chip__x" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </span>
-                  </a>
-                {% endif %}
+      {% if no_results %}
+        <section class="pp-collection-main">
+          <div class="pp-wrap">
+            <div class="pp-search-empty" role="region" aria-labelledby="empty-title">
+              <svg class="pp-search-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="20" y1="20" x2="16.65" y2="16.65"></line>
+              </svg>
+              {% if search.performed %}
+                <h2 id="empty-title" class="pp-search-empty__title">No results for &ldquo;{{ search_terms_escaped }}&rdquo;</h2>
+                <p class="pp-search-empty__text">We couldn't find anything matching your search. Check the spelling or browse a category below.</p>
               {% else %}
-                {% for value in filter.active_values %}
-                  <a href="{{ value.url_to_remove }}" class="pp-chip">
-                    {{ value.label }}
-                    <span class="pp-chip__x" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </span>
-                  </a>
-                {% endfor %}
+                <h2 id="empty-title" class="pp-search-empty__title">What are you looking for?</h2>
+                <p class="pp-search-empty__text">Type a product name, colour or room into the search bar, or browse a category below.</p>
               {% endif %}
-            {% endfor %}
-            {% if show_chips %}
-              <a href="{{ clear_url }}" class="pp-chips__clear">Clear all</a>
-            {% endif %}
-          </div>
-        </div>
-      </section>
-
-      <section class="pp-search-main">
-        <div class="pp-wrap">
-          <div class="pp-search-layout{% if is_empty %} is-empty{% endif %}" id="search-layout">
-            <form method="get" action="{{ routes.search_url }}">
-              <input type="hidden" name="type" value="product">
-              <input type="hidden" name="q" value="{{ search_terms_escaped }}">
-              {% if current_sort != blank %}
-                <input type="hidden" name="sort_by" value="{{ current_sort }}">
-              {% endif %}
-              <aside class="pp-sidebar" aria-label="Refine results" id="sidebar-filters">
-                {% for filter in search.filters %}
-                  {% assign normalized_filter_label = filter.label | strip | downcase %}
-                  <section class="pp-filtergroup" data-filter-group data-filter-group-section="{{ filter.param_name | default: filter.label | handle }}">
-                    <button type="button" class="pp-filtergroup__head" data-group-toggle aria-expanded="true">
-                      <span>{{ filter.label }}</span>
-                      <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                    </button>
-                    <div class="pp-filtergroup__body">
-                      {% if filter.type == 'price_range' %}
-                        <div class="pp-fprice">
-                          <div class="pp-fprice__field">
-                            <label for="DesktopMin-{{ section.id }}-{{ forloop.index }}">Min</label>
-                            <input
-                              id="DesktopMin-{{ section.id }}-{{ forloop.index }}"
-                              type="number"
-                              inputmode="decimal"
-                              name="{{ filter.min_value.param_name }}"
-                              value="{% if filter.min_value.value != null %}{{ filter.min_value.value | money_without_currency }}{% endif %}"
-                              placeholder="0"
-                              min="0"
-                              max="{{ filter.range_max | money_without_currency }}"
-                              autocomplete="off"
-                            >
-                          </div>
-                          <span class="pp-fprice__sep">&ndash;</span>
-                          <div class="pp-fprice__field">
-                            <label for="DesktopMax-{{ section.id }}-{{ forloop.index }}">Max</label>
-                            <input
-                              id="DesktopMax-{{ section.id }}-{{ forloop.index }}"
-                              type="number"
-                              inputmode="decimal"
-                              name="{{ filter.max_value.param_name }}"
-                              value="{% if filter.max_value.value != null %}{{ filter.max_value.value | money_without_currency }}{% endif %}"
-                              placeholder="{{ filter.range_max | money_without_currency }}"
-                              min="0"
-                              max="{{ filter.range_max | money_without_currency }}"
-                              autocomplete="off"
-                            >
-                          </div>
-                        </div>
-                        <div class="pp-fprice__presets">
-                          <button type="submit" class="pp-fprice__preset">Apply</button>
-                        </div>
-                      {% elsif filter.presentation == 'swatch' or normalized_filter_label == 'color' or normalized_filter_label == 'colour' %}
-                        <div class="pp-fcolors">
-                          {% for value in filter.values %}
-                            {% liquid
-                              assign swatch_background = blank
-                              if value.swatch.image != blank
-                                assign swatch_background = value.swatch.image | image_url: width: 64
-                              elsif value.swatch.color != blank
-                                assign swatch_background = value.swatch.color
-                              endif
-                            %}
-                            <label
-                              class="pp-fcolor{% if value.active %} is-active{% endif %}"
-                              {% if swatch_background contains 'http' %}
-                                style="background-image:url('{{ swatch_background }}'); background-size:cover; background-position:center;"
-                              {% elsif swatch_background != blank %}
-                                style="background: {{ swatch_background }};"
-                              {% endif %}
-                            >
-                              <span class="pp-fcolor__tip">{{ value.label }}</span>
-                              <input
-                                type="checkbox"
-                                name="{{ value.param_name }}"
-                                value="{{ value.value }}"
-                                onchange="this.form.submit()"
-                                {% if value.active %}
-                                  checked
-                                {% endif %}
-                                {% if value.count == 0 and value.active == false %}
-                                  disabled
-                                {% endif %}
-                              >
-                            </label>
-                          {% endfor %}
-                        </div>
-                      {% else %}
-                        <ul class="pp-fopts">
-                          {% for value in filter.values %}
-                            <li>
-                              <label class="pp-fopt">
-                                <input
-                                  type="checkbox"
-                                  name="{{ value.param_name }}"
-                                  value="{{ value.value }}"
-                                  onchange="this.form.submit()"
-                                  {% if value.active %}
-                                    checked
-                                  {% endif %}
-                                {% if value.count == 0 and value.active == false %}
-                                  disabled
-                                {% endif %}
-                              >
-                                <span class="pp-fopt__box">
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                  </svg>
-                                </span>
-                                <span class="pp-fopt__label">
-                                  {% if normalized_filter_label == 'rating' and value.label != blank %}
-                                    {% assign rating_label_value = value.label | plus: 0 %}
-                                    <span class="pp-frating-stars" aria-hidden="true">
-                                      {% for star_index in (1..5) %}
-                                        <svg{% if star_index > rating_label_value %} class="dim"{% endif %} viewBox="0 0 20 20">
-                                          <path d="M10.4552 0.846855C10.3119 0.384382 9.68806 0.384382 9.54477 0.846855L7.63027 7.02616C7.56619 7.23298 7.38241 7.37301 7.17504 7.37301H0.979572C0.515888 7.37301 0.323098 7.99527 0.698226 8.28109L5.71047 12.1001C5.87823 12.2279 5.94843 12.4545 5.88435 12.6613L3.96984 18.8406C3.82656 19.3031 4.33129 19.6877 4.70642 19.4019L9.71865 15.5828C9.88642 15.455 10.1136 15.455 10.2813 15.5828L15.2936 19.4019C15.6687 19.6877 16.1734 19.3031 16.0302 18.8406L14.1157 12.6613C14.0516 12.4545 14.1218 12.2279 14.2895 12.1001L19.3018 8.28109C19.6769 7.99527 19.4841 7.37301 19.0204 7.37301H12.825C12.6176 7.37301 12.4338 7.23298 12.3697 7.02616L10.4552 0.846855Z"></path>
-                                        </svg>
-                                      {% endfor %}
-                                    </span>
-                                    <span class="pp-frating-amp">&amp; up</span>
-                                  {% else %}
-                                    {{ value.label }}
-                                  {% endif %}
-                                </span>
-                                <span class="pp-fopt__count">{{ value.count }}</span>
-                              </label>
-                            </li>
-                          {% endfor %}
-                        </ul>
-                      {% endif %}
-                    </div>
-                  </section>
-                {% endfor %}
-              </aside>
-            </form>
-
-            <div>
-              <div class="pp-grid" id="product-grid" aria-label="Search results for {{ search_terms_escaped }}">
-                {% for product in product_results %}
-                  {% liquid
-                    assign selected_variant = product.selected_or_first_available_variant
-                    assign featured_image = product.featured_media.preview_image | default: product.featured_image
-                    assign current_price = selected_variant.price | default: product.price
-                    assign compare_at_price = selected_variant.compare_at_price | default: product.compare_at_price
-                    assign save_amount = 0
-                    if compare_at_price > current_price
-                      assign save_amount = compare_at_price | minus: current_price
-                    endif
-                    assign review_rating_object = product.metafields.reviews.rating.value
-                    assign review_rating = review_rating_object.rating
-                    assign review_scale = review_rating_object.scale_max | default: 5
-                    assign review_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count
-                    assign show_rating = false
-                    if review_rating != blank and review_count != blank and review_count > 0
-                      assign show_rating = true
-                    endif
-                    assign has_sale = false
-                    assign has_new_tag = false
-                    assign has_bestseller_tag = false
-                    capture pp_promo
-                      render 'pp-product-promo', product: product, price: current_price, compare_at: compare_at_price
-                    endcapture
-                    assign pp_promo = pp_promo | strip
-                    if pp_promo contains '|sale'
-                      assign has_sale = true
-                    endif
-                    if pp_promo contains '|new'
-                      assign has_new_tag = true
-                    endif
-                    if pp_promo contains '|bestseller'
-                      assign has_bestseller_tag = true
-                    endif
-                    unless has_sale
-                      assign save_amount = 0
-                    endunless
-                    assign can_quick_add = false
-                    if product.available and product.variants.size == 1 and selected_variant.available
-                      assign can_quick_add = true
-                    endif
-                    assign quick_add_form_id = 'PPSearchQuickAdd-' | append: section.id | append: '-' | append: product.id
-                    assign quick_add_body_form_id = quick_add_form_id | append: '-body'
-                  %}
-
-                  <article class="pp-card">
-                    <div class="pp-card__image">
-                      <div class="pp-card__badges">
-                        {% if has_sale %}
-                          <span class="pp-pill pp-pill--sale">Sale</span>
-                        {% endif %}
-                        {% if has_new_tag %}
-                          <span class="pp-pill pp-pill--new">New</span>
-                        {% endif %}
-                        {% if has_bestseller_tag %}
-                          <span class="pp-pill pp-pill--bestseller">Bestseller</span>
-                        {% endif %}
-                      </div>
-
-                      <button type="button" class="pp-wishlist" aria-label="Add {{ product.title | escape }} to wishlist" data-wishlist data-pp-wishlist data-product-id="{{ product.id }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                      </button>
-
-                      <a href="{{ product.url }}" class="pp-card__image-inner" aria-label="{{ product.title | escape }}">
-                        {% if featured_image != blank %}
-                          {{
-                            featured_image
-                            | image_url: width: 900
-                            | image_tag:
-                              widths: '320, 480, 512, 640, 900, 1200',
-                              sizes: '(min-width: 1101px) 512px, (min-width: 769px) min(45vw, 512px), 100vw',
-                              alt: product.title,
-                              loading: 'lazy'
-                          }}
-                        {% else %}
-                          <div class="pp-card__placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                              <rect x="3.5" y="5.5" width="17" height="13" rx="2"></rect>
-                              <circle cx="9" cy="10" r="1.25"></circle>
-                              <path d="M7 16l4.25-4.25a1 1 0 0 1 1.41 0L17 16"></path>
-                            </svg>
-                            <span>No image available</span>
-                          </div>
-                        {% endif %}
-                      </a>
-
-                      {% if can_quick_add %}
-                        <product-form-component
-                          data-section-id="{{ section.id }}"
-                          data-product-id="{{ product.id }}"
-                          on:submit="/handleSubmit"
-                          class="pp-card__quickadd-form"
-                        >
-                          <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
-                          {%- form 'product', product, id: quick_add_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
-                            <input
-                              type="hidden"
-                              name="id"
-                              ref="variantId"
-                              value="{{ selected_variant.id }}"
-                              {% unless selected_variant.available %}
-                                disabled
-                              {% endunless %}
-                            >
-                            <input type="hidden" name="quantity" value="1">
-                            {% assign pp_search_add_to_cart_text = 'actions.add_to_cart' | t %}
-                            {% render 'add-to-cart-button',
-                              can_add_to_cart: selected_variant.available,
-                              add_to_cart_text: pp_search_add_to_cart_text,
-                              product: product,
-                              class: 'pp-quickadd'
-                            %}
-                          {%- endform -%}
-                        </product-form-component>
-                      {% endif %}
-                    </div>
-
-                    <div class="pp-card__body">
-                      <a href="{{ product.url }}" class="pp-card__title">{{ product.title }}</a>
-
-                      <div class="pp-card__rating">
-                        {% render 'pp-judgeme-badge', product: product %}
-                      </div>
-
-                      <div class="pp-card__price">
-                        <span class="pp-price{% if has_sale %} pp-price--sale{% endif %}">{{ current_price | money }}</span>
-                        {% if has_sale %}
-                          <span class="pp-price__was">{{ compare_at_price | money }}</span>
-                          <span class="pp-price__save">Save {{ save_amount | money }}</span>
-                        {% endif %}
-                      </div>
-                      <div class="pp-card__cta">
-                        {% if product.available == false %}
-                          <span class="pp-card-cta pp-card-cta--soldout">Sold out</span>
-                        {% elsif can_quick_add %}
-                          <product-form-component
-                            data-section-id="{{ section.id }}"
-                            data-product-id="{{ product.id }}"
-                            on:submit="/handleSubmit"
-                            class="pp-card__quickadd-form pp-card__quickadd-form--body"
-                          >
-                            <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
-                            {%- form 'product', product, id: quick_add_body_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
-                              <input type="hidden" name="id" ref="variantId" value="{{ selected_variant.id }}">
-                              <input type="hidden" name="quantity" value="1">
-                              {% render 'add-to-cart-button', can_add_to_cart: selected_variant.available, add_to_cart_text: 'Add to cart', product: product, class: 'pp-card-cta' %}
-                            {%- endform -%}
-                          </product-form-component>
-                        {% else %}
-                          <a href="{{ product.url }}" class="pp-card-cta">Choose options</a>
-                        {% endif %}
-                      </div>
-                    </div>
-                  </article>
-                {% endfor %}
-              </div>
-
-              <div class="pp-empty-state" role="region" aria-labelledby="empty-title">
-                <svg class="pp-empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="11" cy="11" r="7"></circle>
-                  <line x1="20" y1="20" x2="16.65" y2="16.65"></line>
-                  <line x1="8.5" y1="8.5" x2="13.5" y2="13.5"></line>
-                  <line x1="13.5" y1="8.5" x2="8.5" y2="13.5"></line>
-                </svg>
-                <h2 id="empty-title" class="pp-empty-state__title">No results for &ldquo;{{ search_terms_escaped }}&rdquo;</h2>
-                <p class="pp-empty-state__text">We couldn't find anything matching your search. Try checking spelling or browse by category below.</p>
-
-                <div class="pp-empty-state__browse-label">Browse categories</div>
-                <div class="pp-empty-state__pills">
-                  {% if browse_links != blank %}
-                    {% for link in browse_links limit: 12 %}
-                      <a href="{{ link.url }}" class="pp-empty-state__pill">{{ link.title }}</a>
-                    {% endfor %}
-                  {% endif %}
+              {% if browse_links != blank %}
+                <div class="pp-search-empty__label">Browse categories</div>
+                <div class="pp-search-empty__pills">
+                  {% for link in browse_links limit: 12 %}
+                    <a href="{{ link.url }}" class="pp-search-empty__pill">{{ link.title }}</a>
+                  {% endfor %}
                 </div>
-                <a href="{{ support_url }}" class="pp-empty-state__support">Or contact support &rarr;</a>
-              </div>
-
-              {% if total_results > 0 %}
-                <nav class="pp-pagination" aria-label="Pagination">
-                  <div class="pp-pagination__count">Showing {{ shown_results }} of {{ total_results }}</div>
-                  <div class="pp-pagination__pages">
-                    {% if paginate.previous %}
-                      <a href="{{ paginate.previous.url }}" class="pp-page pp-page--arrow" aria-label="Previous page">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                      </a>
-                    {% else %}
-                      <span class="pp-page pp-page--arrow is-disabled" aria-label="Previous page" aria-disabled="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                      </span>
-                    {% endif %}
-
-                    {% for part in paginate.parts %}
-                      {% if part.is_link %}
-                        <a href="{{ part.url }}" class="pp-page">{{ part.title }}</a>
-                      {% else %}
-                        {% if part.title == '&hellip;' %}
-                          <span class="pp-page" aria-hidden="true">&hellip;</span>
-                        {% else %}
-                          <span class="pp-page is-current" aria-current="page">{{ part.title }}</span>
-                        {% endif %}
-                      {% endif %}
-                    {% endfor %}
-
-                    {% if paginate.parts == blank %}
-                      <span class="pp-page is-current" aria-current="page">1</span>
-                    {% endif %}
-
-                    {% if paginate.next %}
-                      <a href="{{ paginate.next.url }}" class="pp-page pp-page--arrow" aria-label="Next page">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                      </a>
-                    {% else %}
-                      <span class="pp-page pp-page--arrow is-disabled" aria-label="Next page" aria-disabled="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                      </span>
-                    {% endif %}
-                  </div>
-                  <div class="pp-pagination__spacer" aria-hidden="true"></div>
-                </nav>
               {% endif %}
+              <a href="{{ support_url }}" class="pp-search-empty__support">Or contact support &rarr;</a>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
-
-    <div class="pp-overlay" data-overlay aria-hidden="true"></div>
-    <aside class="pp-drawer" id="filter-drawer" aria-label="Filter drawer" aria-hidden="true">
-      <div class="pp-drawer__head">
-        <div class="pp-drawer__title">Filters</div>
-        <button type="button" class="pp-drawer__close" data-close-drawer aria-label="Close filters">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <form method="get" action="{{ routes.search_url }}">
-        <input type="hidden" name="type" value="product">
+        </section>
+      {% else %}
+      <div
+        id="SearchFiltersForm-{{ section.id }}"
+        class="pp-collection-form"
+        data-action="{{ routes.search_url }}"
+        data-pp-collection-form
+      >
         <input type="hidden" name="q" value="{{ search_terms_escaped }}">
-        {% if current_sort != blank %}
-          <input type="hidden" name="sort_by" value="{{ current_sort }}">
-        {% endif %}
-        <div class="pp-drawer__body" id="drawer-filters">
-          {% for filter in search.filters %}
-            {% assign normalized_filter_label = filter.label | strip | downcase %}
-            <section class="pp-filtergroup is-collapsed" data-filter-group-section="{{ filter.param_name | default: filter.label | handle }}">
-              <button type="button" class="pp-filtergroup__head" data-group-toggle aria-expanded="false">
-                <span>{{ filter.label }}</span>
-                <svg class="pp-filtergroup__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-              <div class="pp-filtergroup__body">
-                {% if filter.type == 'price_range' %}
-                  <div class="pp-fprice">
-                    <div class="pp-fprice__field">
-                      <label for="DrawerMin-{{ section.id }}-{{ forloop.index }}">Min</label>
-                      <input
-                        id="DrawerMin-{{ section.id }}-{{ forloop.index }}"
-                        type="number"
-                        inputmode="decimal"
-                        name="{{ filter.min_value.param_name }}"
-                        value="{% if filter.min_value.value != null %}{{ filter.min_value.value | money_without_currency }}{% endif %}"
-                        placeholder="0"
-                        min="0"
-                        max="{{ filter.range_max | money_without_currency }}"
-                        autocomplete="off"
+        <input type="hidden" name="type" value="product">
+        <input type="hidden" name="sort_by" value="{{ current_sort }}" data-pp-sort-input>
+
+        <section class="pp-collection-main">
+          <div class="pp-wrap">
+            <div class="pp-collection-layout">
+              <aside class="pp-sidebar" aria-label="Product filters" id="sidebar-filters" data-filter-source="desktop">
+                {% render 'pp-collection-filters', source: 'desktop', section_id: section.id, filters: search.filters %}
+              </aside>
+
+              <div class="pp-collection-results">
+                <div class="pp-toolbar" aria-label="Filters and sort">
+                  <div class="pp-toolbar__row">
+                    <div class="pp-toolbar__left">
+                      <button
+                        type="button"
+                        class="pp-filterbtn"
+                        data-open-drawer
+                        aria-label="Open filters"
+                        aria-controls="filter-drawer"
                       >
-                    </div>
-                    <span class="pp-fprice__sep">&ndash;</span>
-                    <div class="pp-fprice__field">
-                      <label for="DrawerMax-{{ section.id }}-{{ forloop.index }}">Max</label>
-                      <input
-                        id="DrawerMax-{{ section.id }}-{{ forloop.index }}"
-                        type="number"
-                        inputmode="decimal"
-                        name="{{ filter.max_value.param_name }}"
-                        value="{% if filter.max_value.value != null %}{{ filter.max_value.value | money_without_currency }}{% endif %}"
-                        placeholder="{{ filter.range_max | money_without_currency }}"
-                        min="0"
-                        max="{{ filter.range_max | money_without_currency }}"
-                        autocomplete="off"
-                      >
-                    </div>
-                  </div>
-                  <div class="pp-fprice__presets">
-                    <button type="submit" class="pp-fprice__preset">Apply</button>
-                  </div>
-                {% elsif filter.presentation == 'swatch' or normalized_filter_label == 'color' or normalized_filter_label == 'colour' %}
-                  <div class="pp-fcolors">
-                    {% for value in filter.values %}
-                      {% liquid
-                        assign swatch_background = blank
-                        if value.swatch.image != blank
-                          assign swatch_background = value.swatch.image | image_url: width: 64
-                        elsif value.swatch.color != blank
-                          assign swatch_background = value.swatch.color
-                        endif
-                      %}
-                      <label
-                        class="pp-fcolor{% if value.active %} is-active{% endif %}"
-                        {% if swatch_background contains 'http' %}
-                          style="background-image:url('{{ swatch_background }}'); background-size:cover; background-position:center;"
-                        {% elsif swatch_background != blank %}
-                          style="background: {{ swatch_background }};"
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <line x1="4" y1="6" x2="20" y2="6"></line>
+                          <line x1="7" y1="12" x2="17" y2="12"></line>
+                          <line x1="10" y1="18" x2="14" y2="18"></line>
+                        </svg>
+                        Filters
+                        <span
+                          class="pp-filterbtn__count"
+                          data-filterbtn-count
+                          {% if total_active_values == 0 %}hidden{% endif %}
+                        >
+                          {{ total_active_values }}
+                        </span>
+                      </button>
+                      <p class="pp-toolbar__count">
+                        {% if shown_from == 0 %}
+                          Showing 0 of {{ total_results }} results for &ldquo;{{ search_terms_escaped }}&rdquo;
+                        {% else %}
+                          Showing {{ shown_from }}–{{ shown_to }} of {{ total_results }} results for &ldquo;{{ search_terms_escaped }}&rdquo;
                         {% endif %}
-                      >
-                        <span class="pp-fcolor__tip">{{ value.label }}</span>
-                        <input
-                          type="checkbox"
-                          name="{{ value.param_name }}"
-                          value="{{ value.value }}"
-                          {% if value.active %}
-                            checked
+                      </p>
+                    </div>
+
+                    <div class="pp-toolbar__right">
+                      <div class="pp-sort" data-sort>
+                        <button type="button" class="pp-sort__btn" data-sort-btn aria-haspopup="listbox" aria-expanded="false">
+                          <span class="pp-sort__label-key">Sort:</span>
+                          <span class="pp-sort__label-val" data-sort-current>{{ current_sort_label }}</span>
+                          <svg class="pp-sort__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </button>
+                        <div class="pp-sort__menu" role="listbox" aria-label="Sort options">
+                          <button type="button" class="pp-sort__option{% if current_sort_key == 'relevance' %} is-active{% endif %}" data-sort-key="relevance" data-sort-option="{{ sort_relevance_value }}" data-sort-label="Relevance" role="option" aria-selected="{% if current_sort_key == 'relevance' %}true{% else %}false{% endif %}">Relevance <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% if sort_best_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'best' %} is-active{% endif %}" data-sort-key="best" data-sort-option="{{ sort_best_value }}" data-sort-label="Best selling" role="option" aria-selected="{% if current_sort_key == 'best' %}true{% else %}false{% endif %}">Best selling <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                           {% endif %}
-                          {% if value.count == 0 and value.active == false %}
-                            disabled
+                          {% if sort_price_asc_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'price-asc' %} is-active{% endif %}" data-sort-key="price-asc" data-sort-option="{{ sort_price_asc_value }}" data-sort-label="Price: Low to high" role="option" aria-selected="{% if current_sort_key == 'price-asc' %}true{% else %}false{% endif %}">Price: Low to high <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                           {% endif %}
-                        >
-                      </label>
-                    {% endfor %}
+                          {% if sort_price_desc_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'price-desc' %} is-active{% endif %}" data-sort-key="price-desc" data-sort-option="{{ sort_price_desc_value }}" data-sort-label="Price: High to low" role="option" aria-selected="{% if current_sort_key == 'price-desc' %}true{% else %}false{% endif %}">Price: High to low <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% endif %}
+                          {% if sort_newest_value != blank %}
+                            <button type="button" class="pp-sort__option{% if current_sort_key == 'newest' %} is-active{% endif %}" data-sort-key="newest" data-sort-option="{{ sort_newest_value }}" data-sort-label="Newest" role="option" aria-selected="{% if current_sort_key == 'newest' %}true{% else %}false{% endif %}">Newest <svg class="pp-sort__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="pp-viewtoggle" data-view-toggle role="group" aria-label="Product layout">
+                        <button type="button" class="pp-viewtoggle__btn is-active" data-view="grid" aria-pressed="true" aria-label="Grid view">
+                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                          </svg>
+                        </button>
+                        <button type="button" class="pp-viewtoggle__btn" data-view="list" aria-pressed="false" aria-label="List view">
+                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="3" rx="1"></rect>
+                            <rect x="3" y="10.5" width="18" height="3" rx="1"></rect>
+                            <rect x="3" y="17" width="18" height="3" rx="1"></rect>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                {% else %}
-                  <ul class="pp-fopts">
-                    {% for value in filter.values %}
-                      <li>
-                        <label class="pp-fopt">
-                          <input
-                            type="checkbox"
-                            name="{{ value.param_name }}"
-                            value="{{ value.value }}"
-                            {% if value.active %}
-                              checked
-                            {% endif %}
-                          {% if value.count == 0 and value.active == false %}
-                            disabled
-                          {% endif %}
-                        >
-                          <span class="pp-fopt__box">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                              <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                          </span>
-                          <span class="pp-fopt__label">
-                            {% if normalized_filter_label == 'rating' and value.label != blank %}
-                              {% assign rating_label_value = value.label | plus: 0 %}
-                              <span class="pp-frating-stars" aria-hidden="true">
-                                {% for star_index in (1..5) %}
-                                  <svg{% if star_index > rating_label_value %} class="dim"{% endif %} viewBox="0 0 20 20">
-                                    <path d="M10.4552 0.846855C10.3119 0.384382 9.68806 0.384382 9.54477 0.846855L7.63027 7.02616C7.56619 7.23298 7.38241 7.37301 7.17504 7.37301H0.979572C0.515888 7.37301 0.323098 7.99527 0.698226 8.28109L5.71047 12.1001C5.87823 12.2279 5.94843 12.4545 5.88435 12.6613L3.96984 18.8406C3.82656 19.3031 4.33129 19.6877 4.70642 19.4019L9.71865 15.5828C9.88642 15.455 10.1136 15.455 10.2813 15.5828L15.2936 19.4019C15.6687 19.6877 16.1734 19.3031 16.0302 18.8406L14.1157 12.6613C14.0516 12.4545 14.1218 12.2279 14.2895 12.1001L19.3018 8.28109C19.6769 7.99527 19.4841 7.37301 19.0204 7.37301H12.825C12.6176 7.37301 12.4338 7.23298 12.3697 7.02616L10.4552 0.846855Z"></path>
-                                  </svg>
-                                {% endfor %}
-                              </span>
-                              <span class="pp-frating-amp">&amp; up</span>
+
+                  <div class="pp-chips{% if show_chips %} is-visible{% endif %}" data-chips aria-label="Active filters">
+                    {% for filter in search.filters %}
+                      {% if filter.type == 'price_range' %}
+                        {% if filter.min_value.value != null or filter.max_value.value != null %}
+                          <a href="{{ filter.url_to_remove }}" class="pp-chip">
+                            {% if filter.min_value.value != null and filter.max_value.value != null %}
+                              {{ filter.min_value.value | money_without_trailing_zeros }} - {{ filter.max_value.value | money_without_trailing_zeros }}
+                            {% elsif filter.min_value.value != null %}
+                              From {{ filter.min_value.value | money_without_trailing_zeros }}
                             {% else %}
-                              {{ value.label }}
+                              Up to {{ filter.max_value.value | money_without_trailing_zeros }}
                             {% endif %}
-                          </span>
-                          <span class="pp-fopt__count">{{ value.count }}</span>
-                        </label>
-                      </li>
+                            <span class="pp-chip__x" aria-hidden="true">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </span>
+                          </a>
+                        {% endif %}
+                      {% else %}
+                        {% for value in filter.active_values %}
+                          <a href="{{ value.url_to_remove }}" class="pp-chip">
+                            {{ value.label }}
+                            <span class="pp-chip__x" aria-hidden="true">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </span>
+                          </a>
+                        {% endfor %}
+                      {% endif %}
                     {% endfor %}
-                  </ul>
+                    {% if show_chips %}
+                      <a href="{{ clear_url }}" class="pp-chips__clear">Clear all</a>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="pp-grid" id="product-grid" aria-label="Search results for {{ search_terms_escaped }}" data-pp-page-size="{{ products_per_page }}">
+                  {% for product in product_results %}
+                    {% render 'pp-collection-product-card', product: product, card_index: forloop.index %}
+                  {% else %}
+                    <div class="pp-grid__empty">
+                      <p class="pp-grid__empty-title">No products match these filters</p>
+                      <p>Try removing a filter to see more products.</p>
+                      <a href="{{ clear_url }}" class="pp-chips__clear">Clear all filters</a>
+                    </div>
+                  {% endfor %}
+                </div>
+
+                {% if paginate.pages > 1 %}
+                  <nav class="pp-pagination" aria-label="Pagination">
+                    <div class="pp-pagination__count">Showing {{ shown_from }}–{{ shown_to }} of {{ total_results }}</div>
+                    <div class="pp-pagination__pages">
+                      {% if paginate.previous %}
+                        <a href="{{ paginate.previous.url }}" class="pp-page pp-page--arrow" aria-label="Previous page" data-pp-nav>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="pp-page pp-page--arrow" aria-disabled="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                          </svg>
+                        </span>
+                      {% endif %}
+
+                      {% for part in paginate.parts %}
+                        {% if part.is_link %}
+                          <a href="{{ part.url }}" class="pp-page" data-pp-nav>{{ part.title }}</a>
+                        {% else %}
+                          {% if part.title == '&hellip;' %}
+                            <span class="pp-page pp-page--ellipsis" aria-hidden="true">&hellip;</span>
+                          {% else %}
+                            <span class="pp-page is-current" aria-current="page">{{ part.title }}</span>
+                          {% endif %}
+                        {% endif %}
+                      {% endfor %}
+
+                      {% if paginate.next %}
+                        <a href="{{ paginate.next.url }}" class="pp-page pp-page--arrow" aria-label="Next page" data-pp-nav>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="pp-page pp-page--arrow" aria-disabled="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div class="pp-pagination__spacer" aria-hidden="true"></div>
+                  </nav>
                 {% endif %}
               </div>
-            </section>
-          {% endfor %}
-        </div>
-        <div class="pp-drawer__foot">
-          <a href="{{ clear_url }}" class="pp-drawer__clear">Clear all</a>
-          <button type="submit" class="pp-drawer__show" data-close-drawer>Show {{ total_results }} results</button>
-        </div>
-      </form>
-    </aside>
+            </div>
+          </div>
+        </section>
+
+        <section class="pp-collection-trust" aria-label="Shopping benefits">
+          <div class="pp-wrap">
+            <div class="pp-collection-trust__grid">
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>Australia wide shipping</h3>
+                  <p>Fast, tracked delivery to your door.</p>
+                </div>
+              </div>
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>30 day returns</h3>
+                  <p>Easy returns on unused items.</p>
+                </div>
+              </div>
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>Secure checkout</h3>
+                  <p>Encrypted payments you can trust.</p>
+                </div>
+              </div>
+              <div class="pp-collection-trust__item">
+                <span class="pp-collection-trust__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </span>
+                <div class="pp-collection-trust__copy">
+                  <h3>Pretty &amp; Practical</h3>
+                  <p>Designed for beautiful, everyday living.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="pp-overlay" data-overlay aria-hidden="true"></div>
+        <aside class="pp-drawer" id="filter-drawer" aria-label="Filter drawer" aria-hidden="true" data-filter-source="drawer">
+          <div class="pp-drawer__head">
+            <div class="pp-drawer__title">Filters</div>
+            <button type="button" class="pp-drawer__close" data-close-drawer aria-label="Close filters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="pp-drawer__body" id="drawer-filters">
+            {% render 'pp-collection-filters', source: 'drawer', section_id: section.id, filters: search.filters %}
+          </div>
+          <div class="pp-drawer__foot">
+            <a href="{{ clear_url }}" class="pp-drawer__clear">Clear all</a>
+            <button type="button" class="pp-drawer__show" data-pp-apply>Show results</button>
+          </div>
+        </aside>
+      </div>
+      {% endif %}
+    </main>
   </div>
 {% endpaginate %}
 
 {% stylesheet %}
-  :root {
-    --pp-primary: #e8532a;
-    --pp-primary-dark: #c73e18;
-    --pp-primary-light: #fff1ec;
-    --pp-primary-mid: #f0784e;
-    --pp-navy: #111827;
-    --pp-navy-deep: #0f172a;
-    --pp-navy-mid: #1e293b;
-    --pp-white: #ffffff;
-    --pp-bg: #ffffff;
-    --pp-bg-subtle: #f7f8fa;
-    --pp-border: #e5e7eb;
-    --pp-border-light: #f3f4f6;
-    --pp-text: #111827;
-    --pp-text-secondary: #4b5563;
-    --pp-text-muted: #9ca3af;
-    --pp-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.07), 0 1px 2px rgb(0 0 0 / 0.04);
-    --pp-shadow-md: 0 4px 12px rgb(0 0 0 / 0.08);
-    --pp-shadow-lg: 0 14px 26px rgb(0 0 0 / 0.12);
-    --pp-shadow-xl: 0 24px 48px rgb(0 0 0 / 0.15);
-    --pp-radius-sm: 8px;
-    --pp-radius-md: 12px;
-    --pp-radius-lg: 16px;
-    --pp-radius-xl: 20px;
-    --pp-radius-pill: 999px;
-    --pp-font-heading: 'Sora', sans-serif;
-    --pp-font-body: 'DM Sans', sans-serif;
-    --pp-transition: 160ms ease;
-    --pp-transition-md: 240ms ease;
-    --pp-wrap-max: 1600px;
-    --pp-wrap-pad: 24px;
-  }
-
-  .shopify-section .pp-wrap,
-  .shopify-section .pp-wrap *,
-  .shopify-section .pp-wrap *::before,
-  .shopify-section .pp-wrap *::after,
-  .pp-overlay,
-  .pp-overlay::before,
-  .pp-overlay::after,
-  .pp-drawer,
-  .pp-drawer *,
-  .pp-drawer *::before,
-  .pp-drawer *::after {
-    box-sizing: border-box;
-  }
-
-  .shopify-section [data-pp-search-page] img,
-  .shopify-section [data-pp-search-page] svg {
-    max-width: 100%;
-    display: block;
-  }
-
-  .shopify-section [data-pp-search-page] button,
-  .shopify-section [data-pp-search-page] input,
-  .shopify-section [data-pp-search-page] select {
-    font-family: inherit;
-    font-size: inherit;
-  }
-
-  .shopify-section [data-pp-search-page] button {
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 0;
-    color: inherit;
-  }
-
-  .shopify-section [data-pp-search-page] a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .shopify-section [data-pp-search-page] h1,
-  .shopify-section [data-pp-search-page] h2,
-  .shopify-section [data-pp-search-page] h3,
-  .shopify-section [data-pp-search-page] h4 {
-    font-family: var(--pp-font-heading);
-    margin: 0;
-    color: var(--pp-navy-deep);
-    line-height: 1.15;
-  }
-
-  .shopify-section [data-pp-search-page] p {
-    margin: 0;
-  }
-
-  .shopify-section [data-pp-search-page] [hidden] {
-    display: none !important;
-  }
-
-  body.is-locked {
-    overflow: hidden;
-  }
-
-  .shopify-section [data-pp-search-page] :focus-visible {
-    outline: 2px solid var(--pp-primary);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-
-  .pp-wrap {
-    width: min(100%, var(--pp-wrap-max));
-    margin-inline: auto;
-    padding-inline: var(--pp-wrap-pad);
-  }
-
   .pp-search-head {
     padding: 28px 0 18px;
-    background: var(--pp-white);
+    background: var(--pp-white, #fff);
   }
 
-  .pp-breadcrumb {
-    font-size: 13px;
-    color: var(--pp-text-muted);
-    font-weight: 500;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .pp-breadcrumb a {
-    color: var(--pp-text-secondary);
-    transition: color 0.15s ease;
-  }
-
-  .pp-breadcrumb a:hover {
-    color: var(--pp-navy);
-  }
-
-  .pp-breadcrumb svg {
-    width: 12px;
-    height: 12px;
-    color: var(--pp-text-muted);
-  }
-
-  .pp-breadcrumb__current {
-    color: var(--pp-navy);
-    font-weight: 600;
-  }
-
-  .pp-search-title {
+  .pp-search-template .pp-search-title {
     font-family: var(--pp-font-heading);
     font-size: 36px;
     font-weight: 700;
     color: var(--pp-navy-deep);
     letter-spacing: -0.02em;
-    margin-bottom: 2px;
     line-height: 1.1;
+    margin: 0 0 2px;
   }
 
-  .pp-search-count {
+  .pp-search-template .pp-search-count {
     font-size: 15px;
-    color: var(--pp-text-secondary);
     font-weight: 500;
+    color: var(--pp-text-secondary);
   }
 
-  .pp-search-count strong {
+  .pp-search-template .pp-search-count strong {
     color: var(--pp-navy-deep);
     font-weight: 700;
   }
 
-  .pp-toolbar {
-    border-top: 1px solid var(--pp-border-light);
-    border-bottom: 1px solid var(--pp-border-light);
-    background: var(--pp-white);
-    padding: 10px 0;
-  }
-
-  .pp-toolbar__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .pp-toolbar__left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .pp-filterbtn {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 0 16px;
-    height: 40px;
-    border-radius: var(--pp-radius-pill);
-    background: var(--pp-white);
-    border: 1px solid var(--pp-border);
-    font-family: var(--pp-font-heading);
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--pp-navy);
-    transition: background 0.15s ease, color 0.15s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    box-shadow: none;
-    text-decoration: none;
-  }
-
-  .pp-filterbtn:hover {
-    background: var(--pp-navy);
-    color: var(--pp-white);
-  }
-
-  .pp-filterbtn svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .pp-filterbtn__count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    background: var(--pp-primary);
-    color: var(--pp-white);
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 0 6px;
-    margin-left: 2px;
-  }
-
-  .pp-toolbar__results {
-    font-size: 13px;
-    color: var(--pp-text-secondary);
-    font-weight: 500;
-  }
-
-  .pp-toolbar__right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .pp-toolbar__right form,
-  .pp-sidebar form,
-  .pp-drawer form {
-    margin: 0;
-  }
-
-  .pp-sort {
-    position: relative;
-  }
-
-  .pp-sort__btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 16px;
-    height: 40px;
-    border: 1px solid var(--pp-border);
-    background: var(--pp-white);
-    border-radius: var(--pp-radius-pill);
-    font-family: var(--pp-font-body);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--pp-navy);
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-
-  .pp-sort__btn:hover {
-    border-color: var(--pp-navy);
-  }
-
-  .pp-sort__btn .pp-sort__label-key {
-    color: var(--pp-text-muted);
-    font-weight: 500;
-  }
-
-  .pp-sort__btn .pp-sort__label-val {
-    font-weight: 600;
-    color: var(--pp-navy);
-  }
-
-  .pp-sort__caret {
-    width: 14px;
-    height: 14px;
-    color: var(--pp-primary);
-    transition: transform 0.2s ease;
-    margin-left: 2px;
-  }
-
-  .pp-sort.is-open .pp-sort__caret {
-    transform: rotate(180deg);
-  }
-
-  .pp-sort__menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    min-width: min(220px, calc(100vw - 32px));
-    max-width: calc(100vw - 32px);
-    background: var(--pp-white);
-    border: 1px solid var(--pp-border-light);
-    border-radius: var(--pp-radius-md);
-    box-shadow: var(--pp-shadow-lg);
-    padding: 6px;
-    z-index: 30;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-4px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-
-  .pp-sort.is-open .pp-sort__menu {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
-
-  .pp-sort__option {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: var(--pp-radius-sm);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--pp-navy);
-    text-align: left;
-    transition: background 0.12s ease;
-  }
-
-  .pp-sort__option:hover {
-    background: var(--pp-bg-subtle);
-  }
-
-  .pp-sort__option.is-active {
-    color: var(--pp-primary-dark);
-    font-weight: 600;
-  }
-
-  .pp-sort__option .pp-sort__check {
-    width: 14px;
-    height: 14px;
-    color: var(--pp-primary);
-    opacity: 0;
-    flex-shrink: 0;
-  }
-
-  .pp-sort__option.is-active .pp-sort__check {
-    opacity: 1;
-  }
-
-  .pp-chips {
-    display: none;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 14px 0 4px;
-  }
-
-  .pp-chips.is-visible {
-    display: flex;
-  }
-
-  .pp-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 6px 6px 12px;
-    background: var(--pp-primary-light);
-    color: var(--pp-primary-dark);
-    border-radius: var(--pp-radius-pill);
-    font-family: var(--pp-font-body);
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .pp-chip__x {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(199 62 24 / 0.12);
-    color: var(--pp-primary-dark);
-    transition: background 0.15s ease;
-  }
-
-  .pp-chip__x:hover {
-    background: var(--pp-primary);
-    color: var(--pp-white);
-  }
-
-  .pp-chip__x svg {
-    width: 10px;
-    height: 10px;
-    stroke-width: 2.5;
-  }
-
-  .pp-chips__clear {
-    margin-left: auto;
-    font-family: var(--pp-font-body);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--pp-primary);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: color 0.15s ease;
-  }
-
-  .pp-chips__clear:hover {
-    color: var(--pp-primary-dark);
-  }
-
-  .pp-search-main {
-    padding: 20px 0 56px;
-    background: var(--pp-white);
-  }
-
-  .pp-search-layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 40px;
-    align-items: flex-start;
-  }
-
-  .pp-sidebar {
-    --pp-sticky-sidebar-top: calc(var(--pp-header-group-height, var(--header-group-height, 96px)) + 20px);
-    position: sticky;
-    top: var(--pp-sticky-sidebar-top);
-    align-self: flex-start;
-    max-height: calc(100vh - var(--pp-sticky-sidebar-top) - 20px);
-    overflow-y: auto;
-    padding-right: 8px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--pp-border) transparent;
-  }
-
-  .pp-sidebar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .pp-sidebar::-webkit-scrollbar-thumb {
-    background: var(--pp-border);
-    border-radius: 3px;
-  }
-
-  .pp-filtergroup {
-    border-bottom: 1px solid var(--pp-border-light);
-    padding: 18px 0;
-  }
-
-  .pp-filtergroup:first-child {
-    padding-top: 4px;
-  }
-
-  .pp-filtergroup__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    font-family: var(--pp-font-heading);
-    font-weight: 600;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--pp-navy-deep);
-    padding-bottom: 14px;
-    transition: color 0.15s ease;
-  }
-
-  .pp-filtergroup__head:hover {
-    color: var(--pp-primary-dark);
-  }
-
-  .pp-filtergroup__caret {
-    width: 14px;
-    height: 14px;
-    color: var(--pp-text-muted);
-    transition: transform 0.25s ease;
-    stroke-width: 2;
-  }
-
-  .pp-filtergroup.is-collapsed .pp-filtergroup__caret {
-    transform: rotate(-90deg);
-  }
-
-  .pp-filtergroup__body {
-    display: block;
-    padding-bottom: 4px;
-  }
-
-  .pp-filtergroup.is-collapsed .pp-filtergroup__body {
-    display: none;
-  }
-
-  .pp-fprice {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-
-  .pp-fprice__field {
-    flex: 1;
-    position: relative;
-  }
-
-  .pp-fprice__field label {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: var(--pp-text-muted);
-    font-weight: 600;
-    pointer-events: none;
-  }
-
-  .pp-fprice__field input {
-    width: 100%;
-    height: 38px;
-    border: 1px solid var(--pp-border);
-    border-radius: var(--pp-radius-sm);
-    background: var(--pp-white);
-    padding: 0 10px 0 38px;
-    font-size: 13px;
-    color: var(--pp-navy);
-    font-weight: 600;
-    transition: border-color 0.15s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    box-shadow: none;
-  }
-
-  .pp-fprice__field input:focus {
-    outline: none;
-    border-color: var(--pp-navy);
-  }
-
-  .pp-fprice__field input::-webkit-outer-spin-button,
-  .pp-fprice__field input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .pp-fprice__field input[type='number'] {
-    -moz-appearance: textfield;
-  }
-
-  .pp-fprice__sep {
-    color: var(--pp-text-muted);
-    font-size: 13px;
-  }
-
-  .pp-fprice__presets {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .pp-fprice__preset {
-    font-family: var(--pp-font-body);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 5px 10px;
-    border: 1px solid var(--pp-border);
-    border-radius: var(--pp-radius-pill);
-    background: var(--pp-white);
-    color: var(--pp-text-secondary);
-    transition: all 0.15s ease;
-  }
-
-  .pp-fprice__preset:hover {
-    border-color: var(--pp-navy);
-    color: var(--pp-navy);
-  }
-
-  .pp-fprice__preset.is-active {
-    background: var(--pp-navy);
-    color: var(--pp-white);
-    border-color: var(--pp-navy);
-  }
-
-  .pp-fopts {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .pp-fopt {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    font-size: 14px;
-    color: var(--pp-text-secondary);
-    font-weight: 500;
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.15s ease;
-  }
-
-  .pp-fopt:hover {
-    color: var(--pp-navy);
-  }
-
-  .pp-fopt input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .pp-fopt__box {
-    width: 18px;
-    height: 18px;
-    border: 1.5px solid color-mix(in srgb, var(--pp-primary) 42%, #e5e7eb);
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.15s ease;
-    background: var(--pp-white);
-  }
-
-  .pp-fopt__box svg {
-    width: 12px;
-    height: 12px;
-    color: var(--pp-white);
-    stroke-width: 3;
-    opacity: 0;
-    transition: opacity 0.12s ease;
-  }
-
-  .pp-fopt input:checked + .pp-fopt__box {
-    background: var(--pp-primary);
-    border-color: var(--pp-primary);
-  }
-
-  .pp-fopt input:checked + .pp-fopt__box svg {
-    opacity: 1;
-  }
-
-  .pp-fopt__box--radio {
-    border-radius: 50%;
-  }
-
-  .pp-fopt input:checked + .pp-fopt__box--radio {
-    background: var(--pp-primary);
-    border-color: var(--pp-primary);
-    border-width: 1.5px;
-  }
-
-  .pp-fopt__label {
-    flex: 1;
-  }
-
-  .pp-fopt__count {
-    color: var(--pp-text-muted);
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .pp-fopt input:checked ~ .pp-fopt__label {
-    color: var(--pp-navy-deep);
-    font-weight: 600;
-  }
-
-  .pp-fcolors {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .pp-fcolor {
-    position: relative;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--pp-white);
-    box-shadow: 0 0 0 1px var(--pp-border);
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .pp-fcolor:hover {
-    transform: scale(1.08);
-  }
-
-  .pp-fcolor.is-active {
-    box-shadow: 0 0 0 2px var(--pp-navy);
-  }
-
-  .pp-fcolor__tip {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--pp-navy-deep);
-    color: var(--pp-white);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s ease;
-    z-index: 5;
-  }
-
-  .pp-fcolor:hover .pp-fcolor__tip {
-    opacity: 1;
-  }
-
-  .pp-frating-stars {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-  }
-
-  .pp-frating-stars svg {
-    width: 13px;
-    height: 13px;
-    color: var(--pp-primary);
-    fill: currentColor;
-  }
-
-  .pp-frating-stars svg.dim {
-    color: var(--pp-border);
-  }
-
-  .pp-frating-amp {
-    font-size: 12px;
-    color: var(--pp-text-muted);
-    margin-left: 4px;
-  }
-
-  .pp-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px 22px;
-  }
-
-  .pp-card {
-    display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-    border: 0;
-    outline: 0;
-    box-shadow: none;
-    background: transparent;
-    border-radius: 0;
-  }
-
-  .pp-card__image {
-    position: relative;
-    width: min(100%, 512px);
-    aspect-ratio: 1 / 1;
-    background: transparent;
-    border: 0;
-    border-radius: var(--pp-radius-lg);
-    overflow: hidden;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-inline: auto;
-    transition: transform 0.25s ease;
-  }
-
-  .pp-card:hover .pp-card__image {
-    transform: none;
-  }
-
-  .pp-card__image-inner {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.4s ease;
-  }
-
-  .pp-card:hover .pp-card__image-inner {
-    transform: none;
-  }
-
-  .pp-card__image-inner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .pp-card__placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: var(--pp-radius-md);
-    background: var(--pp-bg-subtle);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    color: var(--pp-text-muted);
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-    padding: 16px;
-    line-height: 1.4;
-  }
-
-  .pp-card__placeholder svg {
-    width: 40px;
-    height: 40px;
-    opacity: 0.35;
-    stroke-width: 1.25;
-  }
-
-  .pp-card__placeholder span {
-    font-family: var(--pp-font-heading);
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--pp-text-secondary);
-    letter-spacing: 0.01em;
-    max-width: 80%;
-  }
-
-  .pp-card__badges {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 2;
-  }
-
-  .pp-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--pp-font-heading);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 6px 10px;
-    border-radius: var(--pp-radius-sm);
-    line-height: 1;
-  }
-
-  .pp-pill--sale {
-    background: var(--pp-primary);
-    color: var(--pp-white);
-  }
-
-  .pp-pill--new,
-  .pp-pill--bestseller {
-    background: var(--pp-navy);
-    color: var(--pp-white);
-  }
-
-  .pp-pill--new::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--pp-primary);
-  }
-
-  .pp-wishlist {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 2;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--pp-text-muted);
-    transition: transform 0.2s ease, color 0.2s ease, background 0.2s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
-  }
-
-  .pp-wishlist svg {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s ease;
-  }
-
-  .pp-wishlist:hover {
-    background: var(--pp-white);
-    color: var(--pp-navy);
-  }
-
-  .pp-wishlist.is-active {
-    color: #ef4444;
-  }
-
-  .pp-wishlist.is-active svg {
-    fill: #ef4444;
-    stroke: #ef4444;
-  }
-
-  .pp-quickadd {
-    display: none !important;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 44px;
-    background: var(--pp-navy);
-    color: var(--pp-white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-family: var(--pp-font-heading);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    transform: translateY(100%);
-    transition: transform 0.24s ease;
-    z-index: 2;
-  }
-
-  .pp-card:hover .pp-quickadd {
-    transform: translateY(100%);
-  }
-
-  .pp-quickadd svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .pp-card__body {
-    padding: 16px 4px 0;
-  }
-
-  .pp-card__cat {
-    font-family: var(--pp-font-body);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 500;
-    color: var(--pp-text-muted);
-    margin-bottom: 6px;
-  }
-
-  .pp-card__title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--pp-navy);
-    line-height: 1.35;
-    margin-bottom: 8px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    min-height: calc(15px * 1.35 * 2);
-  }
-
-  .pp-card__rating {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-
-  .pp-stars {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-  }
-
-  .pp-stars svg {
-    width: 12px;
-    height: 12px;
-    color: var(--pp-primary);
-    fill: currentColor;
-    stroke: none;
-  }
-
-  .pp-stars svg.dim {
-    color: var(--pp-border);
-  }
-
-  .pp-card__count {
-    font-size: 13px;
-    color: var(--pp-text-muted);
-    font-family: var(--pp-font-body);
-  }
-
-  .pp-card__price {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .pp-card__cta {
-    margin-top: 12px;
-  }
-
-  .pp-card__quickadd-form--body {
-    display: block;
-    width: 100%;
-  }
-
-  .pp-card__quickadd-form--body add-to-cart-component {
-    display: contents;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card-cta,
-  .shopify-section [data-pp-search-page] .pp-card__cta .pp-card-cta,
-  .shopify-section [data-pp-search-page] .pp-card__cta button.pp-card-cta,
-  .shopify-section [data-pp-search-page] .pp-card__cta a.pp-card-cta,
-  .shopify-section [data-pp-search-page] .pp-card__cta button.button.pp-card-cta {
-    --button-color: var(--pp-primary, #e8532a);
-    --button-background-color: #fff;
-    --button-border-color: var(--pp-primary, #e8532a);
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    min-height: 42px;
-    padding: 0 14px;
-    border: 1.5px solid var(--pp-primary, #e8532a) !important;
-    border-radius: 8px;
-    background: #fff !important;
-    background-color: #fff !important;
-    color: var(--pp-primary, #e8532a) !important;
-    font-family: var(--pp-font-heading);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    box-shadow: none !important;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card-cta svg,
-  .shopify-section [data-pp-search-page] .pp-card-cta .add-to-cart-icon svg {
-    width: 16px;
-    height: 16px;
-    color: inherit !important;
-    stroke: currentColor !important;
-    fill: none;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card-cta .add-to-cart-icon {
-    display: inline-flex;
-    width: 16px;
-    height: 16px;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card-cta:hover:not(.pp-card-cta--soldout),
-  .shopify-section [data-pp-search-page] .pp-card__cta button.pp-card-cta:hover:not(.pp-card-cta--soldout),
-  .shopify-section [data-pp-search-page] .pp-card__cta a.pp-card-cta:hover:not(.pp-card-cta--soldout) {
-    background: var(--pp-primary-light, #fff1ec) !important;
-    background-color: var(--pp-primary-light, #fff1ec) !important;
-    color: var(--pp-primary, #e8532a) !important;
-    border: 1.5px solid var(--pp-primary, #e8532a) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card-cta--soldout,
-  .shopify-section [data-pp-search-page] .pp-card-cta--soldout:hover,
-  .shopify-section [data-pp-search-page] .pp-card__cta .pp-card-cta--soldout,
-  .shopify-section [data-pp-search-page] .pp-card__cta span.pp-card-cta--soldout {
-    background: #fff !important;
-    border: 1.5px solid var(--pp-primary, #e8532a) !important;
-    color: var(--pp-primary, #e8532a) !important;
-    cursor: default;
-    box-shadow: none !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card {
-    border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-card__image {
-    border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  .pp-price {
-    font-family: var(--pp-font-heading);
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--pp-navy-deep);
-    letter-spacing: -0.005em;
-  }
-
-  .pp-price--sale {
-    color: var(--pp-navy-deep);
-  }
-
-  .pp-price__was {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--pp-text-muted);
-    text-decoration: line-through;
-  }
-
-  .pp-price__save {
-    font-size: 12px;
-    font-weight: 600;
-    background: var(--pp-primary-light);
-    color: var(--pp-primary-dark);
-    padding: 2px 8px;
-    border-radius: var(--pp-radius-pill);
-    line-height: 1.4;
-  }
-
-  .pp-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding-top: 48px;
-    flex-wrap: wrap;
-  }
-
-  .pp-pagination__count {
-    font-size: 13px;
-    color: var(--pp-text-secondary);
-    font-weight: 500;
-  }
-
-  .pp-pagination__pages {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin: 0 auto;
-  }
-
-  .pp-page {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--pp-font-heading);
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--pp-navy);
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-
-  .pp-page:hover {
-    background: var(--pp-bg-subtle);
-  }
-
-  .pp-page.is-current {
-    background: var(--pp-navy);
-    color: var(--pp-white);
-  }
-
-  .pp-page.is-current:hover {
-    background: var(--pp-navy-deep);
-  }
-
-  .pp-page.is-disabled {
-    color: var(--pp-text-muted);
-    pointer-events: none;
-    opacity: 0.5;
-  }
-
-  .pp-page--arrow svg {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2;
-  }
-
-  .pp-pagination__spacer {
-    width: 110px;
-  }
-
-  .pp-empty-state {
-    display: none;
+  .pp-search-empty {
     max-width: 480px;
     margin: 0 auto;
-    padding: 80px 24px;
+    padding: 64px 0 80px;
     text-align: center;
   }
 
-  .pp-empty-state__icon {
-    width: 60px;
-    height: 60px;
-    color: var(--pp-text-muted);
+  .pp-search-empty__icon {
+    width: 56px;
+    height: 56px;
     margin: 0 auto 24px;
+    color: var(--pp-text-muted);
     stroke-width: 1.5;
   }
 
-  .pp-empty-state__title {
+  .pp-search-template .pp-search-empty__title {
     font-family: var(--pp-font-heading);
     font-size: 24px;
     font-weight: 700;
     color: var(--pp-navy-deep);
-    letter-spacing: -0.015em;
-    margin-bottom: 12px;
     line-height: 1.2;
+    margin: 0 0 12px;
   }
 
-  .pp-empty-state__text {
+  .pp-search-template .pp-search-empty__text {
     font-size: 15px;
-    color: var(--pp-text-secondary);
     line-height: 1.6;
-    max-width: 400px;
-    margin: 0 auto;
+    color: var(--pp-text-secondary);
   }
 
-  .pp-empty-state__browse-label {
+  .pp-search-empty__label {
+    margin: 32px 0 16px;
     font-family: var(--pp-font-heading);
     font-size: 13px;
     font-weight: 600;
-    color: var(--pp-text-muted);
-    text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-top: 32px;
-    margin-bottom: 16px;
+    text-transform: uppercase;
+    color: var(--pp-text-muted);
   }
 
-  .pp-empty-state__pills {
+  .pp-search-empty__pills {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -2021,969 +506,45 @@
     margin-bottom: 24px;
   }
 
-  .pp-empty-state__pill {
+  .pp-search-template .pp-search-empty__pill {
     display: inline-flex;
     align-items: center;
-    background: var(--pp-white);
-    border: 1px solid var(--pp-border);
-    border-radius: var(--pp-radius-pill);
     padding: 10px 20px;
+    border: 1px solid var(--pp-border);
+    border-radius: var(--pp-radius-pill, 999px);
+    background: var(--pp-white, #fff);
     font-family: var(--pp-font-heading);
     font-size: 14px;
     font-weight: 500;
     color: var(--pp-navy);
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
   }
 
-  .pp-empty-state__pill:hover {
-    background: var(--pp-bg-subtle);
+  .pp-search-template .pp-search-empty__pill:hover {
     border-color: var(--pp-navy);
+    background: var(--pp-bg-subtle);
   }
 
-  .pp-empty-state__support {
-    display: inline-block;
-    font-family: var(--pp-font-body);
+  .pp-search-template .pp-search-empty__support {
     font-size: 14px;
     font-weight: 600;
     color: var(--pp-primary);
-    transition: color 0.15s ease;
-  }
-
-  .pp-empty-state__support:hover {
-    color: var(--pp-primary-dark);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  .pp-search-layout.is-empty {
-    grid-template-columns: 1fr;
-  }
-
-  .pp-search-layout.is-empty .pp-sidebar,
-  .pp-search-layout.is-empty #product-grid,
-  .pp-search-layout.is-empty .pp-pagination {
-    display: none;
-  }
-
-  .pp-search-layout.is-empty .pp-empty-state {
-    display: block;
-  }
-
-  .pp-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgb(15 23 42 / 0.55);
-    z-index: 9998;
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-    transition: opacity 0.25s ease;
-  }
-
-  .pp-overlay.is-open {
-    opacity: 1;
-    pointer-events: auto;
-    visibility: visible;
-  }
-
-  .pp-drawer {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: min(92vw, 360px);
-    background: var(--pp-white);
-    z-index: 9999;
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    display: flex;
-    flex-direction: column;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .pp-drawer.is-open {
-    transform: translateX(0);
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .pp-drawer__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--pp-border-light);
-    position: sticky;
-    top: 0;
-    background: var(--pp-white);
-    z-index: 2;
-  }
-
-  .pp-drawer__title {
-    font-family: var(--pp-font-heading);
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--pp-navy-deep);
-  }
-
-  .pp-drawer__close {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--pp-navy);
-    transition: background 0.15s ease;
-  }
-
-  .pp-drawer__close:hover {
-    background: var(--pp-bg-subtle);
-  }
-
-  .pp-drawer__close svg {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2;
-  }
-
-  .pp-drawer form {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  .pp-drawer__body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 20px 20px;
-    background: var(--pp-white);
-  }
-
-  .pp-drawer__foot {
-    border-top: 1px solid var(--pp-border-light);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--pp-white);
-  }
-
-  .pp-drawer__clear {
-    font-family: var(--pp-font-body);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--pp-text-secondary);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  .pp-drawer__clear:hover {
-    color: var(--pp-navy);
-  }
-
-  .pp-drawer__show {
-    flex: 1;
-    background: var(--pp-primary);
-    color: var(--pp-white);
-    height: 46px;
-    border-radius: var(--pp-radius-pill);
-    font-family: var(--pp-font-heading);
-    font-size: 14px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 14px rgb(232 83 42 / 0.25);
-    transition: background 0.15s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    border: 0;
-    text-decoration: none;
-  }
-
-  .pp-drawer__show:hover {
-    background: var(--pp-primary-dark);
-  }
-
-  @media (max-width: 1100px) {
-    .pp-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 880px) {
-    .pp-search-layout {
-      display: block;
-    }
-
-    .pp-sidebar {
-      display: none;
-    }
-
-    .pp-search-layout > form {
-      display: none;
-    }
-
-    .pp-filterbtn {
-      display: inline-flex;
-    }
-
-    .pp-toolbar__results {
-      display: none;
-    }
   }
 
   @media (max-width: 768px) {
-    [data-pp-search-page] {
-      --pp-wrap-pad: 16px;
-    }
-
-    .pp-search-title {
-      font-size: 24px;
-    }
-
     .pp-search-head {
       padding: 20px 0 14px;
     }
 
-    .pp-toolbar {
-      padding: 10px 0;
+    .pp-search-template .pp-search-title {
+      font-size: 24px;
     }
 
-    .pp-toolbar__row {
-      gap: 10px;
-    }
-
-    .pp-sort__btn {
-      padding: 0 12px;
-    }
-
-    .pp-sort__btn .pp-sort__label-key {
-      display: none;
-    }
-
-    .pp-grid {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 16px;
-    }
-
-    .pp-card__image {
-      width: 100%;
-      padding: 0;
-      border-radius: var(--pp-radius-md);
-    }
-
-    .pp-card__body {
-      padding-top: 14px;
-    }
-
-    .pp-quickadd {
-      display: none;
-    }
-
-    .pp-pagination {
-      flex-direction: column-reverse;
-      gap: 12px;
-      padding-top: 36px;
-    }
-
-    .pp-pagination__spacer {
-      display: none;
-    }
-
-    .pp-empty-state {
-      padding: 56px 16px;
-    }
-
-    .pp-empty-state__title {
-      font-size: 22px;
+    .pp-search-empty {
+      padding: 48px 0 56px;
     }
   }
-
-  .shopify-section [data-pp-search-page] .pp-filterbtn {
-    display: none !important;
-    align-items: center !important;
-    gap: 8px !important;
-    padding: 0 16px !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    border-radius: var(--pp-radius-pill) !important;
-    background: var(--pp-white) !important;
-    border: 1px solid var(--pp-border) !important;
-    font-family: var(--pp-font-heading) !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    line-height: 1 !important;
-    color: var(--pp-navy) !important;
-    text-transform: none !important;
-    letter-spacing: 0 !important;
-    box-shadow: none !important;
-    transition: background .15s ease, color .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filterbtn:hover {
-    background: var(--pp-navy) !important;
-    color: var(--pp-white) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filterbtn svg {
-    width: 15px !important;
-    height: 15px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filterbtn__count {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 20px !important;
-    height: 20px !important;
-    padding: 0 6px !important;
-    margin-left: 2px !important;
-    border-radius: 999px !important;
-    background: var(--pp-primary) !important;
-    color: var(--pp-white) !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filterbtn__count[hidden] {
-    display: none !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    padding: 0 16px !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    border: 1px solid var(--pp-border) !important;
-    background: var(--pp-white) !important;
-    border-radius: var(--pp-radius-pill) !important;
-    font-family: var(--pp-font-body) !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    color: var(--pp-navy) !important;
-    box-shadow: none !important;
-    transition: border-color .15s ease, background .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__btn:hover {
-    border-color: var(--pp-navy) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__btn .pp-sort__label-key {
-    color: var(--pp-text-muted) !important;
-    font-weight: 500 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__btn .pp-sort__label-val {
-    font-weight: 600 !important;
-    color: var(--pp-navy) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__caret {
-    width: 14px !important;
-    height: 14px !important;
-    color: var(--pp-primary) !important;
-    transition: transform .2s ease !important;
-    margin-left: 2px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort.is-open .pp-sort__caret {
-    transform: rotate(180deg) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__menu {
-    position: absolute !important;
-    top: calc(100% + 8px) !important;
-    right: 0 !important;
-    min-width: min(220px, calc(100vw - 32px)) !important;
-    max-width: calc(100vw - 32px) !important;
-    background: var(--pp-white) !important;
-    border: 1px solid var(--pp-border-light) !important;
-    border-radius: var(--pp-radius-md) !important;
-    box-shadow: var(--pp-shadow-lg) !important;
-    padding: 6px !important;
-    z-index: 30 !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transform: translateY(-4px) !important;
-    transition: opacity .15s ease, transform .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort.is-open .pp-sort__menu {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: translateY(0) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__option {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    padding: 10px 12px !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: var(--pp-radius-sm) !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    color: var(--pp-navy) !important;
-    text-align: left !important;
-    box-shadow: none !important;
-    transition: background .12s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__option:hover {
-    background: var(--pp-bg-subtle) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__option.is-active {
-    color: var(--pp-primary-dark) !important;
-    font-weight: 600 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__option .pp-sort__check {
-    width: 14px !important;
-    height: 14px !important;
-    color: var(--pp-primary) !important;
-    opacity: 0 !important;
-    flex-shrink: 0 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-sort__option.is-active .pp-sort__check {
-    opacity: 1 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup {
-    border-bottom: 1px solid var(--pp-border-light) !important;
-    padding: 18px 0 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup:first-child {
-    padding-top: 4px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup__head {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    padding-bottom: 14px !important;
-    font-family: var(--pp-font-heading) !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    line-height: 1.15 !important;
-    letter-spacing: 0.06em !important;
-    text-transform: uppercase !important;
-    color: var(--pp-navy-deep) !important;
-    transition: color .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup__head:hover {
-    color: var(--pp-primary-dark) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup__caret {
-    width: 14px !important;
-    height: 14px !important;
-    color: var(--pp-text-muted) !important;
-    stroke-width: 2 !important;
-    transition: transform .25s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup.is-collapsed .pp-filtergroup__caret {
-    transform: rotate(-90deg) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup__body {
-    display: block !important;
-    padding-bottom: 4px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-filtergroup.is-collapsed .pp-filtergroup__body {
-    display: none !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopts {
-    list-style: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    padding: 6px 0 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    line-height: 1.3 !important;
-    color: var(--pp-text-secondary) !important;
-    cursor: pointer !important;
-    user-select: none !important;
-    transition: color .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt:hover {
-    color: var(--pp-navy) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt input {
-    position: absolute !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt__box {
-    width: 18px !important;
-    height: 18px !important;
-    border: 1.5px solid color-mix(in srgb, var(--pp-primary) 42%, #e5e7eb) !important;
-    border-radius: 4px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-    background: var(--pp-white) !important;
-    transition: all .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt__box svg {
-    width: 12px !important;
-    height: 12px !important;
-    color: var(--pp-white) !important;
-    stroke-width: 3 !important;
-    opacity: 0 !important;
-    transition: opacity .12s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt input:checked + .pp-fopt__box {
-    background: var(--pp-primary) !important;
-    border-color: var(--pp-primary) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt input:checked + .pp-fopt__box svg {
-    opacity: 1 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt__label {
-    flex: 1 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt__count {
-    color: var(--pp-text-muted) !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fopt input:checked ~ .pp-fopt__label {
-    color: var(--pp-navy-deep) !important;
-    font-weight: 600 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 14px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__field {
-    flex: 1 !important;
-    position: relative !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__field label {
-    position: absolute !important;
-    left: 10px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    font-size: 12px !important;
-    color: var(--pp-text-muted) !important;
-    font-weight: 600 !important;
-    pointer-events: none !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__field input {
-    width: 100% !important;
-    height: 38px !important;
-    padding: 0 10px 0 38px !important;
-    border: 1px solid var(--pp-border) !important;
-    border-radius: var(--pp-radius-sm) !important;
-    background: var(--pp-white) !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: var(--pp-navy) !important;
-    box-shadow: none !important;
-    transition: border-color .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__field input:focus {
-    outline: none !important;
-    border-color: var(--pp-navy) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__sep {
-    color: var(--pp-text-muted) !important;
-    font-size: 13px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__presets {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__preset {
-    font-family: var(--pp-font-body) !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-    padding: 5px 10px !important;
-    border: 1px solid var(--pp-border) !important;
-    border-radius: var(--pp-radius-pill) !important;
-    background: var(--pp-white) !important;
-    color: var(--pp-text-secondary) !important;
-    transition: all .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-fprice__preset:hover {
-    border-color: var(--pp-navy) !important;
-    color: var(--pp-navy) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-overlay {
-    position: fixed !important;
-    inset: 0 !important;
-    background: rgb(15 23 42 / .55) !important;
-    z-index: 9998 !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
-    transition: opacity .25s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-overlay.is-open {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    visibility: visible !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer {
-    position: fixed !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: min(92vw, 360px) !important;
-    background: var(--pp-white) !important;
-    z-index: 9999 !important;
-    transform: translateX(-100%) !important;
-    transition: transform .25s ease !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-    isolation: isolate !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer.is-open {
-    transform: translateX(0) !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__head {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 18px 20px !important;
-    border-bottom: 1px solid var(--pp-border-light) !important;
-    position: sticky !important;
-    top: 0 !important;
-    background: var(--pp-white) !important;
-    z-index: 2 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__close svg {
-    width: 18px !important;
-    height: 18px !important;
-    stroke-width: 2 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__body {
-    flex: 1 !important;
-    overflow-y: auto !important;
-    padding: 8px 20px 20px !important;
-    background: var(--pp-white) !important;
-    position: relative !important;
-    z-index: 1 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__foot {
-    border-top: 1px solid var(--pp-border-light) !important;
-    padding: 14px 20px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    background: var(--pp-white) !important;
-    position: relative !important;
-    z-index: 2 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__clear {
-    font-family: var(--pp-font-body) !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    color: var(--pp-text-secondary) !important;
-    text-decoration: underline !important;
-    text-underline-offset: 3px !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__show {
-    flex: 1 !important;
-    height: 46px !important;
-    border: 0 !important;
-    border-radius: var(--pp-radius-pill) !important;
-    background: var(--pp-primary) !important;
-    color: var(--pp-white) !important;
-    font-family: var(--pp-font-heading) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 6px 14px rgb(232 83 42 / .25) !important;
-    transition: background .15s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-drawer__show:hover {
-    background: var(--pp-primary-dark) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-wishlist {
-    position: absolute !important;
-    top: 12px !important;
-    right: 12px !important;
-    z-index: 2 !important;
-    width: 36px !important;
-    height: 36px !important;
-    border: 0 !important;
-    border-radius: 50% !important;
-    background: transparent !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: var(--pp-text-muted) !important;
-    box-shadow: none !important;
-    transition: transform .2s ease, color .2s ease, background .2s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-wishlist svg {
-    width: 20px !important;
-    height: 20px !important;
-    transition: transform .2s ease !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-wishlist:hover {
-    background: var(--pp-white) !important;
-    color: var(--pp-navy) !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-wishlist.is-active {
-    color: #ef4444 !important;
-  }
-
-  .shopify-section [data-pp-search-page] .pp-wishlist.is-active svg {
-    fill: #ef4444 !important;
-    stroke: #ef4444 !important;
-  }
-
-  @media (max-width: 880px) {
-    .shopify-section [data-pp-search-page] .pp-filterbtn {
-      display: inline-flex !important;
-    }
-  }
-
 {% endstylesheet %}
-
-{% javascript %}
-  (function () {
-    'use strict';
-
-    var root = document.querySelector('[data-pp-search-page]');
-    if (!root) return;
-
-    var currentUrl = new URL(window.location.href);
-    var currentTypes = currentUrl.searchParams.get('type');
-    if (currentTypes !== 'product') {
-      currentUrl.searchParams.set('type', 'product');
-      window.location.replace(currentUrl.toString());
-      return;
-    }
-
-    document.addEventListener('click', function (e) {
-      var toggle = e.target.closest('[data-group-toggle]');
-      if (!toggle || !root.contains(toggle)) return;
-
-      var section = toggle.closest('.pp-filtergroup');
-      if (!section) return;
-
-      section.classList.toggle('is-collapsed');
-      var expanded = !section.classList.contains('is-collapsed');
-      toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    });
-
-    var sortEl = root.querySelector('[data-sort]');
-    var sortBtn = root.querySelector('[data-sort-btn]');
-    var sortCurrent = root.querySelector('[data-sort-current]');
-    var sortForm = sortEl ? sortEl.closest('form') : null;
-    var sortInput = sortForm ? sortForm.querySelector('[data-sort-input]') : null;
-
-    if (sortEl && sortBtn) {
-      sortBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var isOpen = sortEl.classList.toggle('is-open');
-        sortBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-      });
-
-      document.addEventListener('click', function (e) {
-        var opt = e.target.closest('[data-sort-option]');
-        if (opt && root.contains(opt)) {
-          e.preventDefault();
-          var nextSortValue = opt.getAttribute('data-sort-option') || '';
-          if (!nextSortValue) {
-            sortEl.classList.remove('is-open');
-            sortBtn.setAttribute('aria-expanded', 'false');
-            return;
-          }
-
-          sortEl.querySelectorAll('[data-sort-option]').forEach(function (o) {
-            o.classList.remove('is-active');
-            o.setAttribute('aria-selected', 'false');
-          });
-
-          opt.classList.add('is-active');
-          opt.setAttribute('aria-selected', 'true');
-
-          var label = (opt.childNodes[0] && opt.childNodes[0].nodeValue)
-            ? opt.childNodes[0].nodeValue.trim()
-            : opt.textContent.trim();
-
-          if (sortCurrent) sortCurrent.textContent = label;
-
-          sortEl.classList.remove('is-open');
-          sortBtn.setAttribute('aria-expanded', 'false');
-
-          if (sortInput) {
-            sortInput.value = nextSortValue;
-          }
-
-          if (sortForm && sortInput && sortInput.value) {
-            sortForm.submit();
-          }
-          return;
-        }
-
-        if (!e.target.closest('[data-sort]')) {
-          sortEl.classList.remove('is-open');
-          sortBtn.setAttribute('aria-expanded', 'false');
-        }
-      });
-    }
-
-    var drawer = document.getElementById('filter-drawer');
-    var overlay = document.querySelector('[data-overlay]');
-
-    function openDrawer() {
-      if (!drawer || !overlay) return;
-      var drawerBody = drawer.querySelector('.pp-drawer__body');
-      if (drawerBody) drawerBody.scrollTop = 0;
-      drawer.classList.add('is-open');
-      overlay.classList.add('is-open');
-      drawer.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('is-locked');
-    }
-
-    function closeDrawer() {
-      if (!drawer || !overlay) return;
-      drawer.classList.remove('is-open');
-      overlay.classList.remove('is-open');
-      drawer.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('is-locked');
-    }
-
-    document.querySelectorAll('[data-open-drawer]').forEach(function (button) {
-      button.addEventListener('click', openDrawer);
-    });
-
-    document.querySelectorAll('[data-close-drawer]').forEach(function (button) {
-      button.addEventListener('click', closeDrawer);
-    });
-
-    if (overlay) overlay.addEventListener('click', closeDrawer);
-
-    var wishlistStorageKey = 'pp-collection-wishlist';
-
-    function readWishlist() {
-      try {
-        return JSON.parse(window.localStorage.getItem(wishlistStorageKey) || '[]');
-      } catch (error) {
-        return [];
-      }
-    }
-
-    function writeWishlist(items) {
-      window.localStorage.setItem(wishlistStorageKey, JSON.stringify(items));
-    }
-
-    var wishlistItems = new Set(readWishlist());
-
-    document.querySelectorAll('[data-pp-wishlist], [data-wishlist]').forEach(function (button) {
-      if (!(button instanceof HTMLButtonElement)) return;
-
-      var productId = button.dataset.productId;
-      if (!productId) return;
-
-      button.classList.toggle('is-active', wishlistItems.has(productId));
-
-      button.addEventListener('click', function () {
-        if (wishlistItems.has(productId)) {
-          wishlistItems.delete(productId);
-          button.classList.remove('is-active');
-        } else {
-          wishlistItems.add(productId);
-          button.classList.add('is-active');
-          button.classList.add('pulse');
-          window.setTimeout(function () {
-            button.classList.remove('pulse');
-          }, 250);
-        }
-
-        writeWishlist(Array.from(wishlistItems));
-      });
-    });
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-
-      if (drawer && drawer.classList.contains('is-open')) closeDrawer();
-
-      if (sortEl && sortEl.classList.contains('is-open')) {
-        sortEl.classList.remove('is-open');
-        if (sortBtn) sortBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }());
-{% endjavascript %}
 
 {% schema %}
 {

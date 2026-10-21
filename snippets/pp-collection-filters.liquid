@@ -6,20 +6,22 @@
 
   @param {string} source - desktop | drawer
   @param {string} section_id
+  @param {filter[]} [filters] - defaults to collection.filters (search passes search.filters)
 {%- endcomment -%}
 
 {%- liquid
+  assign pp_filters = filters | default: collection.filters
   assign auto_submit = false
   if source == 'desktop'
     assign auto_submit = true
   endif
 -%}
 
-{%- if collection.filters.size == 0 -%}
-  <p class="pp-filters-empty">No filters are available for this collection.</p>
+{%- if pp_filters.size == 0 -%}
+  <p class="pp-filters-empty">No filters are available for these products.</p>
 {%- endif -%}
 
-{%- for filter in collection.filters -%}
+{%- for filter in pp_filters -%}
   {%- liquid
     assign group_open = true
     if forloop.index > 4 and filter.active_values.size == 0
@@ -101,7 +103,7 @@
                 autocomplete="off"
               >
             </div>
-            <button type="submit" class="pp-fprice__go">Go</button>
+            <button type="button" class="pp-fprice__go" data-pp-apply>Go</button>
           </div>
 
           {%- comment -%} Quick price bands, only those below the collection's highest price. {%- endcomment -%}

@@ -3291,3 +3291,93 @@ body.is-locked {
   font-size: 13px;
   color: var(--pp-text-muted);
 }
+
+/* Shared page resets for the collection and search pages (moved from main-collection). */
+.shopify-section [data-pp-collection-page] button,
+.shopify-section [data-pp-collection-page] input,
+.shopify-section [data-pp-collection-page] select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.shopify-section [data-pp-collection-page] button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.shopify-section [data-pp-collection-page] a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shopify-section [data-pp-collection-page] p {
+  margin: 0;
+}
+
+.shopify-section [data-pp-collection-page] .pp-breadcrumb {
+  font-size: 13px !important;
+  color: var(--pp-text-muted) !important;
+  font-weight: 500 !important;
+  margin-bottom: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-breadcrumb a,
+.shopify-section [data-pp-collection-page] .pp-breadcrumb a:link,
+.shopify-section [data-pp-collection-page] .pp-breadcrumb a:visited,
+.shopify-section [data-pp-collection-page] .pp-breadcrumb a:active {
+  color: var(--pp-text-muted) !important;
+  font-weight: 500 !important;
+  transition: color 0.15s ease !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-breadcrumb a:hover {
+  color: var(--pp-navy) !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-breadcrumb svg {
+  width: 12px !important;
+  height: 12px !important;
+  color: var(--pp-text-muted) !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-breadcrumb__current {
+  color: var(--pp-navy) !important;
+  font-weight: 600 !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-drawer__title {
+  font-family: var(--pp-font-heading) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--pp-navy-deep) !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-drawer__close {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--pp-navy) !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-drawer__close:hover {
+  background: var(--pp-bg-subtle) !important;
+}
+
+.shopify-section [data-pp-collection-page] .pp-drawer__close svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2 !important;
+}
