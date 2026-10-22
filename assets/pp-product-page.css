@@ -4513,7 +4513,7 @@
 .pp-product-page .pp-brand-line__name {
   font-family: var(--pp-font-heading);
   font-weight: 600;
-  color: var(--pp-primary, #e8532a);
+  color: var(--pp-primary-mid, #f0784e);
 }
 
 .pp-pdp-v2 .pp-info-actions {
