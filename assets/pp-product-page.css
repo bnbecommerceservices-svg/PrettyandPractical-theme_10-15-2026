@@ -5123,11 +5123,13 @@ product-recommendations.product-recommendations .pp-recommend {
 /* ----- ADD TO CART MOTION (main and sticky buttons) -----
    Hover: a slightly deeper orange (#dc4a22) and a 2px lift, no shadow. Press: a small squeeze.
    .is-loading / .is-added are set by pp-product.js while adding.
-   Scoped like the buy box rules above, which also hide ::before/::after. */
-.pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout),
+   Covers both product page layouts (.pp-buybox and the newer .pp-pdp-v2 cart
+   panel); the buy box rules above hide ::before/::after, so these restore them. */
+.pp-product-page .pp-atc:not(.pp-atc--soldout),
 .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout) {
   position: relative;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgb(232 83 42 / 0.2);
   transition: background-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease, scale 0.12s ease, color 0.15s ease;
 }
 
@@ -5138,19 +5140,19 @@ product-recommendations.product-recommendations .pp-recommend {
   color: var(--pp-white, #fff);
 }
 
-.pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout):hover,
+.pp-product-page .pp-atc:not(.pp-atc--soldout):hover,
 .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout):hover {
   background-color: #dc4a22;
   transform: translateY(-2px);
   box-shadow: none;
 }
 
-.pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout):active,
+.pp-product-page .pp-atc:not(.pp-atc--soldout):active,
 .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout):active {
   scale: 0.98;
 }
 
-.pp-product-page .pp-buybox .pp-atc:focus-visible,
+.pp-product-page .pp-atc:focus-visible,
 .pp-product-page .pp-sticky-atc:focus-visible {
   outline: 2px solid var(--pp-primary);
   outline-offset: 3px;
@@ -5158,16 +5160,16 @@ product-recommendations.product-recommendations .pp-recommend {
 
 /* Adding: the label gives way to a spinner. The button is disabled while
    the request runs, so keep it at full strength rather than greyed out. */
-.pp-product-page .pp-buybox .pp-atc.is-loading,
+.pp-product-page .pp-atc.is-loading,
 .pp-product-page .pp-sticky-atc.is-loading,
-.pp-product-page .pp-buybox .pp-atc.is-added,
+.pp-product-page .pp-atc.is-added,
 .pp-product-page .pp-sticky-atc.is-added {
   color: transparent !important;
   opacity: 1 !important;
   cursor: progress;
 }
 
-.pp-product-page .pp-buybox .pp-atc.is-loading::after,
+.pp-product-page .pp-atc.is-loading::after,
 .pp-product-page .pp-sticky-atc.is-loading::after {
   content: "";
   position: absolute;
@@ -5183,14 +5185,14 @@ product-recommendations.product-recommendations .pp-recommend {
   animation: pp-atc-spin 0.7s linear infinite;
 }
 
-/* Added: "Added to cart" with a tick, popping in. */
-.pp-product-page .pp-buybox .pp-atc.is-added,
-.pp-product-page .pp-sticky-atc.is-added {
+/* Added: "Added to cart" with a tick, popping in (kept over the hover colour). */
+.pp-product-page .pp-atc.is-added:not(.pp-atc--soldout),
+.pp-product-page .pp-sticky-atc.is-added:not(.pp-atc--soldout) {
   background-color: var(--pp-primary-dark);
   cursor: default;
 }
 
-.pp-product-page .pp-buybox .pp-atc.is-added::after,
+.pp-product-page .pp-atc.is-added::after,
 .pp-product-page .pp-sticky-atc.is-added::after {
   content: "Added to cart";
   position: absolute;
@@ -5222,17 +5224,44 @@ product-recommendations.product-recommendations .pp-recommend {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout),
+  .pp-product-page .pp-atc:not(.pp-atc--soldout),
   .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout),
-  .pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout):hover,
+  .pp-product-page .pp-atc:not(.pp-atc--soldout):hover,
   .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout):hover {
     transition: background-color 0.2s ease;
     transform: none;
   }
 
-  .pp-product-page .pp-buybox .pp-atc.is-added::after,
+  .pp-product-page .pp-atc.is-added::after,
   .pp-product-page .pp-sticky-atc.is-added::after {
     animation: none;
+  }
+}
+
+/* Cart icon with the same hop as the product card buttons. */
+.pp-product-page .pp-atc .pp-atc__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pp-product-page .pp-atc:not(.pp-atc--soldout):hover .pp-atc__icon {
+  transform: translateY(-2px) rotate(-8deg);
+}
+
+.pp-product-page .pp-atc.pp-atc--soldout .pp-atc__icon,
+.pp-product-page .pp-atc:is(.is-loading, .is-added) .pp-atc__icon {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-product-page .pp-atc .pp-atc__icon {
+    transition: none;
+  }
+
+  .pp-product-page .pp-atc:not(.pp-atc--soldout):hover .pp-atc__icon {
+    transform: none;
   }
 }
 

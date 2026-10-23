@@ -480,7 +480,9 @@
     if (atc) {
       atc.disabled = soldOut;
       atc.classList.toggle('pp-atc--soldout', soldOut);
-      atc.textContent = soldOut ? 'Sold out' : 'Add to cart';
+      const atcLabel = document.getElementById('add-to-cart-label');
+      if (atcLabel) atcLabel.textContent = soldOut ? 'Sold out' : 'Add to cart';
+      else atc.textContent = soldOut ? 'Sold out' : 'Add to cart';
     }
     if (stickyAtc) {
       stickyAtc.disabled = soldOut;
