@@ -110,8 +110,11 @@
     {% endif %}
   </div>
   <div class="pp-card__body">
+    {% comment %} Always rendered, even when empty, so titles, prices and buttons line up across a row. {% endcomment %}
     {% if card_category != blank %}
       <p class="pp-card__cat">{{ card_category }}</p>
+    {% else %}
+      <p class="pp-card__cat" aria-hidden="true">&nbsp;</p>
     {% endif %}
     <a href="{{ product_url }}" class="pp-card__title">{{ product.title }}</a>
     {% liquid

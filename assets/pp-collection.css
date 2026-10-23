@@ -3321,3 +3321,26 @@ body.is-locked {
   margin-top: auto;
   padding-top: 12px;
 }
+
+/* Every text line in a card stays on one line, so a long product type,
+   a sale price or the delivery note on a narrow phone can't push the
+   lines below it out of step with the neighbouring cards. */
+.pp-collection-template .pp-card__cat,
+.pp-collection-template .pp-card__ship {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-collection-template .pp-card__price {
+  flex-wrap: nowrap;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.pp-collection-template .pp-card__price .pp-price__was {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
