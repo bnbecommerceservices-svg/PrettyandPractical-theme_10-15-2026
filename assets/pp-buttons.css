@@ -126,6 +126,7 @@ html :is(
   .pp-faq .btn-contact,
   .pp-about-us .cta-btn,
   .pp-account-btn--primary,
+  .pp-pdp-v2 .pp-delivery__row button,
   .pp-search-form__btn,
   .pp-drawer__search-btn
 ) {
@@ -154,7 +155,8 @@ html :is(
   .pp-contact-us .pp-submit-btn,
   .pp-faq .btn-contact,
   .pp-about-us .cta-btn,
-  .pp-account-btn--primary
+  .pp-account-btn--primary,
+  .pp-pdp-v2 .pp-delivery__row button
 ) {
   box-shadow: 0 1px 3px rgb(232 83 42 / 0.2) !important;
 }
@@ -179,7 +181,8 @@ html :is(
   .pp-contact-us .pp-submit-btn,
   .pp-faq .btn-contact,
   .pp-about-us .cta-btn,
-  .pp-account-btn--primary
+  .pp-account-btn--primary,
+  .pp-pdp-v2 .pp-delivery__row button
 ):is(:hover, :focus-visible) {
   background: #dc4a22 !important;
   border-color: #dc4a22 !important;
@@ -217,7 +220,8 @@ html :is(
   .pp-contact-us .pp-submit-btn,
   .pp-faq .btn-contact,
   .pp-about-us .cta-btn,
-  .pp-account-btn--primary
+  .pp-account-btn--primary,
+  .pp-pdp-v2 .pp-delivery__row button
 ):active {
   scale: 0.97;
   translate: 0 0;
@@ -244,7 +248,8 @@ html :is(
   .pp-contact-us .pp-submit-btn,
   .pp-faq .btn-contact,
   .pp-about-us .cta-btn,
-  .pp-account-btn--primary
+  .pp-account-btn--primary,
+  .pp-pdp-v2 .pp-delivery__row button
   ):is(:hover, :focus-visible, :active) {
     translate: none;
     scale: none;

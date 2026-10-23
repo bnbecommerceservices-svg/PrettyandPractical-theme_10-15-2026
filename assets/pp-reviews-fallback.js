@@ -19,7 +19,7 @@
   var productType = root.getAttribute('data-product-type') || 'this piece';
   var reviewsSrc = root.getAttribute('data-reviews-src') || '';
 
-  var AVATAR = ['#e8532a', '#c73e18', '#0f766e', '#b45309', '#1d4ed8', '#7c3aed', '#be185d'];
+  var AVATAR = ['#e8532a'];
   var CITIES = [
     'Sydney, NSW', 'Melbourne, VIC', 'Brisbane, QLD', 'Perth, WA',
     'Adelaide, SA', 'Hobart, TAS', 'Canberra, ACT', 'Gold Coast, QLD', 'Geelong, VIC',
@@ -351,7 +351,7 @@
     }
     summaryEl.innerHTML =
       '<div class="pp-creviews__score">' +
-        '<strong>' + avg.toFixed(1) + '</strong>' +
+        '<strong>' + avg.toFixed(1) + '<span aria-hidden="true">/5</span></strong>' +
         '<div class="pp-creviews__score-stars" aria-label="' + avg.toFixed(1) + ' out of 5 stars">' + starsHtml(Math.round(avg)) + '</div>' +
         '<p>' + formatCount(total) + ' review' + (total === 1 ? '' : 's') + '</p>' +
       '</div>' +
@@ -360,13 +360,23 @@
 
   function renderPills(reviews) {
     var counts = histogram(reviews);
-    var items = [{ label: 'All stars', value: 0 }].concat(
-      [5, 4, 3, 2, 1].map(function (n) { return { label: n + ' ★', value: n }; })
+    // "All 5", "5 ★ 2", ... with the count in a badge; ratings nobody gave are greyed out.
+    var items = [{ value: 0, count: reviews.length }].concat(
+      [5, 4, 3, 2, 1].map(function (n) { return { value: n, count: counts[n] || 0 }; })
     );
     pillsEl.innerHTML = items.map(function (item) {
-      var extra = item.value ? ' <span>(' + (counts[item.value] || 0) + ')</span>' : '';
-      return '<button type="button" class="pp-creviews__pill' + (filterStar === item.value ? ' is-active' : '') + '" data-star="' + item.value + '">' +
-        item.label + extra + '</button>';
+      var active = filterStar === item.value;
+      var empty = item.value && !item.count;
+      var label = item.value ? item.value + ' ' + '<svg class="pp-creviews__pill-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.7 6.2 6.8.6-5.2 4.5 1.6 6.6L12 16.8 6.1 20.4l1.6-6.6L2.5 9.3l6.8-.6L12 2.5z"></path></svg>' : 'All';
+      var name = item.value
+        ? item.value + ' star' + (item.value === 1 ? '' : 's') + ', ' + item.count + ' review' + (item.count === 1 ? '' : 's')
+        : 'All ratings, ' + item.count + ' review' + (item.count === 1 ? '' : 's');
+      return '<button type="button" role="tab" class="pp-creviews__pill' + (active ? ' is-active' : '') + '"' +
+        ' data-star="' + item.value + '" aria-selected="' + active + '" aria-label="' + name + '"' +
+        (empty ? ' disabled' : '') + '>' +
+        '<span class="pp-creviews__pill-label">' + label + '</span>' +
+        '<span class="pp-creviews__count" aria-hidden="true">' + item.count + '</span>' +
+        '</button>';
     }).join('');
     filtersEl.hidden = false;
   }
@@ -394,15 +404,16 @@
       '<p class="pp-creviews__body' + (long ? ' is-clamp' : '') + '">' + escapeHtml(review.body) + '</p>' +
       (long ? '<button type="button" class="pp-creviews__read" data-read-more>Read more</button>' : '') +
       '<div class="pp-creviews__helpful">' +
-        '<span>Helpful?</span>' +
+        '<span class="pp-creviews__helpful-q">Was this helpful?</span>' +
         '<button type="button" class="pp-creviews__vote" data-helpful="' + index + '">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>' +
-          'Yes' + (help ? ' (' + help + ')' : '') +
+          'Yes' + (help ? '<span class="pp-creviews__count" data-help-count>' + help + '</span>' : '') +
         '</button>' +
         '<button type="button" class="pp-creviews__vote" data-unhelpful="' + index + '">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>' +
           'No' +
         '</button>' +
+        '<span class="pp-creviews__thanks" role="status"></span>' +
       '</div>' +
     '</article>';
   }
@@ -416,7 +427,10 @@
     if (moreBtn) {
       var leftover = rows.length - visible.length;
       moreBtn.hidden = leftover <= 0;
-      moreBtn.textContent = leftover > 0 ? 'See all ' + formatCount(rows.length) + ' reviews ↓' : '';
+      moreBtn.innerHTML = leftover > 0
+        ? 'Show ' + formatCount(leftover) + ' more review' + (leftover === 1 ? '' : 's') +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>'
+        : '';
     }
   }
 
@@ -445,16 +459,31 @@
         more.remove();
         return;
       }
-      var yes = event.target.closest('[data-helpful]');
-      if (yes) {
-        var idx = yes.getAttribute('data-helpful');
-        var next = 1;
-        try {
-          next = (parseInt(window.localStorage.getItem(helpfulKey(idx)) || '0', 10) || 0) + 1;
-          window.localStorage.setItem(helpfulKey(idx), String(next));
-        } catch (err) {}
-        yes.innerHTML = yes.innerHTML.replace(/Yes(?: \(\d+\))?/, 'Yes (' + next + ')');
-        yes.classList.add('is-on');
+      // One vote per review: the chosen button lights up, both lock, and a thank-you shows.
+      var vote = event.target.closest('[data-helpful], [data-unhelpful]');
+      if (vote && !vote.disabled) {
+        var row = vote.closest('.pp-creviews__helpful');
+        if (vote.hasAttribute('data-helpful')) {
+          var idx = vote.getAttribute('data-helpful');
+          var next = 1;
+          try {
+            next = (parseInt(window.localStorage.getItem(helpfulKey(idx)) || '0', 10) || 0) + 1;
+            window.localStorage.setItem(helpfulKey(idx), String(next));
+          } catch (err) {}
+          var badge = vote.querySelector('[data-help-count]');
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'pp-creviews__count';
+            badge.setAttribute('data-help-count', '');
+            vote.appendChild(badge);
+          }
+          badge.textContent = String(next);
+        }
+        vote.classList.add('is-on');
+        vote.setAttribute('aria-pressed', 'true');
+        row.querySelectorAll('.pp-creviews__vote').forEach(function (btn) { btn.disabled = true; });
+        var thanks = row.querySelector('.pp-creviews__thanks');
+        if (thanks) thanks.textContent = 'Thanks for your feedback!';
       }
     });
   }
