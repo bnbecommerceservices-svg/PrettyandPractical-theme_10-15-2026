@@ -149,7 +149,7 @@
           {%- form 'product', product, id: quick_add_body_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
             <input type="hidden" name="id" ref="variantId" value="{{ selected_variant.id }}">
             <input type="hidden" name="quantity" value="1">
-            {% render 'add-to-cart-button', can_add_to_cart: selected_variant.available, add_to_cart_text: 'Add to cart', product: product, class: 'pp-card-cta' %}
+            {% render 'add-to-cart-button', can_add_to_cart: selected_variant.available, add_to_cart_text: 'Add to cart', product: product, class: 'pp-card-cta add-to-cart-button' %}
           {%- endform -%}
         </product-form-component>
       {% else %}

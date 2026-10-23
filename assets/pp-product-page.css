@@ -5119,3 +5119,119 @@ product-recommendations.product-recommendations .pp-recommend {
   background: transparent;
   border-top: 0;
 }
+
+/* ----- ADD TO CART MOTION (main and sticky buttons) -----
+   Hover: a slightly deeper orange (#dc4a22) and a 2px lift, no shadow. Press: a small squeeze.
+   .is-loading / .is-added are set by pp-product.js while adding.
+   Scoped like the buy box rules above, which also hide ::before/::after. */
+.pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout),
+.pp-product-page .pp-sticky-atc:not(.pp-atc--soldout) {
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease, scale 0.12s ease, color 0.15s ease;
+}
+
+/* ".pp-product-page button { background: none }" outranks the sticky
+   button's own colour, which left it as bare text; restore it here. */
+.pp-product-page .pp-sticky-atc:not(.pp-atc--soldout) {
+  background-color: var(--pp-primary);
+  color: var(--pp-white, #fff);
+}
+
+.pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout):hover,
+.pp-product-page .pp-sticky-atc:not(.pp-atc--soldout):hover {
+  background-color: #dc4a22;
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout):active,
+.pp-product-page .pp-sticky-atc:not(.pp-atc--soldout):active {
+  scale: 0.98;
+}
+
+.pp-product-page .pp-buybox .pp-atc:focus-visible,
+.pp-product-page .pp-sticky-atc:focus-visible {
+  outline: 2px solid var(--pp-primary);
+  outline-offset: 3px;
+}
+
+/* Adding: the label gives way to a spinner. The button is disabled while
+   the request runs, so keep it at full strength rather than greyed out. */
+.pp-product-page .pp-buybox .pp-atc.is-loading,
+.pp-product-page .pp-sticky-atc.is-loading,
+.pp-product-page .pp-buybox .pp-atc.is-added,
+.pp-product-page .pp-sticky-atc.is-added {
+  color: transparent !important;
+  opacity: 1 !important;
+  cursor: progress;
+}
+
+.pp-product-page .pp-buybox .pp-atc.is-loading::after,
+.pp-product-page .pp-sticky-atc.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgb(255 255 255 / 0.35);
+  border-top-color: #fff;
+  display: block;
+  border-radius: 50%;
+  animation: pp-atc-spin 0.7s linear infinite;
+}
+
+/* Added: "Added to cart" with a tick, popping in. */
+.pp-product-page .pp-buybox .pp-atc.is-added,
+.pp-product-page .pp-sticky-atc.is-added {
+  background-color: var(--pp-primary-dark);
+  cursor: default;
+}
+
+.pp-product-page .pp-buybox .pp-atc.is-added::after,
+.pp-product-page .pp-sticky-atc.is-added::after {
+  content: "Added to cart";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-left: 26px;
+  color: #fff;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") no-repeat calc(50% - 62px) 50% / 18px 18px;
+  animation: pp-atc-added 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pp-product-page .pp-sticky-atc.is-added::after {
+  content: "Added";
+  padding-left: 22px;
+  background-position: calc(50% - 26px) 50%;
+  background-size: 15px 15px;
+}
+
+@keyframes pp-atc-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pp-atc-added {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout),
+  .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout),
+  .pp-product-page .pp-buybox .pp-atc:not(.pp-atc--soldout):hover,
+  .pp-product-page .pp-sticky-atc:not(.pp-atc--soldout):hover {
+    transition: background-color 0.2s ease;
+    transform: none;
+  }
+
+  .pp-product-page .pp-buybox .pp-atc.is-added::after,
+  .pp-product-page .pp-sticky-atc.is-added::after {
+    animation: none;
+  }
+}

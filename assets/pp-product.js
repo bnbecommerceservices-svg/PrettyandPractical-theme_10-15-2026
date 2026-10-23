@@ -591,6 +591,19 @@
     return cart;
   }
 
+  // Button feedback while adding: a spinner, then "Added to cart" for a
+  // moment. Classes only, since syncVariantDetails rewrites the label text.
+  let atcStateTimer = null;
+  function setAtcState(state) {
+    [addToCartBtn, document.getElementById('sticky-atc')].forEach((button) => {
+      if (!button) return;
+      button.classList.toggle('is-loading', state === 'loading');
+      button.classList.toggle('is-added', state === 'added');
+    });
+    if (atcStateTimer) clearTimeout(atcStateTimer);
+    if (state === 'added') atcStateTimer = setTimeout(() => setAtcState(''), 1800);
+  }
+
   async function submitAddToCart() {
     const matchingVariant = findMatchingVariant();
     if (!matchingVariant) return;
@@ -617,6 +630,7 @@
 
     if (addToCartBtn) addToCartBtn.disabled = true;
     if (stickyAtc) stickyAtc.disabled = true;
+    setAtcState('loading');
 
     try {
       const response = await fetch(`${rootUrl}cart/add.js`, {
@@ -634,9 +648,11 @@
         source: 'pp-product-form',
         sections: responseData?.sections || {}
       });
+      setAtcState('added');
       popHeaderCart();
       showToast('Added to cart');
     } catch (error) {
+      setAtcState('');
       showToast(error.message || 'Unable to add to cart', 'error');
     } finally {
       syncVariantDetails(findMatchingVariant());

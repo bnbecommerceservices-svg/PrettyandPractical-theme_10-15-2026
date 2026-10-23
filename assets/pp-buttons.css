@@ -1,0 +1,86 @@
+/*
+  Product card "Add to cart" / "Choose options" buttons (homepage, collection,
+  search and the rows that reuse collection cards), styled to match the
+  product page's solid orange button:
+  - rest: solid orange, white label
+  - hover: a slightly deeper orange (#dc4a22) and a 2px lift, no shadow
+  - press: a small squeeze
+  - added: darker orange with the theme's checkmark burst (data-added is set
+    by add-to-cart-component in product-form.js)
+
+  pp-homepage.css and pp-collection.css set background, border, colour and
+  shadow with !important on selectors up to five classes deep, so the
+  repeated class here lifts these rules above them. Sold-out buttons keep
+  their own grey style.
+*/
+.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout) {
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid var(--pp-primary, #e8532a) !important;
+  border-radius: 10px !important;
+  background: var(--pp-primary, #e8532a) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 3px rgb(232 83 42 / 0.2) !important;
+  transition: background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, translate 0.22s ease, scale 0.12s ease;
+}
+
+.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout):is(:hover, :focus-visible) {
+  border-color: #dc4a22 !important;
+  background: #dc4a22 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  translate: 0 -2px;
+}
+
+.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout)[data-added='true'] {
+  border-color: var(--pp-primary-dark, #c73e18) !important;
+  background: var(--pp-primary-dark, #c73e18) !important;
+  color: #fff !important;
+}
+
+.pp-card__cta .pp-card-cta:not(.pp-card-cta--soldout):active {
+  scale: 0.97;
+  translate: 0 0;
+}
+
+.pp-card__cta .pp-card-cta:focus-visible {
+  outline: 2px solid var(--pp-primary, #e8532a);
+  outline-offset: 2px;
+}
+
+/* White icon on orange, with a little hop on hover. */
+.pp-card__cta .pp-card-cta:not(.pp-card-cta--soldout) .add-to-cart-icon {
+  color: #fff;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pp-card__cta .pp-card-cta:hover .add-to-cart-icon {
+  transform: translateY(-2px) rotate(-8deg);
+}
+
+/* Success: the theme's checkmark burst, in white. */
+.pp-card__cta .pp-card-cta .add-to-cart__added {
+  color: #fff;
+  pointer-events: none;
+}
+
+.pp-card__cta .pp-card-cta .add-to-cart__added-icon {
+  width: 36px;
+  height: 36px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout),
+  .pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout):is(:hover, :focus-visible) {
+    transition: background-color 0.2s ease;
+    translate: none;
+  }
+
+  .pp-card__cta .pp-card-cta .add-to-cart-icon {
+    transition: none;
+  }
+
+  .pp-card__cta .pp-card-cta:hover .add-to-cart-icon {
+    transform: none;
+  }
+}
