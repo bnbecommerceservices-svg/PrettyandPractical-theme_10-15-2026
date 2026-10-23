@@ -235,6 +235,12 @@
       sortButton.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
+        // The menu hangs from the button's right edge; when the toolbar wraps and
+        // the button sits on the left, hang it from the left edge so it stays on screen.
+        const menu = sort.querySelector('.pp-sort__menu');
+        if (menu instanceof HTMLElement) {
+          sort.classList.toggle('is-left', sortButton.getBoundingClientRect().right - menu.offsetWidth < 16);
+        }
         const isOpen = sort.classList.toggle('is-open');
         sortButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       });
