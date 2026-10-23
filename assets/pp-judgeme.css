@@ -241,7 +241,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--pp-primary-dark, #c73e18);
+  color: #15803d;
   font-family: "Sora", sans-serif;
   font-size: 12px;
   font-weight: 600;
@@ -288,8 +288,8 @@
 .pp-product-page .jdgm-histogram__bar-content,
 .pp-product-page .jdgm-histogram .jdgm-histogram__bar-content,
 .jdgm-histogram__bar-content {
-  background: var(--pp-primary, #e8532a) !important;
-  background-color: var(--pp-primary, #e8532a) !important;
+  background: #f08a5c !important;
+  background-color: #f08a5c !important;
 }
 
 .pp-creviews {
@@ -328,31 +328,7 @@
   align-items: center;
   padding: 24px 28px;
   border-radius: 14px;
-  /* Flat theme orange, the same as the add-to-cart and sort buttons. */
-  background: var(--pp-primary, #e8532a);
-  color: #fff;
-}
-
-/* Inside the solid orange summary everything turns white. */
-.pp-creviews__summary .pp-creviews__score strong,
-.pp-creviews__summary .pp-creviews__score p,
-.pp-creviews__summary .pp-creviews__barrow,
-.pp-creviews__summary .pp-creviews__barrow em,
-.pp-creviews__summary .pp-creviews__star {
-  color: #fff;
-}
-
-.pp-creviews__summary .pp-creviews__score p {
-  font-weight: 600;
-}
-
-.pp-creviews__summary .pp-creviews__barrow,
-.pp-creviews__summary .pp-creviews__barrow em {
-  font-weight: 700;
-}
-
-.pp-creviews__summary .pp-creviews__star.is-empty {
-  color: rgb(255 255 255 / 0.4);
+  background: #f4f5f7;
 }
 
 /* Score block: centred, sized to its content, with a divider before the bars. */
@@ -363,7 +339,7 @@
   justify-content: center;
   min-width: 150px;
   padding-right: 32px;
-  border-right: 1px solid rgb(255 255 255 / 0.28);
+  border-right: 1px solid #e5e7eb;
   text-align: center;
 }
 
@@ -376,7 +352,7 @@
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0;
-  opacity: 0.8;
+  color: #6b7280;
 }
 
 .pp-creviews__summary .pp-creviews__score-stars {
@@ -387,15 +363,6 @@
 .pp-creviews__summary .pp-creviews__score-stars .pp-creviews__star svg {
   width: 19px;
   height: 19px;
-}
-
-.pp-creviews__summary .pp-creviews__track {
-  background: rgb(255 255 255 / 0.3);
-  box-shadow: none;
-}
-
-.pp-creviews__summary .pp-creviews__fill {
-  background: #fff;
 }
 
 .pp-creviews__score strong {
@@ -416,7 +383,7 @@
 
 .pp-creviews__star {
   display: inline-flex;
-  color: var(--pp-primary, #e8532a);
+  color: #f08a5c;
 }
 
 .pp-creviews__star svg {
@@ -426,7 +393,7 @@
 }
 
 .pp-creviews__star.is-empty {
-  color: rgb(232 83 42 / 0.22);
+  color: #d4d4d8;
 }
 
 .pp-creviews__score p {
@@ -462,15 +429,14 @@
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px rgb(232 83 42 / 0.15);
+  background: #e5e7eb;
 }
 
 .pp-creviews__fill {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--pp-primary, #e8532a);
+  background: #f08a5c;
 }
 
 .pp-creviews__filters {
@@ -496,35 +462,24 @@
 .pp-creviews__pill {
   min-height: 34px;
   padding: 0 14px;
-  border: 1px solid var(--pp-border, #e5e7eb);
+  border: 1px solid #d1d5db;
   border-radius: 999px;
   background: #fff;
-  color: var(--pp-navy, #111827);
+  color: #374151;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-/* Like the collection sort menu: options highlight light orange,
-   the selected one is the solid orange of the sort button. */
+.pp-creviews__pill.is-active,
 .pp-creviews__pill:hover {
-  border-color: var(--pp-primary-light, #fff1ec);
-  background: var(--pp-primary-light, #fff1ec);
-  color: var(--pp-primary-dark, #c73e18);
+  border-color: #e8532a;
+  color: #e8532a;
 }
 
 .pp-creviews__pill.is-active {
-  border-color: var(--pp-primary, #e8532a);
-  background: var(--pp-primary, #e8532a);
-  color: #fff;
   font-weight: 700;
-}
-
-.pp-creviews__pill.is-active:hover {
-  border-color: #dc4a22;
-  background: #dc4a22;
-  color: #fff;
 }
 
 /* Pill content: "5 ★" then the count in a small badge. */
@@ -546,11 +501,7 @@
 .pp-creviews__pill-star {
   width: 13px;
   height: 13px;
-  fill: var(--pp-primary, #e8532a);
-}
-
-.pp-creviews__pill.is-active .pp-creviews__pill-star {
-  fill: #fff;
+  fill: #f08a5c;
 }
 
 .pp-creviews__count {
@@ -561,35 +512,26 @@
   height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--pp-bg-subtle, #f7f8fa);
-  color: var(--pp-text-secondary, #4b5563);
+  background: #f4f5f7;
+  color: #4b5563;
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
 }
 
 .pp-creviews__pill:hover .pp-creviews__count,
-.pp-creviews__vote:hover .pp-creviews__count {
-  background: #fff;
-  color: var(--pp-primary-dark, #c73e18);
-}
-
-/* On the orange buttons the count is plain white text, no badge circle. */
 .pp-creviews__pill.is-active .pp-creviews__count,
-.pp-creviews__pill.is-active:hover .pp-creviews__count,
+.pp-creviews__vote:hover .pp-creviews__count,
 .pp-creviews__vote.is-on .pp-creviews__count {
-  min-width: 0;
-  padding: 0;
-  background: transparent;
-  color: #fff;
-  font-size: 13px;
+  background: #fdeee8;
+  color: #e8532a;
 }
 
 /* No reviews at that rating: greyed out and not clickable. */
 .pp-creviews__pill:disabled {
-  border-color: var(--pp-border-light, #f3f4f6);
+  border-color: #e5e7eb;
   background: #fff;
-  color: var(--pp-text-muted, #9ca3af);
+  color: #9ca3af;
   cursor: default;
 }
 
@@ -598,8 +540,8 @@
 }
 
 .pp-creviews__pill:disabled .pp-creviews__count {
-  background: var(--pp-border-light, #f3f4f6);
-  color: var(--pp-text-muted, #9ca3af);
+  background: #f3f4f6;
+  color: #9ca3af;
 }
 
 .pp-creviews__item {
@@ -658,7 +600,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--pp-primary-dark, #c73e18);
+  color: #15803d;
   font-weight: 700;
 }
 
@@ -714,14 +656,14 @@
   gap: 6px;
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid var(--pp-border, #e5e7eb);
+  border: 1px solid #d1d5db;
   border-radius: 999px;
   background: #fff;
-  color: var(--pp-navy, #111827);
+  color: #374151;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .pp-creviews__vote svg {
@@ -729,16 +671,10 @@
   height: 14px;
 }
 
-.pp-creviews__vote:hover {
-  border-color: var(--pp-primary-light, #fff1ec);
-  background: var(--pp-primary-light, #fff1ec);
-  color: var(--pp-primary-dark, #c73e18);
-}
-
+.pp-creviews__vote:hover,
 .pp-creviews__vote.is-on {
-  border-color: var(--pp-primary, #e8532a);
-  background: var(--pp-primary, #e8532a);
-  color: #fff;
+  border-color: #e8532a;
+  color: #e8532a;
 }
 
 /* After voting both buttons lock; the unchosen one fades back. */
@@ -751,13 +687,12 @@
 }
 
 .pp-creviews__vote:disabled:hover:not(.is-on) {
-  border-color: var(--pp-border, #e5e7eb);
-  background: #fff;
-  color: var(--pp-navy, #111827);
+  border-color: #d1d5db;
+  color: #374151;
 }
 
 .pp-creviews__thanks {
-  color: var(--pp-primary-dark, #c73e18);
+  color: #15803d;
   font-weight: 700;
 }
 
@@ -785,22 +720,19 @@
   min-height: 46px;
   min-width: min(420px, 100%);
   padding: 0 20px;
-  border: 1px solid var(--pp-primary, #e8532a);
+  border: 1px solid #d1d5db;
   border-radius: 10px;
-  background: var(--pp-primary, #e8532a);
-  color: #fff;
+  background: #fff;
+  color: #111827;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgb(232 83 42 / 0.2);
-  transition: background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, translate 0.22s ease, scale 0.12s ease;
+  transition: border-color 0.22s ease, color 0.22s ease, translate 0.22s ease, scale 0.12s ease;
 }
 
 .pp-creviews__more:hover {
-  border-color: #dc4a22;
-  background: #dc4a22;
-  color: #fff;
-  box-shadow: none;
+  border-color: #e8532a;
+  color: #e8532a;
   translate: 0 -2px;
 }
 
@@ -836,7 +768,7 @@
     min-width: 0;
     padding: 0 0 16px;
     border-right: 0;
-    border-bottom: 1px solid rgb(255 255 255 / 0.28);
+    border-bottom: 1px solid #e5e7eb;
   }
 
   .pp-creviews__who {

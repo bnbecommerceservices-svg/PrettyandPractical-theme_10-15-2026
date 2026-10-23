@@ -306,7 +306,7 @@
 .pp-review-avatar { width: 44px; height: 44px; background: var(--pp-primary-light); color: var(--pp-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--pp-font-heading); font-weight: 700; font-size: 15px; flex-shrink: 0; }
 .pp-review-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .pp-review-name { font-weight: 700; font-size: 14px; color: var(--pp-text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.pp-verified { background: var(--pp-primary-light); color: var(--pp-primary-dark); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--pp-radius-pill); letter-spacing: .02em; }
+.pp-verified { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--pp-radius-pill); letter-spacing: .02em; }
 .pp-review-loc, .pp-review-date { font-size: 12px; color: var(--pp-text-muted); }
 .pp-review-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .pp-review-top .pp-stars svg { width: 14px; height: 14px; }
@@ -1885,7 +1885,7 @@
 .pp-product-page .pp-rs-bars .jdgm-histogram[data-pp-review-histogram-clone] .jdgm-histogram__row > *:nth-child(2) > * {
   display: block;
   height: 100%;
-  background: var(--pp-primary);
+  background: #f08a5c;
   border-radius: var(--pp-radius-pill);
   transition: width 600ms ease;
 }
@@ -2072,8 +2072,8 @@
 
 .pp-product-page .pp-verified,
 .pp-product-page .pp-review-verified {
-  background: var(--pp-primary-light);
-  color: var(--pp-primary-dark);
+  background: #dcfce7;
+  color: #15803d;
   font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
@@ -2269,8 +2269,8 @@
   display: inline-flex;
   align-items: center;
   margin-left: 8px;
-  background: var(--pp-primary-light);
-  color: var(--pp-primary-dark);
+  background: #dcfce7;
+  color: #15803d;
   font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
@@ -3846,6 +3846,19 @@
   display: none !important;
 }
 
+/* Orange rating stars beside the title in the current layout (colour only). */
+.pp-product-page .pp-rating-row .pp-card__rating-fallback {
+  color: var(--pp-primary);
+}
+
+.pp-product-page .pp-rating-row .pp-card__rating-fallback svg {
+  fill: currentColor;
+}
+
+.pp-product-page .pp-rating-row .pp-card__rating-fallback svg.dim {
+  color: var(--pp-border);
+}
+
 .pp-product-page .pp-rating-popover {
   position: absolute;
   top: calc(100% + 10px);
@@ -3910,7 +3923,7 @@
 .pp-product-page .pp-hist__stars svg {
   width: 16px;
   height: 16px;
-  color: var(--pp-primary);
+  color: #f4b183;
 }
 
 .pp-product-page .pp-hist__based {
@@ -3945,14 +3958,14 @@
   display: block;
   height: 12px;
   overflow: hidden;
-  background: var(--pp-primary-light);
+  background: #eceff3;
   border-radius: 999px;
 }
 
 .pp-product-page .pp-hist__fill {
   display: block;
   height: 100%;
-  background: var(--pp-primary);
+  background: #f08a5c;
   border-radius: 999px;
 }
 
@@ -4137,7 +4150,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--pp-primary-dark);
+  color: #15803d;
   font-family: var(--pp-font-heading);
   font-size: 12px;
   font-weight: 600;

@@ -19,7 +19,7 @@
   var productType = root.getAttribute('data-product-type') || 'this piece';
   var reviewsSrc = root.getAttribute('data-reviews-src') || '';
 
-  var AVATAR = ['#e8532a'];
+  var AVATAR = ['#e8532a', '#c73e18', '#0f766e', '#b45309', '#1d4ed8', '#7c3aed', '#be185d'];
   var CITIES = [
     'Sydney, NSW', 'Melbourne, VIC', 'Brisbane, QLD', 'Perth, WA',
     'Adelaide, SA', 'Hobart, TAS', 'Canberra, ACT', 'Gold Coast, QLD', 'Geelong, VIC',
