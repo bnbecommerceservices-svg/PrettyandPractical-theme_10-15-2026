@@ -3371,3 +3371,21 @@ body.is-locked {
   height: 18px !important;
   stroke-width: 2 !important;
 }
+
+/* Card buttons line up across a row: the body fills the card's height
+   (cards stretch to the tallest in the row) and the button sits at the
+   bottom, whatever rows above it show (seller, reviews, sale price). */
+.pp-collection-template .pp-card {
+  height: 100%;
+}
+
+.pp-collection-template .pp-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.pp-collection-template .pp-card__body > .pp-card__cta {
+  margin-top: auto;
+  padding-top: 12px;
+}
