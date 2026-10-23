@@ -3358,3 +3358,31 @@ body.is-locked {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Hover swaps to the product's second image (mouse and trackpad only;
+   on touch screens the first tap opens the product as before). */
+.pp-card__image-inner--swap {
+  position: relative;
+}
+
+.shopify-section .pp-collection-template .pp-card__image-inner--swap .pp-card__img--hover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #fff;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+@media (hover: hover) {
+  .shopify-section .pp-collection-template .pp-card:hover .pp-card__image-inner--swap .pp-card__img--hover,
+  .shopify-section .pp-collection-template .pp-card__image-inner--swap:focus-visible .pp-card__img--hover {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shopify-section .pp-collection-template .pp-card__image-inner--swap .pp-card__img--hover {
+    transition: none;
+  }
+}

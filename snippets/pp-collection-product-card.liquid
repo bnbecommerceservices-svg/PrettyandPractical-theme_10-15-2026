@@ -5,6 +5,14 @@
     assign product_url = product.url | within: collection
   endif
   assign featured_image = product.featured_media.preview_image | default: product.featured_image
+  # Second product image, shown when the card is hovered.
+  assign hover_image = blank
+  for media in product.media
+    if media.preview_image != blank and media.id != product.featured_media.id
+      assign hover_image = media.preview_image
+      break
+    endif
+  endfor
   assign current_price = selected_variant.price | default: product.price
   assign compare_at_price = selected_variant.compare_at_price | default: product.compare_at_price
   assign has_bestseller_tag = false
@@ -70,7 +78,7 @@
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
       </svg>
     </button>
-    <a href="{{ product_url }}" class="pp-card__image-inner" aria-label="{{ product.title | escape }}">
+    <a href="{{ product_url }}" class="pp-card__image-inner{% if hover_image != blank %} pp-card__image-inner--swap{% endif %}" aria-label="{{ product.title | escape }}">
       {% if featured_image != blank %}
         {{
           featured_image
@@ -79,8 +87,21 @@
             widths: '320, 480, 512, 640, 900, 1200',
             sizes: '(min-width: 1101px) 512px, (min-width: 769px) min(45vw, 512px), 100vw',
             alt: product.title,
+            class: 'pp-card__img pp-card__img--main',
             loading: 'lazy'
         }}
+        {% if hover_image != blank %}
+          {{
+            hover_image
+            | image_url: width: 900
+            | image_tag:
+              widths: '320, 480, 512, 640, 900, 1200',
+              sizes: '(min-width: 1101px) 512px, (min-width: 769px) min(45vw, 512px), 100vw',
+              alt: '',
+              class: 'pp-card__img pp-card__img--hover',
+              loading: 'lazy'
+          }}
+        {% endif %}
       {% else %}
         <div class="pp-card__placeholder">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
