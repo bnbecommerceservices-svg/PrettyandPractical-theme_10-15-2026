@@ -622,7 +622,7 @@ body.is-locked {
 
 .pp-fprice__field input:focus {
   outline: none;
-  border-color: var(--pp-navy);
+  border-color: var(--pp-primary);
 }
 
 .pp-fprice__field input::-webkit-outer-spin-button,
@@ -1028,12 +1028,12 @@ body.is-locked {
 }
 
 .pp-wishlist.is-active {
-  color: #ef4444;
+  color: var(--pp-primary);
 }
 
 .pp-wishlist.is-active svg {
-  fill: #ef4444;
-  stroke: #ef4444;
+  fill: var(--pp-primary);
+  stroke: var(--pp-primary);
 }
 
 .pp-wishlist.pulse svg {
@@ -1103,7 +1103,7 @@ body.is-locked {
 }
 
 .pp-quickadd[data-added='true'] {
-  background: #065f46;
+  background: var(--pp-primary-dark);
 }
 
 .pp-quickadd:hover {
@@ -2124,7 +2124,7 @@ body.is-locked {
 
 .pp-collection-template .pp-fprice__field input:focus {
   outline: none !important;
-  border-color: var(--pp-navy) !important;
+  border-color: var(--pp-primary) !important;
 }
 
 .pp-collection-template .pp-fprice__field input::-webkit-outer-spin-button,
@@ -2536,12 +2536,12 @@ body.is-locked {
 }
 
 .shopify-section .pp-collection-template .pp-wishlist.is-active {
-  color: #ef4444 !important;
+  color: var(--pp-primary) !important;
 }
 
 .shopify-section .pp-collection-template .pp-wishlist.is-active svg {
-  fill: #ef4444 !important;
-  stroke: #ef4444 !important;
+  fill: var(--pp-primary) !important;
+  stroke: var(--pp-primary) !important;
 }
 
 .shopify-section .pp-collection-template #product-grid.pp-grid {
@@ -2689,7 +2689,7 @@ body.is-locked {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #fdba8c;
+  color: var(--pp-primary-mid);
 }
 
 .pp-collection-hero__cta {
@@ -2981,7 +2981,7 @@ body.is-locked {
   min-width: 46px;
   padding: 0 12px;
   border-radius: 6px;
-  background: var(--pp-navy);
+  background: var(--pp-primary);
   color: #fff;
   font-family: var(--pp-font-heading);
   font-size: 13px;
@@ -2989,8 +2989,19 @@ body.is-locked {
 }
 
 .pp-collection-template .pp-fprice__go:hover {
-  background: var(--pp-navy-mid);
+  background: #dc4a22;
   color: #fff;
+}
+
+/* A theme-wide button reset was clearing the Go button's background. */
+.shopify-section .pp-collection-template button.pp-fprice__go {
+  background: var(--pp-primary);
+  color: #fff;
+  transition: background-color 0.22s ease;
+}
+
+.shopify-section .pp-collection-template button.pp-fprice__go:hover {
+  background: #dc4a22;
 }
 
 .pp-collection-template .pp-fopt__count {
@@ -3013,7 +3024,7 @@ body.is-locked {
 .pp-collection-template .pp-frating-stars svg {
   width: 14px;
   height: 14px;
-  color: #f5b400;
+  color: var(--pp-primary);
   fill: currentColor;
 }
 
@@ -3044,21 +3055,24 @@ body.is-locked {
 
 .pp-collection-template .pp-stars svg,
 .pp-collection-template .pp-card__rating svg {
-  color: #f5b400;
+  color: var(--pp-primary);
   fill: currentColor;
 }
 
-.pp-collection-template .pp-price,
-.pp-collection-template .pp-price--sale {
+.pp-collection-template .pp-price {
   color: var(--pp-navy-deep) !important;
   font-size: 18px;
+}
+
+.pp-collection-template .pp-price.pp-price--sale {
+  color: var(--pp-primary) !important;
 }
 
 .pp-collection-template .pp-card__ship {
   margin: 6px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: #15803d;
+  color: var(--pp-navy-mid);
 }
 
 .pp-collection-template .pp-card-cta,
