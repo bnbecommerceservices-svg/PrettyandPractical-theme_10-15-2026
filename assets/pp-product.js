@@ -788,15 +788,16 @@
       return;
     }
 
-    const button = event.target.closest('.pp-quickadd[data-quick-add-variant-id]');
+    const button = event.target.closest('button[data-quick-add-variant-id]');
     if (!button) return;
 
     event.preventDefault();
     event.stopPropagation();
 
     const variantId = button.getAttribute('data-quick-add-variant-id');
-    if (!variantId) return;
+    if (!variantId || button.classList.contains('is-loading')) return;
 
+    button.classList.add('is-loading');
     try {
       const response = await fetch(`${rootUrl}cart/add.js`, {
         method: 'POST',
@@ -804,12 +805,14 @@
         body: JSON.stringify({ items: [{ id: Number(variantId), quantity: 1 }] })
       });
       if (!response.ok) throw new Error('Unable to add to cart');
+      button.classList.remove('is-loading');
       button.classList.add('is-added');
       await refreshCartCount();
       popHeaderCart();
       showToast('Added to cart');
-      window.setTimeout(() => button.classList.remove('is-added'), 1400);
+      window.setTimeout(() => button.classList.remove('is-added'), 1800);
     } catch (error) {
+      button.classList.remove('is-loading');
       showToast(error.message || 'Unable to add to cart', 'error');
     }
   });

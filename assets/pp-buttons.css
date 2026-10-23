@@ -32,10 +32,18 @@
   translate: 0 -2px;
 }
 
-.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout)[data-added='true'] {
+.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout)[data-added='true'],
+.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout).is-added {
   border-color: var(--pp-primary-dark, #c73e18) !important;
   background: var(--pp-primary-dark, #c73e18) !important;
   color: #fff !important;
+}
+
+/* Product page recommendation cards (pp-product.js): the label hides behind
+   a spinner, then an "Added" tick drawn by pp-product-page.css. */
+.pp-card__cta .pp-card-cta.pp-card-cta.pp-card-cta.pp-card-cta:not(.pp-card-cta--soldout):is(.is-loading, .is-added) {
+  color: transparent !important;
+  translate: 0 0;
 }
 
 .pp-card__cta .pp-card-cta:not(.pp-card-cta--soldout):active {
@@ -82,5 +90,163 @@
 
   .pp-card__cta .pp-card-cta:hover .add-to-cart-icon {
     transform: none;
+  }
+}
+
+/*
+  Every other solid orange button (checkout, cart, header, filters, sort,
+  forms, empty states, account) follows the same pattern:
+  - rest: theme orange with a soft shadow
+  - hover: #dc4a22, no shadow, and a 2px lift
+  - press: a small squeeze
+  Search buttons are joined to their input, so they change colour but don't lift.
+
+  Each list is wrapped in :is(), which takes the specificity of its most specific
+  selector, and the leading html adds one more step, so these win over the
+  pages' own (often !important) rules wherever they load.
+*/
+html :is(
+  .pp-checkout:not([disabled]),
+  .pp-empty-cta,
+  .pp-main .pp-summary__checkout,
+  .pp-main .pp-btn--primary,
+  .pp-btn-primary,
+  .pp-sheet-cta,
+  .pp-welcome__submit,
+  .pp-welcome__copy-btn,
+  .pp-welcome__shop,
+  .pp-cart-btn,
+  .shopify-section .pp-collection-template .pp-drawer__show,
+  .shopify-section .pp-collection-template .pp-sort__btn,
+  .shopify-section .pp-collection-template button.pp-fprice__go,
+  .pp-collection-hero__cta,
+  .pp-grid__empty-links a,
+  .pp-wishlist-empty a,
+  .pp-contact-us .pp-submit-btn,
+  .pp-faq .btn-contact,
+  .pp-about-us .cta-btn,
+  .pp-account-btn--primary,
+  .pp-search-form__btn,
+  .pp-drawer__search-btn
+) {
+  background: var(--pp-primary) !important;
+  color: #fff !important;
+  transition: background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, translate 0.22s ease, scale 0.12s ease !important;
+}
+
+html :is(
+  .pp-checkout:not([disabled]),
+  .pp-empty-cta,
+  .pp-main .pp-summary__checkout,
+  .pp-main .pp-btn--primary,
+  .pp-btn-primary,
+  .pp-sheet-cta,
+  .pp-welcome__submit,
+  .pp-welcome__copy-btn,
+  .pp-welcome__shop,
+  .pp-cart-btn,
+  .shopify-section .pp-collection-template .pp-drawer__show,
+  .shopify-section .pp-collection-template .pp-sort__btn,
+  .shopify-section .pp-collection-template button.pp-fprice__go,
+  .pp-collection-hero__cta,
+  .pp-grid__empty-links a,
+  .pp-wishlist-empty a,
+  .pp-contact-us .pp-submit-btn,
+  .pp-faq .btn-contact,
+  .pp-about-us .cta-btn,
+  .pp-account-btn--primary
+) {
+  box-shadow: 0 1px 3px rgb(232 83 42 / 0.2) !important;
+}
+
+html :is(
+  .pp-checkout:not([disabled]),
+  .pp-empty-cta,
+  .pp-main .pp-summary__checkout,
+  .pp-main .pp-btn--primary,
+  .pp-btn-primary,
+  .pp-sheet-cta,
+  .pp-welcome__submit,
+  .pp-welcome__copy-btn,
+  .pp-welcome__shop,
+  .pp-cart-btn,
+  .shopify-section .pp-collection-template .pp-drawer__show,
+  .shopify-section .pp-collection-template .pp-sort__btn,
+  .shopify-section .pp-collection-template button.pp-fprice__go,
+  .pp-collection-hero__cta,
+  .pp-grid__empty-links a,
+  .pp-wishlist-empty a,
+  .pp-contact-us .pp-submit-btn,
+  .pp-faq .btn-contact,
+  .pp-about-us .cta-btn,
+  .pp-account-btn--primary
+):is(:hover, :focus-visible) {
+  background: #dc4a22 !important;
+  border-color: #dc4a22 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  transform: none !important;
+  translate: 0 -2px;
+}
+
+html :is(
+  .pp-search-form__btn,
+  .pp-drawer__search-btn
+):is(:hover, :focus-visible) {
+  background: #dc4a22 !important;
+  color: #fff !important;
+}
+
+html :is(
+  .pp-checkout:not([disabled]),
+  .pp-empty-cta,
+  .pp-main .pp-summary__checkout,
+  .pp-main .pp-btn--primary,
+  .pp-btn-primary,
+  .pp-sheet-cta,
+  .pp-welcome__submit,
+  .pp-welcome__copy-btn,
+  .pp-welcome__shop,
+  .pp-cart-btn,
+  .shopify-section .pp-collection-template .pp-drawer__show,
+  .shopify-section .pp-collection-template .pp-sort__btn,
+  .shopify-section .pp-collection-template button.pp-fprice__go,
+  .pp-collection-hero__cta,
+  .pp-grid__empty-links a,
+  .pp-wishlist-empty a,
+  .pp-contact-us .pp-submit-btn,
+  .pp-faq .btn-contact,
+  .pp-about-us .cta-btn,
+  .pp-account-btn--primary
+):active {
+  scale: 0.97;
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html :is(
+    .pp-checkout:not([disabled]),
+  .pp-empty-cta,
+  .pp-main .pp-summary__checkout,
+  .pp-main .pp-btn--primary,
+  .pp-btn-primary,
+  .pp-sheet-cta,
+  .pp-welcome__submit,
+  .pp-welcome__copy-btn,
+  .pp-welcome__shop,
+  .pp-cart-btn,
+  .shopify-section .pp-collection-template .pp-drawer__show,
+  .shopify-section .pp-collection-template .pp-sort__btn,
+  .shopify-section .pp-collection-template button.pp-fprice__go,
+  .pp-collection-hero__cta,
+  .pp-grid__empty-links a,
+  .pp-wishlist-empty a,
+  .pp-contact-us .pp-submit-btn,
+  .pp-faq .btn-contact,
+  .pp-about-us .cta-btn,
+  .pp-account-btn--primary
+  ):is(:hover, :focus-visible, :active) {
+    translate: none;
+    scale: none;
   }
 }

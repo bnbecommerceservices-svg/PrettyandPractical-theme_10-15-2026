@@ -22,7 +22,7 @@
     assign show_quick_add = true
   endif
 -%}
-<article class="pp-card" data-product-id="{{ related_product.id }}">
+<article class="pp-card pp-card--rec" data-product-id="{{ related_product.id }}">
   <div class="pp-card__image">
     <div class="pp-card__badges">
       {% if card_on_sale %}
@@ -64,16 +64,6 @@
         </div>
       {% endif %}
     </a>
-    {% if show_quick_add %}
-      {%- form 'product', related_product, class: 'pp-quickadd-form' -%}
-        <input type="hidden" name="id" value="{{ card_variant.id }}">
-        <input type="hidden" name="quantity" value="1">
-        <button class="pp-quickadd" type="submit" data-quick-add-variant-id="{{ card_variant.id }}" aria-label="Add {{ related_product.title | escape }} to cart">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
-          <span>Add to cart</span>
-        </button>
-      {%- endform -%}
-    {% endif %}
   </div>
   <div class="pp-card__body">
     <a href="{{ related_product.url }}" class="pp-card__title">{{ related_product.title }}</a>
@@ -84,6 +74,22 @@
       <span class="pp-price{% if card_on_sale %} pp-price--sale{% endif %}">{{ card_variant.price | money }}</span>
       {% if card_on_sale %}
         <span class="pp-price__was">{{ card_compare_at_price | money }}</span>
+      {% endif %}
+    </div>
+    <div class="pp-card__cta">
+      {% if related_product.available == false %}
+        <span class="pp-card-cta pp-card-cta--soldout">Sold out</span>
+      {% elsif show_quick_add %}
+        {%- form 'product', related_product, class: 'pp-rec-form' -%}
+          <input type="hidden" name="id" value="{{ card_variant.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button class="pp-card-cta pp-rec-cta" type="submit" data-quick-add-variant-id="{{ card_variant.id }}" aria-label="Add {{ related_product.title | escape }} to cart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+            <span>Add to cart</span>
+          </button>
+        {%- endform -%}
+      {% else %}
+        <a href="{{ related_product.url }}" class="pp-card-cta">Choose options</a>
       {% endif %}
     </div>
   </div>

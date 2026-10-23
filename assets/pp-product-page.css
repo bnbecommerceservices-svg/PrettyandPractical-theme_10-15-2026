@@ -5235,3 +5235,120 @@ product-recommendations.product-recommendations .pp-recommend {
     animation: none;
   }
 }
+
+/* ----- RECOMMENDATION CARD BUTTONS ("You may also like" and category rows) -----
+   Same button as the collection cards: colours, hover and press come from
+   pp-buttons.css; this sets the size and lines the buttons up across a row.
+   .is-loading / .is-added are set by pp-product.js while adding. */
+.pp-recommend .pp-card--rec {
+  height: 100%;
+}
+
+.pp-recommend .pp-card--rec .pp-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.pp-recommend .pp-card--rec .pp-card__cta {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.pp-recommend .pp-card--rec .pp-rec-form {
+  display: block;
+  width: 100%;
+}
+
+.pp-recommend .pp-card--rec .pp-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  font-family: var(--pp-font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pp-recommend .pp-card--rec .pp-card-cta svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pp-recommend .pp-card--rec .pp-card-cta:hover svg {
+  transform: translateY(-2px) rotate(-8deg);
+}
+
+.pp-recommend .pp-card--rec .pp-card-cta--soldout {
+  border: 1.5px solid var(--pp-border);
+  border-radius: 10px;
+  background: var(--pp-bg-subtle);
+  color: var(--pp-text-muted);
+  cursor: not-allowed;
+}
+
+.pp-recommend .pp-card--rec .pp-rec-cta.is-loading,
+.pp-recommend .pp-card--rec .pp-rec-cta.is-added {
+  color: transparent !important;
+  cursor: progress;
+}
+
+.pp-recommend .pp-card--rec .pp-rec-cta.is-loading svg,
+.pp-recommend .pp-card--rec .pp-rec-cta.is-added svg {
+  visibility: hidden;
+}
+
+.pp-recommend .pp-card--rec .pp-rec-cta.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid rgb(255 255 255 / 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pp-atc-spin 0.7s linear infinite;
+}
+
+.pp-recommend .pp-card--rec .pp-rec-cta.is-added {
+  border-color: var(--pp-primary-dark) !important;
+  background: var(--pp-primary-dark) !important;
+  cursor: default;
+}
+
+.pp-recommend .pp-card--rec .pp-rec-cta.is-added::after {
+  content: "Added";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 22px;
+  color: #fff;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") no-repeat calc(50% - 26px) 50% / 15px 15px;
+  animation: pp-atc-added 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-recommend .pp-card--rec .pp-card-cta svg {
+    transition: none;
+  }
+
+  .pp-recommend .pp-card--rec .pp-card-cta:hover svg {
+    transform: none;
+  }
+
+  .pp-recommend .pp-card--rec .pp-rec-cta.is-added::after {
+    animation: none;
+  }
+}
