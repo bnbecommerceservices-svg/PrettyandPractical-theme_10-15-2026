@@ -454,9 +454,9 @@
                 endif
               endif
               if category_image != blank
-                assign category_bg = category_image | image_url: width: 320, height: 320, crop: 'center'
+                assign category_bg = category_image | image_url: width: 400, height: 400, crop: 'center'
               else
-                assign category_bg = category_bg | replace: 'w=900', 'w=320&h=320'
+                assign category_bg = category_bg | replace: 'w=900', 'w=400&h=400'
               endif
             %}
             <li class="pp-cats__item" {{ block.shopify_attributes }}>
@@ -466,7 +466,7 @@
                 {% if category_url == blank %}aria-disabled="true"{% endif %}
               >
                 <span class="pp-cats__circle{% if is_pets %} pp-cats__circle--pets{% endif %}{% if is_plant_stand %} pp-cats__circle--plants{% endif %}{% if is_metal_plant_stand %} pp-cats__circle--metal-plants{% endif %}">
-                  <img src="{{ category_bg }}" alt="" width="160" height="160" loading="lazy" decoding="async">
+                  <img src="{{ category_bg }}" alt="" width="200" height="200" loading="lazy" decoding="async">
                 </span>
                 <h3 class="pp-cats__name">{{ category_title }}</h3>
                 {% if category_count != blank %}
