@@ -194,6 +194,7 @@ Renders the Pretty & Practical black multi-column footer.
 %}
 
 <div class="pp-site-footer" {{ footer_section.shopify_attributes }}>
+  {%- render 'pp-benefits-strip' -%}
   <footer class="pp-foot" aria-label="Site footer">
     <div class="{{ footer_container_class }}">
       <div class="pp-foot__grid">
