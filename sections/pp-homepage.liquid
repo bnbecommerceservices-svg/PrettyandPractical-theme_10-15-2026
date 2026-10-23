@@ -367,8 +367,16 @@
           </div>
         </div>
 
-        <div class="pp-mosaic">
-          {% for block in category_blocks limit: 10 %}
+        {%- comment -%}
+          Circles in one row: centred when they fit, scrolling sideways (swipe,
+          or the arrows on desktop) when there are more than fit.
+        {%- endcomment -%}
+        <div class="pp-cats" data-pp-cats>
+          <button type="button" class="pp-cats__nav pp-cats__nav--prev" data-pp-cats-prev aria-label="Previous categories" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <ul class="pp-cats__track" data-pp-cats-track role="list">
+          {% for block in category_blocks %}
             {% liquid
               assign category_collection = block.settings.collection
               assign category_url = block.settings.link
@@ -446,24 +454,31 @@
                 endif
               endif
               if category_image != blank
-                assign category_bg = category_image | image_url: width: 900
+                assign category_bg = category_image | image_url: width: 320, height: 320, crop: 'center'
+              else
+                assign category_bg = category_bg | replace: 'w=900', 'w=320&h=320'
               endif
             %}
-            <a
-              href="{{ category_url | default: '#' }}"
-              class="pp-cat pp-cat--{{ block.settings.style }}{% if is_pets %} pp-cat--pets{% endif %}{% if is_plant_stand %} pp-cat--plants{% endif %}{% if is_metal_plant_stand %} pp-cat--metal-plants{% endif %} pp-cat--has-image{% if category_url == blank %} pp-card-is-static{% endif %}"
-              style="background-image: url('{{ category_bg }}');"
-              aria-label="{% if category_count != blank %}Shop {{ category_title }}, {{ category_count }}{% else %}Shop {{ category_title }}{% endif %}"
-              {% if category_url == blank %}aria-disabled="true"{% endif %}
-              {{ block.shopify_attributes }}
-            >
-              <svg class="pp-cat__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-              <h3 class="pp-cat__name">{{ category_title }}</h3>
-              {% if category_count != blank %}
-                <p class="pp-cat__count">{{ category_count }}</p>
-              {% endif %}
-            </a>
+            <li class="pp-cats__item" {{ block.shopify_attributes }}>
+              <a
+                href="{{ category_url | default: '#' }}"
+                class="pp-cats__link{% if category_url == blank %} pp-card-is-static{% endif %}"
+                {% if category_url == blank %}aria-disabled="true"{% endif %}
+              >
+                <span class="pp-cats__circle{% if is_pets %} pp-cats__circle--pets{% endif %}{% if is_plant_stand %} pp-cats__circle--plants{% endif %}{% if is_metal_plant_stand %} pp-cats__circle--metal-plants{% endif %}">
+                  <img src="{{ category_bg }}" alt="" width="160" height="160" loading="lazy" decoding="async">
+                </span>
+                <h3 class="pp-cats__name">{{ category_title }}</h3>
+                {% if category_count != blank %}
+                  <span class="pp-cats__count">{{ category_count }}</span>
+                {% endif %}
+              </a>
+            </li>
           {% endfor %}
+          </ul>
+          <button type="button" class="pp-cats__nav pp-cats__nav--next" data-pp-cats-next aria-label="More categories" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
         </div>
       </div>
     </section>
@@ -797,6 +812,36 @@
       track.scrollBy({ left: -getCardWidth(), behavior: 'smooth' });
     });
   });
+
+  // Category circles: show the arrows only when the row scrolls, and grey
+  // out the one at the end it has reached.
+  document.querySelectorAll('[data-pp-cats]').forEach(function (rail) {
+    var track = rail.querySelector('[data-pp-cats-track]');
+    var prev = rail.querySelector('[data-pp-cats-prev]');
+    var next = rail.querySelector('[data-pp-cats-next]');
+    if (!track || !prev || !next) return;
+
+    function update() {
+      var max = track.scrollWidth - track.clientWidth;
+      var scrolls = max > 2;
+      prev.hidden = !scrolls;
+      next.hidden = !scrolls;
+      rail.classList.toggle('is-scrollable', scrolls);
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max - 2;
+      rail.classList.toggle('is-at-end', next.disabled);
+    }
+
+    function step(direction) {
+      track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: 'smooth' });
+    }
+
+    prev.addEventListener('click', function () { step(-1); });
+    next.addEventListener('click', function () { step(1); });
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  });
 {% endjavascript %}
 
 {% schema %}
@@ -903,7 +948,7 @@
     {
       "type": "category_card",
       "name": "Category card",
-      "limit": 10,
+      "limit": 24,
       "settings": [
         {
           "type": "select",
