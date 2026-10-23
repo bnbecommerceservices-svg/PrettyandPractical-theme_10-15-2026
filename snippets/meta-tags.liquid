@@ -206,3 +206,41 @@
     content="{{ page_description | escape }}"
   >
 {% endif %}
+
+{%- if request.page_type == 'index' -%}
+  {%- comment -%}
+    Tells Google the site's name and logo, so results show
+    "Pretty & Practical" rather than the domain.
+  {%- endcomment -%}
+  {%- liquid
+    if settings.logo != blank
+      assign pp_org_logo = settings.logo | image_url: width: 512 | prepend: 'https:'
+    else
+      assign pp_org_logo = 'pp-favicon-512.png' | asset_url | prepend: 'https:'
+    endif
+  -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": {{ request.origin | append: '/#website' | json }},
+          "name": {{ shop.name | json }},
+          "url": {{ request.origin | append: '/' | json }}
+        },
+        {
+          "@type": "Organization",
+          "@id": {{ request.origin | append: '/#organization' | json }},
+          "name": {{ shop.name | json }},
+          "url": {{ request.origin | append: '/' | json }},
+          "logo": {{ pp_org_logo | json }},
+          "sameAs": [
+            "https://www.facebook.com/prettyandpracticalOZ",
+            "https://www.instagram.com/prettyandpracticalau"
+          ]
+        }
+      ]
+    }
+  </script>
+{%- endif -%}

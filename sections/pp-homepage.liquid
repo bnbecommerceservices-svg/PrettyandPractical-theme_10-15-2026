@@ -46,6 +46,8 @@
 {% endcapture %}
 
 <main class="pp-main pp-homepage-storefront" id="main">
+  {%- comment -%} The page's one H1: what the store sells, for search engines and screen readers. {%- endcomment -%}
+  <h1 class="visually-hidden">{{ section.settings.page_heading | default: shop.name }}</h1>
   {% if hero_blocks.size > 0 or value_blocks.size > 0 %}
   <div class="pp-welcome-screen">
   {% endif %}
@@ -89,7 +91,7 @@
                 {% if primary_hero.settings.badge != blank %}
                   <span class="pp-hero-card__pill pp-hero-card__pill--main">{{ primary_hero.settings.badge }}</span>
                 {% endif %}
-                <h1 id="hero-heading-{{ section.id }}" class="pp-hero-card__title">{{ primary_hero.settings.heading }}</h1>
+                <h2 id="hero-heading-{{ section.id }}" class="pp-hero-card__title">{{ primary_hero.settings.heading }}</h2>
                 {% if primary_hero.settings.text != blank %}
                   <p class="pp-hero-card__sub">{{ primary_hero.settings.text }}</p>
                 {% endif %}
@@ -802,6 +804,7 @@
   "name": "PP Home",
   "settings": [
     { "type": "checkbox", "id": "show_ticker", "label": "Show announcement ticker", "default": true },
+    { "type": "text", "id": "page_heading", "label": "Page heading (H1, hidden)", "info": "Main search heading for the homepage, read by Google and screen readers. Say what the store sells.", "default": "Furniture, Home Décor & Plant Stands Online in Australia" },
     { "type": "text", "id": "values_aria_label", "label": "Values aria label", "default": "Why shop with us" },
     { "type": "text", "id": "categories_heading", "label": "Categories heading", "default": "Shop by Category" },
     { "type": "text", "id": "categories_subheading", "label": "Categories subheading", "default": "Find your next favourite piece across our most-loved categories." },
