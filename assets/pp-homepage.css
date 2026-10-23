@@ -778,9 +778,14 @@
   gap: 24px;
 }
 
+/* Cards are columns that stretch to the tallest card in the row, with the
+   button pushed to the bottom, so buttons line up whatever sits above them
+   (one- or two-line titles, seller, reviews, sale price). */
 .pp-homepage-storefront .pp-card {
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   color: var(--pp-text);
 }
 
@@ -920,6 +925,9 @@
 }
 
 .pp-homepage-storefront .pp-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   padding: 14px 4px 0;
 }
 
@@ -1045,7 +1053,8 @@
 }
 
 .pp-homepage-storefront .pp-card__cta {
-  margin-top: 12px;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 .pp-homepage-storefront .pp-card__quickadd-form--body {
@@ -2029,6 +2038,7 @@
 
   .pp-homepage-storefront .pp-rail__grid .pp-card {
     flex: 0 0 60%;
+    height: auto; /* let the swipe row stretch every card to the tallest */
     scroll-snap-align: start;
   }
 
