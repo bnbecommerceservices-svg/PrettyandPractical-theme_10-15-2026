@@ -172,12 +172,12 @@
 
   <div class="pp-pay">
     <div class="pp-pay-label">We accept</div>
-    <div class="pp-pay-marks" aria-hidden="true">
-      <span class="pp-pay-mark">VISA</span>
-      <span class="pp-pay-mark">MC</span>
-      <span class="pp-pay-mark">AMEX</span>
-      <span class="pp-pay-mark">PYPL</span>
-      <span class="pp-pay-mark">PAY</span>
+    {%- comment -%} Same payment logos as the footer (pp-site-footer). {%- endcomment -%}
+    {%- assign pp_payment_types = 'american_express,apple_pay,google_pay,master,paypal,shopify_pay,unionpay,visa' | split: ',' -%}
+    <div class="pp-pay-marks" aria-label="Accepted payment methods">
+      {%- for type in pp_payment_types -%}
+        <span class="pp-pay-mark">{{ type | payment_type_svg_tag }}</span>
+      {%- endfor -%}
     </div>
   </div>
 {% else %}

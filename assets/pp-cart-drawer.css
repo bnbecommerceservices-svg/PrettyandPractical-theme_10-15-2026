@@ -932,24 +932,28 @@ body.pp-cart-drawer-open {
 }
 
 .pp-cart-shell .pp-pay-marks {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .pp-cart-shell .pp-pay-mark {
-  width: 32px;
-  height: 20px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  display: inline-flex;
-  border-radius: var(--pp-radius-sm);
-  background: var(--pp-bg-subtle);
-  color: var(--pp-text-secondary);
-  font-family: var(--pp-font-heading);
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pp-cart-shell .pp-pay-mark svg,
+.pp-cart-shell .pp-pay-mark .icon-svg {
+  display: block;
+  width: auto;
+  height: 24px;
+  border-radius: 4px;
 }
 
 @keyframes pp-fade-in {
