@@ -3572,3 +3572,104 @@ span.pp-nav-link {
     display: none;
   }
 }
+/* ── Phones: comfortable touch targets and no input zoom ──
+   Links and buttons get at least a 44px tap area (the visible size stays the
+   same where a padded hit area is enough), and form fields are 16px so iOS
+   does not zoom the page when they are focused. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .pp-search-input {
+    min-height: 44px;
+  }
+
+  .pp-logo {
+    display: inline-flex;
+    padding-block: 8px;
+    margin-block: -8px;
+  }
+
+  .pp-announcement__close,
+  .pp-drawer__close,
+  .pp-foot__social {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .pp-foot__logo,
+  .pp-foot__contact-line,
+  .pp-foot__links a,
+  .pp-foot__policy-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .pp-foot__contact-line {
+    display: flex;
+  }
+
+  .pp-card__wishlist {
+    position: absolute;
+  }
+
+  .pp-card__wishlist::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+  }
+
+  .pp-card__title,
+  .pp-breadcrumb a,
+  .pp-breadcrumbs a {
+    display: inline-flex;
+    align-items: center;
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+
+  .pp-card__title {
+    display: block;
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+
+  .pp-info-action,
+  .pp-specs__toggle,
+  .pp-link-primary,
+  .pp-creviews__pill,
+  .pp-creviews__vote,
+  .pp-subcats__chip,
+  .pp-sort__option,
+  .pp-viewtoggle__btn {
+    min-height: 44px !important;
+  }
+
+  .pp-viewtoggle__btn {
+    min-width: 44px !important;
+  }
+
+  .pp-link-primary {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .pp-rating-row {
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+
+  .pp-gallery-arrow,
+  .pp-zoom-hint {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .pp-hero-card__pill {
+    font-size: 12px;
+  }
+}
