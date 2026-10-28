@@ -4,10 +4,10 @@
   Categories come from the menu picked in the header's "Shop by category menu"
   setting. When none is set, every collection that has products is listed
   alphabetically (from the global `collections` object). Each panel shows:
-  - the menu item's own sub-links when the menu has them, otherwise the
-    collection's real product types (`collection.all_types`) as filter links
-  - View all / Best sellers / Newest links using Shopify's built-in sorting
-  - the collection image (or its first product's image via `featured_image`)
+  - the category name, its product count and a "Shop all" link
+  - the menu item's own sub-links (with product counts) when the menu has them,
+    otherwise the collection's real product types (`collection.all_types`) as
+    filter links
 
   @param {linklist} [menu] - Menu whose links are the categories.
 {% enddoc %}

@@ -1130,96 +1130,232 @@ span.pp-nav-link {
   background: #fff;
   border: 1px solid #eceef2;
   border-top: 0;
-  border-radius: 0 0 12px 12px;
-  box-shadow: 0 16px 32px rgb(15 23 42 / .12);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 24px 48px -12px rgb(15 23 42 / .18);
   overflow: hidden;
+  animation: pp-catmega-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pp-catmega-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 .pp-catmega__body {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  min-height: 260px;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 280px;
 }
 
+/* Departments down the left; the active one is marked with an orange bar. */
 .pp-catmega__rail {
   display: flex;
   flex-direction: column;
-  padding: 10px 0;
-  background: #f6f7f9;
-  border-right: 1px solid #eceef2;
+  gap: 2px;
+  padding: 12px;
+  background: #faf8f6;
+  border-right: 1px solid #f0ebe6;
 }
 
 .pp-catmega__tab {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 44px;
+  padding: 0 14px 0 16px;
+  border-radius: 10px;
   color: #202a3a;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.pp-catmega__tab::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--pp-primary);
+  opacity: 0;
+  transition: opacity 120ms ease;
 }
 
 .pp-catmega__tab span {
   color: #94a3b8;
   font-weight: 500;
+  transition: color 120ms ease, transform 120ms ease;
 }
 
-.pp-catmega__tab:hover,
-.pp-catmega__tab.is-active {
-  color: var(--pp-primary);
+.pp-catmega__tab:hover {
   background: #fff;
 }
 
-.pp-catmega__tab:hover span,
+.pp-catmega__tab.is-active {
+  background: #fff;
+  color: var(--pp-primary);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgb(15 23 42 / .06);
+}
+
+.pp-catmega__tab.is-active::before {
+  opacity: 1;
+}
+
 .pp-catmega__tab.is-active span {
   color: var(--pp-primary);
+  transform: translateX(2px);
+}
+
+.pp-catmega__tab:focus-visible,
+.pp-catmega__item:focus-visible,
+.pp-catmega__all:focus-visible,
+.pp-catmega__foot a:focus-visible {
+  outline: 2px solid var(--pp-primary);
+  outline-offset: 2px;
 }
 
 .pp-catmega__panels {
-  padding: 22px 28px 18px;
+  padding: 24px 28px 26px;
 }
 
 .pp-catmega__panel {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .pp-catmega__panel[hidden] {
   display: none;
 }
 
-.pp-catmega__col h3 {
-  margin: 0 0 12px;
-  color: #f08a5c;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* Department name and product count, with "Shop all" on the right. */
+.pp-catmega__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f1f4;
 }
 
-.pp-catmega__col ul {
-  list-style: none;
+.pp-catmega__title {
+  margin: 0;
+  color: #111827;
+  font-family: var(--pp-font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.pp-catmega__meta {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.pp-catmega__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--pp-primary);
+  border-radius: 999px;
+  color: var(--pp-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.pp-catmega__all svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 120ms ease;
+}
+
+.pp-catmega__all:hover {
+  background: var(--pp-primary);
+  color: #fff;
+}
+
+.pp-catmega__all:hover svg {
+  transform: translateX(2px);
+}
+
+/* Sub-categories as a grid of tiles. */
+.pp-catmega__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
   margin: 0;
   padding: 0;
+  list-style: none;
+}
+
+.pp-catmega__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 14px 10px 16px;
+  border: 1px solid #eceef2;
+  border-radius: 12px;
+  background: #fff;
+  color: #202a3a;
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.pp-catmega__item-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-.pp-catmega__col a {
-  display: block;
-  padding: 5px 0;
-  color: #334155;
+.pp-catmega__item-name {
   font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.pp-catmega__col a:hover {
+.pp-catmega__item-count {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.pp-catmega__item-arrow {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.pp-catmega__item:hover {
+  border-color: #f6c3b2;
+  background: #fff7f3;
+  box-shadow: 0 2px 8px rgb(232 83 42 / .08);
+}
+
+.pp-catmega__item:hover .pp-catmega__item-name,
+.pp-catmega__item:hover .pp-catmega__item-arrow {
   color: var(--pp-primary);
+}
+
+.pp-catmega__item:hover .pp-catmega__item-arrow {
+  transform: translateX(2px);
 }
 
 .pp-catmega__foot {
@@ -1227,10 +1363,10 @@ span.pp-nav-link {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 44px;
-  padding: 0 20px;
-  background: #f6f3ef;
-  border-top: 1px solid #eceef2;
+  min-height: 48px;
+  padding: 0 24px;
+  background: #faf8f6;
+  border-top: 1px solid #f0ebe6;
 }
 
 .pp-catmega__foot p {
@@ -1240,73 +1376,21 @@ span.pp-nav-link {
 }
 
 .pp-catmega__foot a {
-  color: var(--pp-primary);
+  color: #202a3a;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .pp-catmega__foot a:hover {
-  text-decoration: underline;
+  color: var(--pp-primary);
 }
 
 .pp-catmega__foot-links {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-/* Collection image card in each category panel. */
-.pp-catmega__feature {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-self: start;
-  max-width: 240px;
-  color: inherit;
-  text-decoration: none;
-}
-
-.pp-catmega__feature-media {
-  display: block;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border: 1px solid #eceef2;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.pp-catmega__feature-media img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 0.4s ease;
-}
-
-.pp-catmega__feature:hover .pp-catmega__feature-media img {
-  transform: scale(1.04);
-}
-
-.pp-catmega__feature-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.pp-catmega__feature-label strong {
-  color: #202a3a;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.pp-catmega__feature-label span {
-  color: var(--pp-primary);
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
+  gap: 24px;
 }
 
 .pp-catmega__empty {
@@ -1317,12 +1401,15 @@ span.pp-nav-link {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pp-catmega__feature-media img {
-    transition: none;
+  .pp-catmega__surface {
+    animation: none;
   }
 
-  .pp-catmega__feature:hover .pp-catmega__feature-media img {
-    transform: none;
+  .pp-catmega__tab span,
+  .pp-catmega__all svg,
+  .pp-catmega__item-arrow {
+    transition: none;
+    transform: none !important;
   }
 }
 

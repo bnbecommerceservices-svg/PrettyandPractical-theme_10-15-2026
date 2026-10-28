@@ -1448,6 +1448,7 @@
     }
 
     let megaCloseTimer = 0;
+    let megaOpenedAt = 0;
     const firstCategoryKey = categoryMega?.querySelector('[data-catmega-tab]')?.getAttribute('data-catmega-tab') || '';
 
     function setCategoryPanel(key) {
@@ -1471,6 +1472,7 @@
     function openCategoryMega(key) {
       if (window.innerWidth < 769 || !(categoryMega instanceof HTMLElement) || !(categoryNav instanceof HTMLElement)) return;
       window.clearTimeout(megaCloseTimer);
+      if (categoryMega.hidden) megaOpenedAt = Date.now();
       categoryMega.hidden = false;
       categoryNav.classList.add('is-mega-open');
       if (categoryMegaTrigger instanceof HTMLElement) {
@@ -1511,7 +1513,9 @@
         });
         categoryMegaTrigger.addEventListener('click', function (event) {
           event.preventDefault();
-          if (categoryNav.classList.contains('is-mega-open')) closeCategoryMega();
+          // Hovering the button opens the dropdown, so a click straight after that keeps it open.
+          const justOpened = Date.now() - megaOpenedAt < 600;
+          if (categoryNav.classList.contains('is-mega-open') && !justOpened) closeCategoryMega();
           else openCategoryMega(firstCategoryKey);
         });
       }
