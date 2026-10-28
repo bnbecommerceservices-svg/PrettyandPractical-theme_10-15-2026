@@ -40,8 +40,8 @@
           "type": "value_item",
           "settings": {
             "icon": "truck",
-            "heading": "Free Delivery",
-            "text": "Australia-wide, excl. some remote postcodes"
+            "heading": "Free delivery Australia-wide",
+            "text": "Excludes some remote postcodes."
           }
         },
         "value_2": {
