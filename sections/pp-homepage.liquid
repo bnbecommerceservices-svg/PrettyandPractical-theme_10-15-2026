@@ -179,7 +179,7 @@
                   {% when 'secure' %}
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
                   {% when 'star' %}
-                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 {% endcase %}
               </span>
               <div class="pp-value__text">
@@ -302,7 +302,7 @@
   {%- comment -%}
     Shop by category: the departments in the menu picked in "Shop by category menu"
     (the same menu as the header dropdown and the /collections page). Each card
-    shows the collection's own image, its real product count and its sub-categories.
+    shows the collection's own image and its real product count in a circle.
   {%- endcomment -%}
   {% if cat_links != blank and cat_links.size > 0 %}
     <section class="pp-section" aria-labelledby="cats-heading-{{ section.id }}">
@@ -320,7 +320,7 @@
           </a>
         </div>
 
-        <ul class="pp-depts" role="list">
+        <ul class="pp-cats" role="list">
           {% for link in cat_links %}
             {% liquid
               assign category_collection = blank
@@ -341,31 +341,19 @@
                 endif
               endif
             %}
-            <li class="pp-depts__item">
-              <a href="{{ link.url }}" class="pp-depts__card">
-                <span class="pp-depts__media">
+            <li class="pp-cats__item">
+              <a href="{{ link.url }}" class="pp-cats__link">
+                <span class="pp-cats__circle">
                   {% if category_image != blank %}
-                    <img src="{{ category_image | image_url: width: 600, height: 450, crop: 'center' }}" alt="" width="300" height="225" loading="lazy" decoding="async">
+                    <img src="{{ category_image | image_url: width: 480, height: 480, crop: 'center' }}" alt="" width="240" height="240" loading="lazy" decoding="async">
                   {% else %}
-                    <span class="pp-depts__initial" aria-hidden="true">{{ link.title | slice: 0 }}</span>
-                  {% endif %}
-                  {% if category_count != blank %}
-                    <span class="pp-depts__count">{{ category_count }}</span>
+                    <span class="pp-cats__initial" aria-hidden="true">{{ link.title | slice: 0 }}</span>
                   {% endif %}
                 </span>
-                <span class="pp-depts__body">
-                  <h3 class="pp-depts__name">{{ link.title | escape }}</h3>
-                  {% if link.links.size > 0 %}
-                    <span class="pp-depts__subs">
-                      {%- for child in link.links limit: 3 -%}{{ child.title | escape }}{% unless forloop.last %} · {% endunless %}{%- endfor -%}
-                      {%- if link.links.size > 3 %} · +{{ link.links.size | minus: 3 }} more{% endif -%}
-                    </span>
-                  {% endif %}
-                  <span class="pp-depts__cta">
-                    Shop now
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                  </span>
-                </span>
+                <span class="pp-cats__name">{{ link.title | escape }}</span>
+                {% if category_count != blank %}
+                  <span class="pp-cats__count">{{ category_count }}</span>
+                {% endif %}
               </a>
             </li>
           {% endfor %}
@@ -739,7 +727,7 @@
     { "type": "checkbox", "id": "show_ticker", "label": "Show announcement ticker", "default": true },
     { "type": "text", "id": "page_heading", "label": "Page heading (H1, hidden)", "info": "Main search heading for the homepage, read by Google and screen readers. Say what the store sells.", "default": "Furniture, Home Décor & Plant Stands Online in Australia" },
     { "type": "text", "id": "values_aria_label", "label": "Values aria label", "default": "Why shop with us" },
-    { "type": "link_list", "id": "category_menu", "label": "Shop by category menu", "info": "The departments shown as cards. Uses the same menu as the header dropdown." },
+    { "type": "link_list", "id": "category_menu", "label": "Shop by category menu", "info": "The departments shown as circles. Uses the same menu as the header dropdown." },
     { "type": "text", "id": "categories_heading", "label": "Categories heading", "default": "Shop by Category" },
     { "type": "text", "id": "categories_subheading", "label": "Categories subheading", "default": "Find your next favourite piece across our most-loved categories." },
     { "type": "collection", "id": "bestsellers_collection", "label": "Bestsellers collection" },
