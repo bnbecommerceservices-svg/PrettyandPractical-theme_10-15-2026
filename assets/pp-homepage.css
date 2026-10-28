@@ -2228,3 +2228,17 @@
     height: 280px;
   }
 }
+
+.pp-cats__initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--pp-primary-light);
+  color: var(--pp-primary);
+  font-family: var(--pp-font-heading);
+  font-size: 40px;
+  font-weight: 800;
+  text-transform: uppercase;
+}

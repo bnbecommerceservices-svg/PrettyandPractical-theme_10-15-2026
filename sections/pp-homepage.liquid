@@ -1,21 +1,12 @@
 {% liquid
   assign hero_blocks = section.blocks | where: 'type', 'hero_card'
   assign value_blocks = section.blocks | where: 'type', 'value_item'
-  assign category_blocks = section.blocks | where: 'type', 'category_card'
   assign review_blocks = section.blocks | where: 'type', 'review'
   assign insta_blocks = section.blocks | where: 'type', 'insta_tile'
 
   assign bestsellers_collection = section.settings.bestsellers_collection
   assign secondary_collection = section.settings.secondary_collection
   assign featured_product = section.settings.featured_product
-
-  assign has_category_mosaic = false
-  for block in category_blocks
-    if block.settings.collection != blank or block.settings.link != blank or block.settings.heading != blank
-      assign has_category_mosaic = true
-      break
-    endif
-  endfor
 
   assign has_judgeme_carousel = false
 
@@ -282,80 +273,19 @@
     </section>
   {% endif %}
 
+  {%- comment -%}
+    Shop by category: the departments in the menu picked in "Shop by category menu"
+    (the same menu as the header dropdown and the /collections page). Each circle
+    shows the collection's own image and its real product count.
+  {%- endcomment -%}
   {% liquid
-    assign promo_1_heading = section.settings.promo_1_heading | default: 'New Arrivals'
-    assign promo_1_tag = section.settings.promo_1_tag | default: 'Just Landed'
-    assign promo_1_label = section.settings.promo_1_label | default: 'Explore now'
-    assign promo_1_url = section.settings.promo_1_link | default: '/collections/new-arrival'
-    assign promo_1_img = section.settings.promo_1_image
-    assign promo_1_fallback = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=80'
-
-    assign promo_2_heading = section.settings.promo_2_heading | default: 'Garden & Outdoor'
-    assign promo_2_tag = section.settings.promo_2_tag | default: 'Outdoor living'
-    assign promo_2_label = section.settings.promo_2_label | default: 'Shop outdoor'
-    assign promo_2_url = section.settings.promo_2_link | default: '/collections/home-garden'
-    assign promo_2_img = section.settings.promo_2_image
-    assign promo_2_fallback = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80'
-
-    assign promo_3_heading = section.settings.promo_3_heading | default: 'Pet Accessories'
-    assign promo_3_tag = section.settings.promo_3_tag | default: 'Pet accessories'
-    assign promo_3_label = section.settings.promo_3_label | default: 'Shop accessories'
-    assign promo_3_url = section.settings.promo_3_link | default: '/collections/pets'
-    assign promo_3_img = section.settings.promo_3_image
-    assign promo_3_fallback = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=900&q=80'
+    assign cat_menu = section.settings.category_menu
+    assign cat_links = blank
+    if cat_menu != blank
+      assign cat_links = cat_menu.links
+    endif
   %}
-  {% unless section.settings.show_promos == false %}
-    <section class="pp-promo" aria-labelledby="promo-heading-{{ section.id }}">
-      <div class="pp-wrap">
-        <div class="pp-section-head">
-          <div class="pp-section-head__text">
-            <h2 id="promo-heading-{{ section.id }}">Featured collections</h2>
-            <p class="pp-section-head__sub">New arrivals, outdoor living and pet accessories — shop the looks we love right now.</p>
-          </div>
-        </div>
-        <div class="pp-promo__grid">
-          <a href="{{ promo_1_url }}" class="pp-promo-card">
-            {% if promo_1_img != blank %}
-              {{ promo_1_img | image_url: width: 900 | image_tag: class: 'pp-promo-card__img', loading: 'lazy', widths: '400,600,900', sizes: '(min-width: 990px) 33vw, 100vw', alt: promo_1_heading | escape }}
-            {% else %}
-              <img class="pp-promo-card__img" src="{{ promo_1_fallback }}" alt="{{ promo_1_heading | escape }}" loading="lazy" width="900" height="600">
-            {% endif %}
-            <div class="pp-promo-card__content">
-              <span class="pp-promo-card__tag">{{ promo_1_tag }}</span>
-              <h3>{{ promo_1_heading }}</h3>
-              <span class="pp-promo-card__cta">{{ promo_1_label }} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-            </div>
-          </a>
-          <a href="{{ promo_2_url }}" class="pp-promo-card">
-            {% if promo_2_img != blank %}
-              {{ promo_2_img | image_url: width: 900 | image_tag: class: 'pp-promo-card__img', loading: 'lazy', widths: '400,600,900', sizes: '(min-width: 990px) 33vw, 100vw', alt: promo_2_heading | escape }}
-            {% else %}
-              <img class="pp-promo-card__img" src="{{ promo_2_fallback }}" alt="{{ promo_2_heading | escape }}" loading="lazy" width="900" height="600">
-            {% endif %}
-            <div class="pp-promo-card__content">
-              <span class="pp-promo-card__tag">{{ promo_2_tag }}</span>
-              <h3>{{ promo_2_heading }}</h3>
-              <span class="pp-promo-card__cta">{{ promo_2_label }} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-            </div>
-          </a>
-          <a href="{{ promo_3_url }}" class="pp-promo-card pp-promo-card--pets">
-            {% if promo_3_img != blank %}
-              {{ promo_3_img | image_url: width: 900 | image_tag: class: 'pp-promo-card__img', loading: 'lazy', widths: '400,600,900', sizes: '(min-width: 990px) 33vw, 100vw', alt: promo_3_heading | escape }}
-            {% else %}
-              <img class="pp-promo-card__img" src="{{ promo_3_fallback }}" alt="{{ promo_3_heading | escape }}" loading="lazy" width="900" height="600">
-            {% endif %}
-            <div class="pp-promo-card__content">
-              <span class="pp-promo-card__tag">{{ promo_3_tag }}</span>
-              <h3>{{ promo_3_heading }}</h3>
-              <span class="pp-promo-card__cta">{{ promo_3_label }} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
-  {% endunless %}
-
-  {% if has_category_mosaic %}
+  {% if cat_links != blank and cat_links.size > 0 %}
     <section class="pp-section" aria-labelledby="cats-heading-{{ section.id }}">
       <div class="pp-wrap">
         <div class="pp-section-head">
@@ -376,105 +306,43 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
           <ul class="pp-cats__track" data-pp-cats-track role="list">
-          {% for block in category_blocks %}
-            {% liquid
-              assign category_collection = block.settings.collection
-              assign category_url = block.settings.link
-              if category_collection != blank
-                assign category_url = category_collection.url
-              endif
-
-              assign category_title = block.settings.heading
-              if category_title == blank and category_collection != blank
-                assign category_title = category_collection.title
-              endif
-
-              assign category_image = blank
-              if category_collection != blank
-                assign category_image = category_collection.featured_image | default: category_collection.image
-              endif
-              if category_image == blank and block.settings.image != blank
-                assign category_image = block.settings.image
-              endif
-
-              assign category_count = blank
-              if block.settings.count_text != blank
-                assign category_count = block.settings.count_text
-              elsif category_collection != blank and category_collection.all_products_count > 0
-                assign category_count = category_collection.all_products_count | append: ' products'
-              endif
-
-              assign cat_key = category_title | downcase
-              assign cat_link = category_url | default: block.settings.link | downcase
-              assign is_metal_plant_stand = false
-              assign is_plant_stand = false
-              assign is_pets = false
-              if cat_key contains 'metal'
-                if cat_key contains 'plant' or cat_link contains 'metal-plant-stand' or cat_link contains 'metal_plant_stand'
-                  assign is_metal_plant_stand = true
+            {% for link in cat_links %}
+              {% liquid
+                assign category_collection = blank
+                if link.type == 'collection_link'
+                  assign category_collection = link.object
                 endif
-              endif
-              if is_metal_plant_stand == false
-                if cat_key contains 'plant' or cat_link contains 'plant-stand' or cat_link contains 'plant_stand'
-                  assign is_plant_stand = true
+                if category_collection != blank and category_collection.all_products_count == 0 and link.links.size == 0
+                  continue
                 endif
-              endif
-              if cat_key contains 'pet' or cat_key contains 'animal' or cat_link contains 'pet'
-                assign is_pets = true
-              endif
-
-              assign category_bg = 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=80'
-              if is_metal_plant_stand
-                assign category_bg = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=900&q=80'
-              elsif is_plant_stand
-                assign category_bg = 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=900&q=80'
-              elsif is_pets
-                assign category_bg = 'https://images.unsplash.com/photo-1758685680310-5670e87e11e3?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'bedroom'
-                assign category_bg = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'living'
-                assign category_bg = 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'dining'
-                assign category_bg = 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'office'
-                assign category_bg = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'decor'
-                assign category_bg = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'kitchen'
-                assign category_bg = 'https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'light'
-                assign category_bg = 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=900&q=80'
-              elsif cat_key contains 'outdoor' or cat_key contains 'garden'
-                assign category_bg = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80'
-              endif
-
-              if block.settings.image == blank
-                if is_metal_plant_stand or is_plant_stand or is_pets
-                  assign category_image = blank
+                assign category_image = blank
+                assign category_count = blank
+                if category_collection != blank
+                  assign category_image = category_collection.featured_image | default: category_collection.image
+                  if category_collection.all_products_count > 0
+                    assign category_count = category_collection.all_products_count | append: ' products'
+                    if category_collection.all_products_count == 1
+                      assign category_count = '1 product'
+                    endif
+                  endif
                 endif
-              endif
-              if category_image != blank
-                assign category_bg = category_image | image_url: width: 400, height: 400, crop: 'center'
-              else
-                assign category_bg = category_bg | replace: 'w=900', 'w=400&h=400'
-              endif
-            %}
-            <li class="pp-cats__item" {{ block.shopify_attributes }}>
-              <a
-                href="{{ category_url | default: '#' }}"
-                class="pp-cats__link{% if category_url == blank %} pp-card-is-static{% endif %}"
-                {% if category_url == blank %}aria-disabled="true"{% endif %}
-              >
-                <span class="pp-cats__circle{% if is_pets %} pp-cats__circle--pets{% endif %}{% if is_plant_stand %} pp-cats__circle--plants{% endif %}{% if is_metal_plant_stand %} pp-cats__circle--metal-plants{% endif %}">
-                  <img src="{{ category_bg }}" alt="" width="200" height="200" loading="lazy" decoding="async">
-                </span>
-                <h3 class="pp-cats__name">{{ category_title }}</h3>
-                {% if category_count != blank %}
-                  <span class="pp-cats__count">{{ category_count }}</span>
-                {% endif %}
-              </a>
-            </li>
-          {% endfor %}
+              %}
+              <li class="pp-cats__item">
+                <a href="{{ link.url }}" class="pp-cats__link">
+                  <span class="pp-cats__circle">
+                    {% if category_image != blank %}
+                      <img src="{{ category_image | image_url: width: 400, height: 400, crop: 'center' }}" alt="" width="200" height="200" loading="lazy" decoding="async">
+                    {% else %}
+                      <span class="pp-cats__initial" aria-hidden="true">{{ link.title | slice: 0 }}</span>
+                    {% endif %}
+                  </span>
+                  <h3 class="pp-cats__name">{{ link.title | escape }}</h3>
+                  {% if category_count != blank %}
+                    <span class="pp-cats__count">{{ category_count }}</span>
+                  {% endif %}
+                </a>
+              </li>
+            {% endfor %}
           </ul>
           <button type="button" class="pp-cats__nav pp-cats__nav--next" data-pp-cats-next aria-label="More categories" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -851,25 +719,9 @@
     { "type": "checkbox", "id": "show_ticker", "label": "Show announcement ticker", "default": true },
     { "type": "text", "id": "page_heading", "label": "Page heading (H1, hidden)", "info": "Main search heading for the homepage, read by Google and screen readers. Say what the store sells.", "default": "Furniture, Home Décor & Plant Stands Online in Australia" },
     { "type": "text", "id": "values_aria_label", "label": "Values aria label", "default": "Why shop with us" },
+    { "type": "link_list", "id": "category_menu", "label": "Shop by category menu", "info": "The departments shown as circles. Uses the same menu as the header dropdown." },
     { "type": "text", "id": "categories_heading", "label": "Categories heading", "default": "Shop by Category" },
     { "type": "text", "id": "categories_subheading", "label": "Categories subheading", "default": "Find your next favourite piece across our most-loved categories." },
-    { "type": "header", "content": "Promo banners" },
-    { "type": "checkbox", "id": "show_promos", "label": "Show promo banners", "default": true },
-    { "type": "image_picker", "id": "promo_1_image", "label": "Promo 1 image" },
-    { "type": "text", "id": "promo_1_tag", "label": "Promo 1 tag", "default": "Just Landed" },
-    { "type": "text", "id": "promo_1_heading", "label": "Promo 1 heading", "default": "New Arrivals" },
-    { "type": "text", "id": "promo_1_label", "label": "Promo 1 button", "default": "Explore now" },
-    { "type": "url", "id": "promo_1_link", "label": "Promo 1 link" },
-    { "type": "image_picker", "id": "promo_2_image", "label": "Promo 2 image" },
-    { "type": "text", "id": "promo_2_tag", "label": "Promo 2 tag", "default": "Outdoor living" },
-    { "type": "text", "id": "promo_2_heading", "label": "Promo 2 heading", "default": "Garden & Outdoor" },
-    { "type": "text", "id": "promo_2_label", "label": "Promo 2 button", "default": "Shop outdoor" },
-    { "type": "url", "id": "promo_2_link", "label": "Promo 2 link" },
-    { "type": "image_picker", "id": "promo_3_image", "label": "Promo 3 image" },
-    { "type": "text", "id": "promo_3_tag", "label": "Promo 3 tag", "default": "Pet accessories" },
-    { "type": "text", "id": "promo_3_heading", "label": "Promo 3 heading", "default": "Pet Accessories" },
-    { "type": "text", "id": "promo_3_label", "label": "Promo 3 button", "default": "Shop accessories" },
-    { "type": "url", "id": "promo_3_link", "label": "Promo 3 link" },
     { "type": "collection", "id": "bestsellers_collection", "label": "Bestsellers collection" },
     { "type": "product", "id": "bestsellers_product_1", "label": "Bestseller product 1" },
     { "type": "product", "id": "bestsellers_product_2", "label": "Bestseller product 2" },
@@ -946,32 +798,6 @@
       ]
     },
     {
-      "type": "category_card",
-      "name": "Category card",
-      "limit": 24,
-      "settings": [
-        {
-          "type": "select",
-          "id": "style",
-          "label": "Style",
-          "default": "furniture",
-          "options": [
-            { "value": "furniture", "label": "Furniture" },
-            { "value": "outdoor", "label": "Outdoor" },
-            { "value": "kitchen", "label": "Kitchen" },
-            { "value": "decor", "label": "Decor" },
-            { "value": "bath", "label": "Bath" },
-            { "value": "pets", "label": "Pets" }
-          ]
-        },
-        { "type": "collection", "id": "collection", "label": "Collection" },
-        { "type": "image_picker", "id": "image", "label": "Fallback image" },
-        { "type": "text", "id": "heading", "label": "Heading override" },
-        { "type": "text", "id": "count_text", "label": "Count text override" },
-        { "type": "url", "id": "link", "label": "Fallback link" }
-      ]
-    },
-    {
       "type": "review",
       "name": "Review",
       "settings": [
@@ -1007,12 +833,7 @@
         { "type": "value_item" },
         { "type": "value_item" },
         { "type": "value_item" },
-        { "type": "value_item" },
-        { "type": "category_card" },
-        { "type": "category_card" },
-        { "type": "category_card" },
-        { "type": "category_card" },
-        { "type": "category_card" }
+        { "type": "value_item" }
       ]
     }
   ]

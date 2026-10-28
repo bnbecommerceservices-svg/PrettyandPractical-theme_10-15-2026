@@ -68,116 +68,6 @@
             "text": "We're here to help"
           }
         },
-        "category_1": {
-          "type": "category_card",
-          "settings": {
-            "style": "furniture",
-            "collection": "",
-            "image": "",
-            "heading": "Bedroom Furniture",
-            "count_text": "",
-            "link": "/collections/bedroom-furniture"
-          }
-        },
-        "category_2": {
-          "type": "category_card",
-          "settings": {
-            "style": "decor",
-            "collection": "",
-            "image": "",
-            "heading": "Living Room Furniture",
-            "count_text": "",
-            "link": "/collections/living-room-furniture"
-          }
-        },
-        "category_3": {
-          "type": "category_card",
-          "settings": {
-            "style": "kitchen",
-            "collection": "",
-            "image": "",
-            "heading": "Dining Furniture",
-            "count_text": "",
-            "link": "/collections/dining-furniture"
-          }
-        },
-        "category_4": {
-          "type": "category_card",
-          "settings": {
-            "style": "bath",
-            "collection": "",
-            "image": "",
-            "heading": "Office Furniture",
-            "count_text": "",
-            "link": "/collections/office-furniture"
-          }
-        },
-        "category_5": {
-          "type": "category_card",
-          "settings": {
-            "style": "decor",
-            "collection": "",
-            "image": "",
-            "heading": "Home Decor",
-            "count_text": "",
-            "link": "/collections/home-decor"
-          }
-        },
-        "category_6": {
-          "type": "category_card",
-          "settings": {
-            "style": "kitchen",
-            "collection": "",
-            "image": "",
-            "heading": "Kitchenware",
-            "count_text": "",
-            "link": "/collections/kitchenware"
-          }
-        },
-        "category_7": {
-          "type": "category_card",
-          "settings": {
-            "style": "decor",
-            "collection": "",
-            "image": "",
-            "heading": "Plant Stands",
-            "count_text": "",
-            "link": "/collections/plant-stands"
-          }
-        },
-        "category_8": {
-          "type": "category_card",
-          "settings": {
-            "style": "bath",
-            "collection": "",
-            "image": "",
-            "heading": "Lighting",
-            "count_text": "",
-            "link": "/collections/lighting"
-          }
-        },
-        "category_9": {
-          "type": "category_card",
-          "settings": {
-            "style": "pets",
-            "collection": "",
-            "image": "",
-            "heading": "Pet Accessories",
-            "count_text": "",
-            "link": "/collections/pets"
-          }
-        },
-        "category_10": {
-          "type": "category_card",
-          "settings": {
-            "style": "furniture",
-            "collection": "",
-            "image": "",
-            "heading": "Metal Plant Stands",
-            "count_text": "",
-            "link": "/collections/metal-plant-stand"
-          }
-        },
         "review_1": {
           "type": "review",
           "settings": {
@@ -317,16 +207,6 @@
         "value_2",
         "value_3",
         "value_4",
-        "category_1",
-        "category_2",
-        "category_3",
-        "category_4",
-        "category_5",
-        "category_6",
-        "category_7",
-        "category_8",
-        "category_9",
-        "category_10",
         "review_1",
         "review_2",
         "review_3",
@@ -341,28 +221,15 @@
       "settings": {
         "page_heading": "Furniture, Home Décor & Plant Stands Online in Australia",
         "values_aria_label": "Why shop with Pretty & Practical",
-        "categories_heading": "Shop Furniture & Home Décor by Category",
-        "categories_subheading": "Impressive collection for your dream home.",
-        "show_promos": true,
-        "promo_1_tag": "Just Landed",
-        "promo_1_heading": "New Arrivals",
-        "promo_1_label": "Explore now",
-        "promo_1_link": "/collections/new-arrival",
-        "promo_2_tag": "Outdoor living",
-        "promo_2_heading": "Garden & Outdoor",
-        "promo_2_label": "Shop outdoor",
-        "promo_2_link": "/collections/home-garden",
-        "promo_3_tag": "Pet accessories",
-        "promo_3_heading": "Pet Accessories",
-        "promo_3_label": "Shop accessories",
-        "promo_3_link": "/collections/pets",
+        "categories_heading": "Shop by Category",
+        "categories_subheading": "Furniture, home décor, storage and garden pieces for every room.",
         "bestsellers_collection": "home-decor",
         "bestsellers_product_1": "1-2m-oversized-luxury-decorative-wall-mirror-crushed-diamond-full-length-mirror",
         "bestsellers_product_2": "1-2m-wall-led-bathroom-vanity-mirror-smart-backlit-front-lighted-anti-fog",
         "bestsellers_product_3": "tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg",
         "bestsellers_product_4": "high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame",
-        "bestsellers_heading": "Best-Selling Furniture & Home Décor",
-        "bestsellers_subheading": "Customer favourites across furniture, mirrors, tables and more.",
+        "bestsellers_heading": "Our Best Sellers",
+        "bestsellers_subheading": "The furniture and home décor Australian shoppers love most.",
         "bestsellers_link_label": "View all",
         "products_per_row": 4,
         "sale_badge_label": "Sale",
@@ -388,13 +255,14 @@
         "secondary_product_3": "high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame",
         "secondary_product_4": "acrylic-coffee-table-clear-coffee-table-with-anti-scratch-pvc-cover-sofa-table",
         "secondary_heading": "New Arrivals",
-        "secondary_subheading": "Fresh pieces just in for Australian homes.",
+        "secondary_subheading": "The newest pieces to join our range.",
         "secondary_link_label": "View all",
         "reviews_heading": "Customer reviews",
         "reviews_subheading": "What Australian shoppers are saying about Pretty & Practical.",
         "show_instagram": false,
         "instagram_heading": "Seen in the wild",
-        "instagram_subheading": "Follow Pretty & Practical for new arrivals and styling ideas."
+        "instagram_subheading": "Follow Pretty & Practical for new arrivals and styling ideas.",
+        "category_menu": "shop-by-category"
       }
     }
   },
