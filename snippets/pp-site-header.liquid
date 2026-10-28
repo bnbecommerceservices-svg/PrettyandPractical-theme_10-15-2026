@@ -27,8 +27,11 @@
   if sticky_mode == 'none'
     assign header_is_sticky = false
   endif
-  assign canonical_category_labels = 'New Arrival|Home & Garden|Garden & Outdoor|Furniture|TV Trolley / Stand|Pets|Under $50|Shop All' | split: '|'
-  assign canonical_category_handles = 'new-arrival|home-garden|garden-outdoor|furniture|tv-stands|pets|under-50|all' | split: '|'
+  # "Shop by category" menu picked in the header settings (a menu object or its handle).
+  assign dropdown_menu = category_dropdown_menu
+  if dropdown_menu != blank and dropdown_menu.links == blank
+    assign dropdown_menu = linklists[dropdown_menu]
+  endif
   assign fallback_search_placeholder = search_placeholder | default: header_section.settings.search_placeholder | default: 'Search furniture, home decor, plant stands, pets & more...'
   assign fallback_category_nav_label = category_nav_label | default: header_section.settings.category_nav_label | default: 'Category navigation'
   assign fallback_announcement_label = announcement_label | default: header_section.settings.announcements_label | default: header_section.settings.announcement_label | default: 'Store announcements'
@@ -96,45 +99,7 @@
 
   assign cart_count = cart.item_count | default: 0
 
-  assign pp_menu_has_tv = false
   assign pp_use_menu_mega = false
-  assign pp_tv_url = '/collections/tv-stands'
-  if collections['tv-stands'].url != blank
-    assign pp_tv_url = collections['tv-stands'].url
-  elsif collections['tv-trolley-stand'].url != blank
-    assign pp_tv_url = collections['tv-trolley-stand'].url
-  endif
-  assign pp_garden_url = blank
-  assign pp_garden_try = 'garden-outdoor,garden-and-outdoor,outdoor-garden,garden,home-garden,home-and-garden' | split: ','
-  for h in pp_garden_try
-    if pp_garden_url == blank and collections[h].url != blank
-      assign pp_garden_url = collections[h].url
-    endif
-  endfor
-  if pp_garden_url == blank
-    for c in collections
-      assign ct = c.title | downcase
-      if pp_garden_url == blank and ct == 'garden & outdoor'
-        assign pp_garden_url = c.url
-      endif
-    endfor
-  endif
-  if pp_garden_url == blank
-    for c in collections
-      assign ct = c.title | downcase
-      if pp_garden_url == blank and ct == 'home & garden'
-        assign pp_garden_url = c.url
-      endif
-    endfor
-  endif
-  if pp_garden_url == blank
-    assign pp_garden_url = routes.all_products_collection_url
-  endif
-  assign pp_outdoor_url = pp_garden_url
-  if collections['outdoor'].products_count > 0
-    assign pp_outdoor_url = collections['outdoor'].url
-  endif
-
   if category_blocks == blank or category_blocks.size == 0
     if category_menu != blank and category_menu.links != blank and category_menu.links.size > 0
       assign category_menu_links = category_menu.links
@@ -145,16 +110,15 @@
 
   if category_menu_links != blank and category_menu_links.size > 0
     for link in category_menu_links
-      assign link_handle = link.title | handleize
-      if link_handle == 'tv-trolley-stand' or link_handle == 'tv-stands'
-        assign pp_menu_has_tv = true
-      endif
       if link.links != blank and link.links.size > 0
         assign pp_use_menu_mega = true
       endif
     endfor
   endif
 %}
+
+{%- capture real_category_text -%}{%- render 'pp-category-entries', menu: dropdown_menu, limit: 12 -%}{%- endcapture -%}
+{%- assign real_categories = real_category_text | strip | split: '§' -%}
 
 {% capture rendered_utility_links %}
   {% if utility_menu_handle != blank and linklists[utility_menu_handle].links.size > 0 %}
@@ -274,79 +238,24 @@
           {% render 'pp-nav-shop-item', link: link %}
         {% endif %}
       {% endunless %}
-      {% if loop_handle == 'furniture' and pp_menu_has_tv == false %}
-        <a href="{{ pp_tv_url }}" class="pp-nav-link">TV Trolley / Stand</a>
-      {% endif %}
     {% endfor %}
   {% else %}
-    {% for label in canonical_category_labels %}
+    {% for entry in real_categories limit: 8 %}
       {% liquid
-        assign canonical_handle = canonical_category_handles[forloop.index0]
-        assign canonical_url = collections[canonical_handle].url
-        if canonical_url == blank
-          assign canonical_url = '/collections/' | append: canonical_handle
+        assign entry_parts = entry | split: '¦'
+        assign entry_url = entry_parts[1]
+        assign entry_active = false
+        if request.path == entry_url
+          assign entry_active = true
         endif
-        if canonical_handle == 'tv-trolley-stand' or canonical_handle == 'tv-stands'
-          assign canonical_url = pp_tv_url
-        elsif canonical_handle == 'outdoor'
-          assign canonical_url = pp_outdoor_url
-        elsif canonical_handle == 'garden-outdoor'
-          assign canonical_url = pp_garden_url
-        endif
-        assign item_title = label | downcase
-        if item_title contains 'furniture'
-          assign item_icon = '&#x1FA91;'
-        elsif item_title contains 'tv'
-          assign item_icon = '&#x1F4FA;'
-        elsif item_title contains 'garden'
-          assign item_icon = '&#x1F333;'
-        elsif item_title contains 'outdoor'
-          assign item_icon = '&#x26F0;&#xFE0F;'
-        elsif item_title contains 'kitchen' or item_title contains 'dining'
-          assign item_icon = '&#x1F373;'
-        elsif item_title contains 'decor'
-          assign item_icon = '&#x1F3E0;'
-        elsif item_title contains 'storage' or item_title contains 'organ'
-          assign item_icon = '&#x1F5C3;&#xFE0F;'
-        elsif item_title contains 'bath'
-          assign item_icon = '&#x1F6C1;'
-        elsif item_title contains 'baby' or item_title contains 'kids'
-          assign item_icon = '&#x1F37C;'
-        elsif item_title contains 'toy' or item_title contains 'game'
-          assign item_icon = '&#x1F3AE;'
-        elsif item_title contains 'hobby' or item_title contains 'hobbies'
-          assign item_icon = '&#x1F9F5;'
-        elsif item_title contains 'sport'
-          assign item_icon = '&#x26BD;'
-        elsif item_title contains 'pet'
-          assign item_icon = '&#x1F43E;'
-        elsif item_title contains 'lighting' or item_title contains 'light'
-          assign item_icon = '&#x1F4A1;'
-        elsif item_title contains 'bedding' or item_title contains 'bed'
-          assign item_icon = '&#x1F6CF;&#xFE0F;'
-        elsif item_title contains 'sale' or item_title contains 'clearance'
-          assign item_icon = '&#x1F3F7;&#xFE0F;'
-        else
-          assign item_icon = '&#x2726;'
-        endif
-        assign mega_is_active = false
-        if request.path == canonical_url
-          assign mega_is_active = true
-        endif
-        assign mega_is_sale = false
-        if item_title contains 'sale' or item_title contains 'clearance'
-          assign mega_is_sale = true
-        endif
-        assign mega_menu_id = 'ppMegaMenu-' | append: header_section.id | append: '-' | append: canonical_handle | append: '-' | append: forloop.index0
+        assign mega_menu_id = 'ppMegaMenu-' | append: header_section.id | append: '-' | append: entry_parts[2]
       %}
       {% render 'pp-nav-mega-item',
-        category_label: label,
-        category_url: canonical_url,
-        item_icon: item_icon,
-        item_handle: canonical_handle,
+        category_label: entry_parts[0],
+        category_url: entry_url,
+        item_handle: entry_parts[2],
         menu_id: mega_menu_id,
-        is_active: mega_is_active,
-        is_sale: mega_is_sale
+        is_active: entry_active
       %}
     {% endfor %}
   {% endif %}
@@ -354,84 +263,9 @@
 {% assign rendered_category_links = rendered_category_links | strip %}
 
 {% capture rendered_search_dropdown_categories %}
-  {% assign preferred_search_dropdown_labels = 'Furniture|Home Decor|Lighting|Plant Stands' | split: '|' %}
-  {% for preferred_label in preferred_search_dropdown_labels %}
-    {% assign category_url = blank %}
-    {% if category_block_items != blank and category_block_items.size > 0 %}
-      {% for block in category_block_items %}
-        {% liquid
-          assign block_label = block.settings.label | strip
-          assign block_url = block.settings.link
-          if block.settings.collection != blank
-            assign block_url = block.settings.collection.url
-          endif
-        %}
-        {% if category_url == blank and block_url != blank and block_label == preferred_label %}
-          {% assign category_url = block_url %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-    {% if category_url == blank and category_menu_links != blank and category_menu_links.size > 0 %}
-      {% for link in category_menu_links %}
-        {% if category_url == blank and link.url != blank and link.title != blank and link.title == preferred_label %}
-          {% liquid
-            assign preferred_key = preferred_label | handleize
-            if preferred_key == 'tv-trolley-stand' or preferred_key == 'tv-stands'
-              assign category_url = pp_tv_url
-            elsif preferred_key == 'outdoor'
-              assign category_url = pp_outdoor_url
-            elsif preferred_key == 'garden-outdoor'
-              assign category_url = pp_garden_url
-            else
-              assign category_url = link.url
-            endif
-          %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-    {% if category_url == blank %}
-      {% for label in canonical_category_labels %}
-        {% if category_url == blank and label == preferred_label %}
-          {% liquid
-            assign canonical_handle = canonical_category_handles[forloop.index0]
-            assign canonical_collection = collections[canonical_handle]
-            if canonical_handle == 'tv-trolley-stand' or canonical_handle == 'tv-stands'
-              assign category_url = pp_tv_url
-            elsif canonical_handle == 'outdoor'
-              assign category_url = pp_outdoor_url
-            elsif canonical_handle == 'garden-outdoor'
-              assign category_url = pp_garden_url
-            elsif canonical_collection != blank
-              assign category_url = canonical_collection.url
-            else
-              assign category_url = '/collections/' | append: canonical_handle
-            endif
-          %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-    {% if category_url == blank %}
-      {% liquid
-        assign preferred_handle = preferred_label | handleize
-        if preferred_handle == 'tv-trolley-stand' or preferred_handle == 'tv-stands'
-          assign category_url = pp_tv_url
-        elsif preferred_handle == 'outdoor'
-          assign category_url = pp_outdoor_url
-        elsif preferred_handle == 'garden-outdoor'
-          assign category_url = pp_garden_url
-        else
-          assign preferred_collection = collections[preferred_handle]
-          if preferred_collection != blank
-            assign category_url = preferred_collection.url
-          else
-            assign category_url = '/collections/' | append: preferred_handle
-          endif
-        endif
-      %}
-    {% endif %}
-    {% if category_url != blank %}
-      <a href="{{ category_url }}" class="pp-pill pp-pill--cat">{{ preferred_label | escape }}</a>
-    {% endif %}
+  {% for entry in real_categories limit: 4 %}
+    {% assign entry_parts = entry | split: '¦' %}
+    <a href="{{ entry_parts[1] }}" class="pp-pill pp-pill--cat">{{ entry_parts[0] | escape }}</a>
   {% endfor %}
 {% endcapture %}
 {% assign rendered_search_dropdown_categories = rendered_search_dropdown_categories | strip %}
@@ -597,13 +431,6 @@
         endif
         assign drawer_url = link.url | default: routes.all_products_collection_url
         assign drawer_key = link.title | handleize
-        if drawer_key == 'tv-trolley-stand' or drawer_key == 'tv-stands' or drawer_url contains '/tv-trolley-stand'
-          assign drawer_url = pp_tv_url
-        elsif drawer_key == 'outdoor'
-          assign drawer_url = pp_outdoor_url
-        elsif drawer_key == 'garden-outdoor' or drawer_url contains '/garden-outdoor'
-          assign drawer_url = pp_garden_url
-        endif
       %}
       {% unless drawer_key == 'outdoor' %}
       <div class="pp-drawer__nav-item" role="listitem">
@@ -636,74 +463,17 @@
       {% endunless %}
     {% endfor %}
   {% else %}
-    {% for label in canonical_category_labels %}
-      {% liquid
-        assign canonical_handle = canonical_category_handles[forloop.index0]
-        assign canonical_url = collections[canonical_handle].url
-        if canonical_url == blank
-          assign canonical_url = '/collections/' | append: canonical_handle
-        endif
-        if canonical_handle == 'tv-trolley-stand' or canonical_handle == 'tv-stands'
-          assign canonical_url = pp_tv_url
-        elsif canonical_handle == 'outdoor'
-          assign canonical_url = pp_outdoor_url
-        elsif canonical_handle == 'garden-outdoor'
-          assign canonical_url = pp_garden_url
-        endif
-        assign item_title = label | downcase
-        if item_title contains 'furniture'
-          assign item_icon = '&#x1FA91;'
-        elsif item_title contains 'tv'
-          assign item_icon = '&#x1F4FA;'
-        elsif item_title contains 'garden'
-          assign item_icon = '&#x1F333;'
-        elsif item_title contains 'outdoor'
-          assign item_icon = '&#x26F0;&#xFE0F;'
-        elsif item_title contains 'kitchen' or item_title contains 'dining'
-          assign item_icon = '&#x1F373;'
-        elsif item_title contains 'decor'
-          assign item_icon = '&#x1F3E0;'
-        elsif item_title contains 'storage' or item_title contains 'organ'
-          assign item_icon = '&#x1F5C3;&#xFE0F;'
-        elsif item_title contains 'bath'
-          assign item_icon = '&#x1F6C1;'
-        elsif item_title contains 'baby' or item_title contains 'kids'
-          assign item_icon = '&#x1F37C;'
-        elsif item_title contains 'toy' or item_title contains 'game'
-          assign item_icon = '&#x1F3AE;'
-        elsif item_title contains 'hobby' or item_title contains 'hobbies'
-          assign item_icon = '&#x1F9F5;'
-        elsif item_title contains 'sport'
-          assign item_icon = '&#x26BD;'
-        elsif item_title contains 'pet'
-          assign item_icon = '&#x1F43E;'
-        elsif item_title contains 'lighting' or item_title contains 'light'
-          assign item_icon = '&#x1F4A1;'
-        elsif item_title contains 'bedding' or item_title contains 'bed'
-          assign item_icon = '&#x1F6CF;&#xFE0F;'
-        elsif item_title contains 'sale' or item_title contains 'clearance'
-          assign item_icon = '&#x1F3F7;&#xFE0F;'
-        else
-          assign item_icon = '&#x2726;'
-        endif
-      %}
+    {% for entry in real_categories %}
+      {% assign entry_parts = entry | split: '¦' %}
       <div class="pp-drawer__nav-item" role="listitem">
-        {% if item_title contains 'sale' or item_title contains 'clearance' %}
-          <a href="{{ canonical_url }}" class="pp-drawer__nav-link pp-drawer-link pp-drawer-link--sale">
-            <span class="pp-drawer-link-content">
-              <span class="pp-drawer-link-name">{{ label | escape }}</span>
-            </span>
-          </a>
-        {% else %}
-          <a href="{{ canonical_url }}" class="pp-drawer__nav-link pp-drawer-link">
-            <span class="pp-drawer-link-content">
-              <span class="pp-drawer-link-name">{{ label | escape }}</span>
-            </span>
-            <svg class="pp-drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </a>
-        {% endif %}
+        <a href="{{ entry_parts[1] }}" class="pp-drawer__nav-link pp-drawer-link">
+          <span class="pp-drawer-link-content">
+            <span class="pp-drawer-link-name">{{ entry_parts[0] | escape }}</span>
+          </span>
+          <svg class="pp-drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
       </div>
     {% endfor %}
   {% endif %}
@@ -1264,7 +1034,7 @@
         {{ rendered_category_links }}
       </div>
       {% unless pp_use_menu_mega %}
-        {% render 'pp-category-mega' %}
+        {% render 'pp-category-mega', menu: dropdown_menu %}
       {% endunless %}
     </div>
   </div>
@@ -1671,6 +1441,7 @@
     }
 
     let megaCloseTimer = 0;
+    const firstCategoryKey = categoryMega?.querySelector('[data-catmega-tab]')?.getAttribute('data-catmega-tab') || '';
 
     function setCategoryPanel(key) {
       if (!(categoryMega instanceof HTMLElement) || !key) return;
@@ -1729,12 +1500,12 @@
 
       if (categoryMegaTrigger instanceof HTMLElement) {
         categoryMegaTrigger.addEventListener('mouseenter', function () {
-          openCategoryMega('new-arrival');
+          openCategoryMega(firstCategoryKey);
         });
         categoryMegaTrigger.addEventListener('click', function (event) {
           event.preventDefault();
           if (categoryNav.classList.contains('is-mega-open')) closeCategoryMega();
-          else openCategoryMega('new-arrival');
+          else openCategoryMega(firstCategoryKey);
         });
       }
 

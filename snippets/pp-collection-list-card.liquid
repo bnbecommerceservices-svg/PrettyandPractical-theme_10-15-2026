@@ -1,0 +1,43 @@
+{% doc %}
+  Collection card for the "Shop by category" page (sections/pp-collection-list.liquid).
+  Collections with no products are skipped.
+
+  @param {collection} collection - The collection to show.
+{% enddoc %}
+
+{%- liquid
+  assign card_count = collection.all_products_count | default: 0
+  assign card_image = collection.featured_image
+-%}
+{%- if card_count > 0 -%}
+  <li class="pp-clist__card">
+    <a class="pp-clist__link" href="{{ collection.url }}">
+      <span class="pp-clist__media">
+        {%- if card_image != blank -%}
+          {{
+            card_image
+            | image_url: width: 800
+            | image_tag:
+              widths: '300, 400, 600, 800',
+              sizes: '(min-width: 1101px) 25vw, (min-width: 769px) 33vw, 50vw',
+              alt: collection.title,
+              loading: 'lazy'
+          }}
+        {%- else -%}
+          <span class="pp-clist__placeholder" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"></rect><circle cx="9" cy="10" r="1.25"></circle><path d="M7 16l4.25-4.25a1 1 0 0 1 1.41 0L17 16"></path></svg>
+          </span>
+        {%- endif -%}
+      </span>
+      <div class="pp-clist__info">
+        <div>
+          <h2 class="pp-clist__name">{{ collection.title | escape }}</h2>
+          <span class="pp-clist__count">{{ card_count }} {% if card_count == 1 %}product{% else %}products{% endif %}</span>
+        </div>
+        <span class="pp-clist__arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+        </span>
+      </div>
+    </a>
+  </li>
+{%- endif -%}

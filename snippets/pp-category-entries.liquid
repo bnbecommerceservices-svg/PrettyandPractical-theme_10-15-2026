@@ -1,0 +1,46 @@
+{% doc %}
+  Outputs the store's real categories as text for the header to split:
+  entries separated by "§", fields by "¦" (title¦url¦key).
+
+  Categories are the links of the given menu; when no menu is given, every
+  collection that has products, alphabetically. The key matches the panel
+  keys in pp-category-mega so a link can open its dropdown panel.
+
+  @param {linklist} [menu] - Menu whose links are the categories.
+  @param {number} [limit] - Most entries to output (default 12).
+{% enddoc %}
+
+{%- liquid
+  assign entry_limit = limit | default: 12
+  assign entry_count = 0
+  if menu != blank and menu.links.size > 0
+    for link in menu.links
+      if entry_count >= entry_limit
+        break
+      endif
+      if link.type == 'collection_link' and link.object.all_products_count == 0 and link.links.size == 0
+        continue
+      endif
+      assign entry_key = link.handle | default: link.title | handleize
+      if entry_count > 0
+        echo '§'
+      endif
+      echo link.title | append: '¦' | append: link.url | append: '¦' | append: entry_key
+      assign entry_count = entry_count | plus: 1
+    endfor
+  else
+    for collection in collections
+      if entry_count >= entry_limit
+        break
+      endif
+      if collection.handle == 'frontpage' or collection.handle == 'all' or collection.all_products_count == 0
+        continue
+      endif
+      if entry_count > 0
+        echo '§'
+      endif
+      echo collection.title | append: '¦' | append: collection.url | append: '¦' | append: collection.handle
+      assign entry_count = entry_count | plus: 1
+    endfor
+  endif
+-%}

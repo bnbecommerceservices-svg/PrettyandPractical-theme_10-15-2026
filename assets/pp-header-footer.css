@@ -1251,6 +1251,81 @@ span.pp-nav-link {
   text-decoration: underline;
 }
 
+.pp-catmega__foot-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Collection image card in each category panel. */
+.pp-catmega__feature {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: start;
+  max-width: 240px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pp-catmega__feature-media {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid #eceef2;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pp-catmega__feature-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+
+.pp-catmega__feature:hover .pp-catmega__feature-media img {
+  transform: scale(1.04);
+}
+
+.pp-catmega__feature-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pp-catmega__feature-label strong {
+  color: #202a3a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pp-catmega__feature-label span {
+  color: var(--pp-primary);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pp-catmega__empty {
+  margin: 0;
+  padding: 28px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-catmega__feature-media img {
+    transition: none;
+  }
+
+  .pp-catmega__feature:hover .pp-catmega__feature-media img {
+    transform: none;
+  }
+}
+
 @media (max-width: 768px) {
   .pp-catmega-trigger,
   .pp-catmega,
