@@ -37,6 +37,16 @@
   const prefersHoverSelection = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   let currentSlide = 0;
 
+  // "1 / 8" badge on the main image (shown on phones, where the arrows are hidden).
+  let galleryCount = null;
+  if (galleryMain && slides.length > 1) {
+    galleryCount = document.createElement('span');
+    galleryCount.className = 'pp-gallery-count';
+    galleryCount.setAttribute('aria-hidden', 'true');
+    galleryCount.textContent = `1 / ${slides.length}`;
+    galleryMain.appendChild(galleryCount);
+  }
+
   function syncGalleryRatio() {
     if (!galleryMain) return;
     const activeSlide = slides[currentSlide] || productRoot.querySelector('.pp-gallery-slide.is-active');
@@ -64,6 +74,7 @@
     slides.forEach((slide, index) => slide.classList.toggle('is-active', index === idx));
     thumbs.forEach((thumb, index) => thumb.setAttribute('aria-current', index === idx ? 'true' : 'false'));
     if (counter) counter.textContent = `Image ${idx + 1} of ${slides.length}`;
+    if (galleryCount) galleryCount.textContent = `${idx + 1} / ${slides.length}`;
     currentSlide = idx;
     resetGalleryZoom();
     syncGalleryRatio();
@@ -282,8 +293,37 @@
       galleryMain.addEventListener('mouseleave', resetGalleryZoom);
     }
 
+    // Swipe left / right on the main image to change picture. Vertical swipes
+    // still scroll the page, and a swipe does not open the lightbox.
+    let swipeStart = null;
+    let didSwipe = false;
+    galleryMain.addEventListener('touchstart', (event) => {
+      if (slides.length < 2 || event.touches.length !== 1) {
+        swipeStart = null;
+        return;
+      }
+      const touch = event.touches[0];
+      swipeStart = { x: touch.clientX, y: touch.clientY };
+      didSwipe = false;
+    }, { passive: true });
+    galleryMain.addEventListener('touchend', (event) => {
+      if (!swipeStart) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - swipeStart.x;
+      const dy = touch.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      didSwipe = true;
+      goToSlide(currentSlide + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+    galleryMain.addEventListener('touchcancel', () => { swipeStart = null; }, { passive: true });
+
     galleryMain.addEventListener('click', (event) => {
       if (event.target.closest('.pp-gallery-arrow, .pp-wishlist-btn, .pp-zoom-hint, .pp-sale-badge')) return;
+      if (didSwipe) {
+        didSwipe = false;
+        return;
+      }
       openLightbox(currentSlide);
     });
   }
@@ -732,25 +772,20 @@
     });
   });
 
+  // Sticky "Add to cart" bar (phones): it appears once the main Add to cart button
+  // has scrolled up past the top of the screen, not while the button is still
+  // further down the page, and it is hidden again when the shopper scrolls back up.
   const stickyBar = document.getElementById('sticky-bar');
   const atcBtn = document.getElementById('add-to-cart');
-  if ('IntersectionObserver' in window && stickyBar && atcBtn) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (window.innerWidth >= 768) {
-          stickyBar.classList.remove('is-visible');
-          return;
-        }
-        if (!entry.isIntersecting) stickyBar.classList.add('is-visible');
-        else stickyBar.classList.remove('is-visible');
-      });
-    }, { threshold: 0, rootMargin: '0px 0px -80px 0px' });
-    observer.observe(atcBtn);
+  if (stickyBar && atcBtn) {
+    const updateStickyBar = () => {
+      const show = window.innerWidth < 768 && atcBtn.getBoundingClientRect().bottom < 0;
+      stickyBar.classList.toggle('is-visible', show);
+    };
+    window.addEventListener('scroll', updateStickyBar, { passive: true });
+    window.addEventListener('resize', updateStickyBar);
+    updateStickyBar();
   }
-
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 768 && stickyBar) stickyBar.classList.remove('is-visible');
-  });
 
   const reviewsLink = document.getElementById('reviews-link');
   if (reviewsLink) {
