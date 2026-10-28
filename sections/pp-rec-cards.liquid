@@ -1,0 +1,18 @@
+{%- comment -%}
+  Product recommendation cards, fetched by the cart page's "You may also like"
+  row with the Section Rendering API:
+  /recommendations/products?product_id=ID&intent=related&section_id=pp-rec-cards
+  Uses the collection page card so every product row looks the same.
+{%- endcomment -%}
+<div data-pp-rec-results>
+  {%- for rec_product in recommendations.products -%}
+    {% render 'pp-collection-product-card', product: rec_product %}
+  {%- endfor -%}
+</div>
+
+{% schema %}
+{
+  "name": "Recommendation cards",
+  "settings": []
+}
+{% endschema %}

@@ -1,4 +1,6 @@
 {{ 'pp-cart-page.css' | asset_url | stylesheet_tag }}
+{{ 'pp-product-card.css' | asset_url | stylesheet_tag }}
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'component-cart-items.js' | asset_url }}" type="module" fetchpriority="low"></script>
 <script src="{{ 'component-cart-quantity-selector.js' | asset_url }}" type="module" fetchpriority="low"></script>
 <script src="{{ 'pp-cart-page.js' | asset_url }}" defer></script>
@@ -538,50 +540,17 @@
           </a>
         </div>
         {% if fallback_recommendations_collection != blank %}
-          <script type="application/json" data-pp-cart-fallback-products>
-            [
-              {% for product in fallback_recommendations_collection.products limit: 12 %}
-                {% liquid
-                  assign variant = product.selected_or_first_available_variant
-                  assign rating = product.metafields.reviews.rating.value.rating
-                  assign rating_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count
-                  assign product_has_sale = false
-                  assign available_variant_count = 0
-                  capture pp_promo
-                    render 'pp-product-promo', product: product, price: variant.price, compare_at: variant.compare_at_price
-                  endcapture
-                  assign pp_promo = pp_promo | strip
-                  if pp_promo contains '|sale'
-                    assign product_has_sale = true
-                  endif
-                  for product_variant in product.variants
-                    if product_variant.available
-                      assign available_variant_count = available_variant_count | plus: 1
-                    endif
-                  endfor
-                %}
-                {
-                  "title": {{ product.title | json }},
-                  "url": {{ variant.url | default: product.url | json }},
-                  "type": {{ product.type | json }},
-                  "vendor": {{ product.vendor | json }},
-                  "price": {{ variant.price | json }},
-                  "compare_at_price": {{ variant.compare_at_price | json }},
-                  "featured_image": {{ product.featured_image | image_url: width: 900 | json }},
-                  "available": {{ variant.available | json }},
-                  "variant_id": {{ variant.id | json }},
-                  "variant_count": {{ product.variants.size | json }},
-                  "available_variant_count": {{ available_variant_count | json }},
-                  "rating": {{ rating | json }},
-                  "rating_count": {{ rating_count | json }},
-                  "has_sale_tag": {{ product_has_sale | json }},
-                  "published_at": {{ product.published_at | json }}
-                }{% unless forloop.last %},{% endunless %}
-              {% endfor %}
-            ]
-          </script>
+          <template data-pp-cart-fallback-cards>
+            {% for product in fallback_recommendations_collection.products limit: 12 %}
+              {% assign fallback_key = ',' | append: product.id | append: ',' %}
+              {% assign cart_ids_key = ',' | append: recommendation_product_ids | append: ',' %}
+              {% unless cart_ids_key contains fallback_key %}
+                {% render 'pp-collection-product-card', product: product %}
+              {% endunless %}
+            {% endfor %}
+          </template>
         {% endif %}
-        <div class="pp-recommend__grid" id="recommend-grid"></div>
+        <div class="pp-recommend__grid pp-cards pp-cards--grid" id="recommend-grid"></div>
       </section>
     {% endunless %}
   </main>

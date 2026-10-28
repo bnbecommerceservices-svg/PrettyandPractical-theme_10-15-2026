@@ -1,4 +1,5 @@
 {{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+{{ 'pp-product-card.css' | asset_url | stylesheet_tag }}
 <script
   src="{{ 'product-recommendations.js' | asset_url }}"
   type="module"
@@ -36,7 +37,7 @@
             <p class="pp-section-head__sub">Pieces like the one you're viewing</p>
           </div>
         </div>
-        <div class="pp-recommend__grid">
+        <div class="pp-recommend__grid pp-cards pp-cards--grid">
           {{ related_cards }}
         </div>
       </section>

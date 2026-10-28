@@ -39,6 +39,7 @@
     assign base_url = routes.all_products_collection_url | append: '?filter.p.t.category='
   -%}
   {{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+  {{ 'pp-product-card.css' | asset_url | stylesheet_tag }}
   <div
     class="pp-category-products"
     data-pp-category-products
@@ -53,7 +54,7 @@
           <p class="pp-section-head__sub">Explore more in this range</p>
         </div>
       </div>
-      <div class="pp-recommend__grid" data-pp-cat-grid></div>
+      <div class="pp-recommend__grid pp-cards pp-cards--grid" data-pp-cat-grid></div>
     </section>
   </div>
   <script>

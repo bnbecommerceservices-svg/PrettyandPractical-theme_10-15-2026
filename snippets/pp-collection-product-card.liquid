@@ -38,6 +38,7 @@
 %}
 <article
   class="pp-card"
+  data-product-id="{{ product.id }}"
   data-pp-type="{{ product.type | escape }}"
   data-pp-price="{{ current_price }}"
   data-pp-available="{% if product.available %}1{% else %}0{% endif %}"
