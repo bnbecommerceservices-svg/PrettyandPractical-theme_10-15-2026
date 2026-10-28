@@ -510,7 +510,7 @@
 
 .pp-homepage-storefront .pp-values {
   margin-top: 12px;
-  padding: 36px 0 28px;
+  padding: 24px 0;
   border-top: 1px solid var(--pp-border-light);
   border-bottom: 1px solid var(--pp-border-light);
 }

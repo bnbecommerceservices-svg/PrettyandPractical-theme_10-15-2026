@@ -162,11 +162,7 @@
   {% if value_blocks.size > 0 %}
     <section class="pp-values" aria-labelledby="values-heading-{{ section.id }}">
       <div class="pp-wrap">
-        <div class="pp-section-head">
-          <div class="pp-section-head__text">
-            <h2 id="values-heading-{{ section.id }}">{{ section.settings.values_aria_label | default: 'Why shop with us' }}</h2>
-          </div>
-        </div>
+        <h2 id="values-heading-{{ section.id }}" class="visually-hidden">{{ section.settings.values_aria_label | default: 'Why shop with us' }}</h2>
         <div class="pp-values__grid">
           {% for block in value_blocks limit: 4 %}
             <div class="pp-value" {{ block.shopify_attributes }}>
