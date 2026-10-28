@@ -1,0 +1,16 @@
+{%- comment -%}
+  One collection page card for the wishlist page. assets/pp-wishlist-page.js
+  fetches it per saved product with /products/{handle}?section_id=pp-wishlist-card.
+{%- endcomment -%}
+<div data-pp-wishlist-card>
+  {%- if product != blank -%}
+    {% render 'pp-collection-product-card', product: product %}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Wishlist card",
+  "settings": []
+}
+{% endschema %}
