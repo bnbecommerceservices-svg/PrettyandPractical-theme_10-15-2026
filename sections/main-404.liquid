@@ -1,4 +1,6 @@
 {{ 'pp-404.css' | asset_url | stylesheet_tag }}
+{{ 'pp-product-card.css' | asset_url | stylesheet_tag }}
+{{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'pp-404.js' | asset_url }}" defer></script>
 
 {% liquid
@@ -10,85 +12,186 @@
       break
     endif
   endfor
+
+  assign pp_404_collection = section.settings.products_collection
+  if pp_404_collection == blank
+    assign pp_404_collection = collections.all
+  endif
+  assign pp_404_products_url = pp_404_collection.url | default: routes.all_products_collection_url
 %}
 
-<main id="main" class="pp-404">
+<div class="pp-404">
   <div class="pp-wrap">
     <div class="pp-404__inner">
-      <svg class="pp-404__art" viewBox="0 0 320 280" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M30 28 H290 V196 H30 Z" fill="var(--pp-bg-subtle)"/>
-        <path d="M30 196 L4 252 H316 L290 196 Z" fill="var(--pp-bg-subtle)"/>
-        <path d="M30 196 H290" stroke="var(--pp-navy)" stroke-width="2" stroke-linecap="round"/>
-        <path d="M30 196 L4 252" stroke="var(--pp-navy)" stroke-width="2" stroke-linecap="round"/>
-        <path d="M290 196 L316 252" stroke="var(--pp-navy)" stroke-width="2" stroke-linecap="round"/>
-        <path d="M30 28 H290 V196" stroke="var(--pp-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M120 196 L104 252" stroke="var(--pp-navy)" stroke-width="1" stroke-opacity="0.25" stroke-linecap="round"/>
-        <path d="M200 196 L212 252" stroke="var(--pp-navy)" stroke-width="1" stroke-opacity="0.25" stroke-linecap="round"/>
-        <rect x="58" y="58" width="78" height="74" rx="3" fill="var(--pp-white)" stroke="var(--pp-navy)" stroke-width="2"/>
-        <path d="M97 58 V132 M58 95 H136" stroke="var(--pp-navy)" stroke-width="1.5" stroke-opacity="0.55"/>
-        <g>
-          <rect x="176" y="118" width="92" height="68" rx="4" transform="rotate(-6 176 118)" fill="var(--pp-white)" stroke="var(--pp-primary)" stroke-width="2.5"/>
-          <text x="218" y="160" transform="rotate(-6 218 160)" text-anchor="middle" font-family="Sora, sans-serif" font-size="30" font-weight="800" fill="var(--pp-primary)">404</text>
-        </g>
-        <g>
-          <path d="M70 150 q0 -42 30 -42 h22 q30 0 30 42 v6 H70 Z" fill="var(--pp-white)" stroke="var(--pp-navy)" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M66 156 h94 v18 q0 6 -6 6 H72 q-6 0 -6 -6 Z" fill="var(--pp-white)" stroke="var(--pp-navy)" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M66 156 q-8 0 -8 12 v16 q0 6 6 6 h6 v-22 q0 -12 -4 -12 Z" fill="var(--pp-white)" stroke="var(--pp-navy)" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M160 156 q8 0 8 12 v16 q0 6 -6 6 h-6 v-22 q0 -12 4 -12 Z" fill="var(--pp-white)" stroke="var(--pp-navy)" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M70 186 v8 M156 186 v8" stroke="var(--pp-navy)" stroke-width="2" stroke-linecap="round"/>
-          <rect x="92" y="124" width="42" height="34" rx="7" fill="var(--pp-primary)"/>
-          <path d="M99 141 h28" stroke="var(--pp-white)" stroke-width="1.5" stroke-opacity="0.6" stroke-linecap="round"/>
-        </g>
-      </svg>
+      <div class="pp-404__hero" data-pp-404-hero aria-hidden="true">
+        <span class="pp-404__orb pp-404__orb--a"></span>
+        <span class="pp-404__orb pp-404__orb--b"></span>
+        <span class="pp-404__orb pp-404__orb--c"></span>
 
-      <h1 class="pp-404__title">This room is empty.</h1>
-      <p class="pp-404__sub">The page you're looking for has moved, been removed, or never existed. Let's get you back on track.</p>
+        <div class="pp-404__stage">
+          <span class="pp-404__digit" data-d="4">4</span>
+          <span class="pp-404__mirror">
+            <svg viewBox="0 0 200 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pp404-frame" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#ffd9c8"/>
+                  <stop offset=".45" stop-color="#ff9d76"/>
+                  <stop offset="1" stop-color="#e0481e"/>
+                </linearGradient>
+                <linearGradient id="pp404-depth" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#d9481b"/>
+                  <stop offset="1" stop-color="#a22d0d"/>
+                </linearGradient>
+                <linearGradient id="pp404-glass" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#f4f7fb"/>
+                  <stop offset=".55" stop-color="#d5dee8"/>
+                  <stop offset="1" stop-color="#a9b8c9"/>
+                </linearGradient>
+                <linearGradient id="pp404-pot" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#52627a"/>
+                  <stop offset="1" stop-color="#0f172a"/>
+                </linearGradient>
+                <linearGradient id="pp404-leaf" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#8fd19e"/>
+                  <stop offset="1" stop-color="#2f8f4e"/>
+                </linearGradient>
+                <clipPath id="pp404-glass-clip">
+                  <path d="M38 246 V104 A62 62 0 0 1 162 104 V246 Z"/>
+                </clipPath>
+              </defs>
+              <path d="M30 258 V104 A74 74 0 0 1 178 104 V258 Z" fill="url(#pp404-depth)" transform="translate(8 6)"/>
+              <path d="M22 254 V100 A78 78 0 0 1 178 100 V254 Z" fill="url(#pp404-frame)"/>
+              <path d="M22 254 V100 A78 78 0 0 1 178 100" stroke="#fff" stroke-opacity=".55" stroke-width="2.5" fill="none"/>
+              <path d="M38 246 V104 A62 62 0 0 1 162 104 V246 Z" fill="url(#pp404-glass)"/>
+              <g clip-path="url(#pp404-glass-clip)">
+                <path d="M30 170 L120 40 L150 40 L60 170 Z" fill="#fff" opacity=".55"/>
+                <path d="M78 210 L168 80 L180 80 L90 210 Z" fill="#fff" opacity=".35"/>
+                <text x="100" y="196" text-anchor="middle" font-family="Sora, sans-serif" font-size="92" font-weight="800" fill="#0f172a" fill-opacity=".1">?</text>
+              </g>
+              <path d="M38 246 V104 A62 62 0 0 1 162 104 V246 Z" stroke="#a22d0d" stroke-opacity=".35" stroke-width="2" fill="none"/>
+            </svg>
+          </span>
+          <span class="pp-404__digit" data-d="4">4</span>
+          <span class="pp-404__plant">
+            <svg viewBox="0 0 80 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M40 62 C22 52 12 34 16 14 C32 22 42 40 40 62 Z" fill="url(#pp404-leaf)"/>
+              <path d="M40 62 C56 50 66 34 62 10 C46 20 38 40 40 62 Z" fill="url(#pp404-leaf)"/>
+              <path d="M40 64 C30 58 18 56 6 60 C16 70 30 72 40 64 Z" fill="url(#pp404-leaf)"/>
+              <path d="M40 64 C50 56 64 54 76 58 C66 70 52 72 40 64 Z" fill="url(#pp404-leaf)"/>
+              <path d="M14 66 H66 L60 104 Q59 108 55 108 H25 Q21 108 20 104 Z" fill="url(#pp404-pot)"/>
+              <path d="M12 62 H68 V70 Q68 72 66 72 H14 Q12 72 12 70 Z" fill="#52627a"/>
+              <path d="M22 76 L26 102" stroke="#fff" stroke-opacity=".25" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+
+
+        <span class="pp-404__shadow"></span>
+      </div>
+
+      <p class="pp-404__eyebrow">Error 404 &middot; Page not found</p>
+      <h1 class="pp-404__title">{{ section.settings.heading | default: "Oops! This room's empty." }}</h1>
+      <p class="pp-404__sub">{{ section.settings.text | default: "The page you're looking for has moved, been removed, or never existed. Try a search or pick a room below." }}</p>
 
       <form class="pp-404__search" role="search" action="{{ routes.search_url }}" method="get">
-        <button type="button" class="pp-404__search-icon" id="searchIcon" aria-label="Search products">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg class="pp-404__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="search" name="q" placeholder="Search furniture, decor, mirrors..." aria-label="Search products">
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="submit" class="pp-404__search-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
-          </svg>
-        </button>
-        <input type="search" id="searchInput" name="q" placeholder="Search furniture, decor, bedding..." aria-label="Search products">
-        <button type="button" class="pp-404__search-btn" id="searchSubmit" aria-label="Submit search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>
           </svg>
         </button>
       </form>
 
-      <p class="pp-404__divider">Or browse by category</p>
+      <div class="pp-404__actions">
+        <a href="{{ routes.root_url }}" class="pp-404__btn pp-404__btn--primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Back to home
+        </a>
+        <a href="{{ pp_404_products_url }}" class="pp-404__btn pp-404__btn--outline">Shop all products</a>
+      </div>
+
+      <p class="pp-404__divider"><span>Or browse by room</span></p>
 
       <ul class="pp-404__pills" role="list">
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Furniture" data-url="{% if section.settings.furniture_url != blank %}{{ section.settings.furniture_url }}{% else %}{{ routes.search_url }}?q={{ 'Furniture' | url_encode }}{% endif %}">Furniture</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Garden & Outdoor" data-url="{% if section.settings.outdoor_url != blank %}{{ section.settings.outdoor_url }}{% else %}{{ pp_garden_url }}{% endif %}">Garden &amp; Outdoor</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Kitchen" data-url="{% if section.settings.kitchen_url != blank %}{{ section.settings.kitchen_url }}{% else %}{{ routes.search_url }}?q={{ 'Kitchen' | url_encode }}{% endif %}">Kitchen</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Decor" data-url="{% if section.settings.decor_url != blank %}{{ section.settings.decor_url }}{% else %}{{ routes.search_url }}?q={{ 'Decor' | url_encode }}{% endif %}">Decor</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Bath" data-url="{% if section.settings.bath_url != blank %}{{ section.settings.bath_url }}{% else %}{{ routes.search_url }}?q={{ 'Bath' | url_encode }}{% endif %}">Bath</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Baby &amp; Kids" data-url="{% if section.settings.baby_kids_url != blank %}{{ section.settings.baby_kids_url }}{% else %}{{ routes.search_url }}?q={{ 'Baby & Kids' | url_encode }}{% endif %}">Baby &amp; Kids</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Toys" data-url="{% if section.settings.toys_url != blank %}{{ section.settings.toys_url }}{% else %}{{ routes.search_url }}?q={{ 'Toys' | url_encode }}{% endif %}">Toys</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Hobbies" data-url="{% if section.settings.hobbies_url != blank %}{{ section.settings.hobbies_url }}{% else %}{{ routes.search_url }}?q={{ 'Hobbies' | url_encode }}{% endif %}">Hobbies</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Sports" data-url="{% if section.settings.sports_url != blank %}{{ section.settings.sports_url }}{% else %}{{ routes.search_url }}?q={{ 'Sports' | url_encode }}{% endif %}">Sports</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Pets" data-url="{% if section.settings.pets_url != blank %}{{ section.settings.pets_url }}{% else %}{{ routes.search_url }}?q={{ 'Pets' | url_encode }}{% endif %}">Pets</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Lighting" data-url="{% if section.settings.lighting_url != blank %}{{ section.settings.lighting_url }}{% else %}{{ routes.search_url }}?q={{ 'Lighting' | url_encode }}{% endif %}">Lighting</button></li>
-        <li role="listitem"><button type="button" class="pp-404__pill" data-cat="Bedding" data-url="{% if section.settings.bedding_url != blank %}{{ section.settings.bedding_url }}{% else %}{{ routes.search_url }}?q={{ 'Bedding' | url_encode }}{% endif %}">Bedding</button></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.furniture_url != blank %}{{ section.settings.furniture_url }}{% else %}{{ routes.search_url }}?q={{ 'Furniture' | url_encode }}{% endif %}">Furniture</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.outdoor_url != blank %}{{ section.settings.outdoor_url }}{% else %}{{ pp_garden_url }}{% endif %}">Garden &amp; Outdoor</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.kitchen_url != blank %}{{ section.settings.kitchen_url }}{% else %}{{ routes.search_url }}?q={{ 'Kitchen' | url_encode }}{% endif %}">Kitchen</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.decor_url != blank %}{{ section.settings.decor_url }}{% else %}{{ routes.search_url }}?q={{ 'Decor' | url_encode }}{% endif %}">Decor</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.bath_url != blank %}{{ section.settings.bath_url }}{% else %}{{ routes.search_url }}?q={{ 'Bath' | url_encode }}{% endif %}">Bath</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.baby_kids_url != blank %}{{ section.settings.baby_kids_url }}{% else %}{{ routes.search_url }}?q={{ 'Baby & Kids' | url_encode }}{% endif %}">Baby &amp; Kids</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.toys_url != blank %}{{ section.settings.toys_url }}{% else %}{{ routes.search_url }}?q={{ 'Toys' | url_encode }}{% endif %}">Toys</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.hobbies_url != blank %}{{ section.settings.hobbies_url }}{% else %}{{ routes.search_url }}?q={{ 'Hobbies' | url_encode }}{% endif %}">Hobbies</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.sports_url != blank %}{{ section.settings.sports_url }}{% else %}{{ routes.search_url }}?q={{ 'Sports' | url_encode }}{% endif %}">Sports</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.pets_url != blank %}{{ section.settings.pets_url }}{% else %}{{ routes.search_url }}?q={{ 'Pets' | url_encode }}{% endif %}">Pets</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.lighting_url != blank %}{{ section.settings.lighting_url }}{% else %}{{ routes.search_url }}?q={{ 'Lighting' | url_encode }}{% endif %}">Lighting</a></li>
+        <li><a class="pp-404__pill" href="{% if section.settings.bedding_url != blank %}{{ section.settings.bedding_url }}{% else %}{{ routes.search_url }}?q={{ 'Bedding' | url_encode }}{% endif %}">Bedding</a></li>
       </ul>
-
-      <a href="{{ routes.root_url }}" class="pp-404__back">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        Back to home
-      </a>
     </div>
+
+    {%- if section.settings.show_products and pp_404_collection.products_count > 0 -%}
+      <div class="pp-404__products">
+        <div class="pp-404__products-head">
+          <h2 class="pp-404__products-title">{{ section.settings.products_heading | default: 'Popular right now' }}</h2>
+          <a href="{{ pp_404_products_url }}" class="pp-404__products-link">View all</a>
+        </div>
+        <div class="pp-cards pp-cards--grid">
+          {%- for product in pp_404_collection.products limit: 4 -%}
+            {% render 'pp-collection-product-card', product: product %}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
   </div>
-</main>
+</div>
 
 {% schema %}
 {
   "name": "PP 404",
   "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Oops! This room's empty."
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "The page you're looking for has moved, been removed, or never existed. Try a search or pick a room below."
+    },
+    {
+      "type": "header",
+      "content": "Products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show products",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "products_heading",
+      "label": "Products heading",
+      "default": "Popular right now"
+    },
+    {
+      "type": "collection",
+      "id": "products_collection",
+      "label": "Products collection",
+      "info": "Shows the first 4 products. Uses all products when empty."
+    },
+    {
+      "type": "header",
+      "content": "Room links"
+    },
     {
       "type": "url",
       "id": "furniture_url",
