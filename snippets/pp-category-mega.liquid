@@ -3,11 +3,13 @@
 
   Categories come from the menu picked in the header's "Shop by category menu"
   setting. When none is set, every collection that has products is listed
-  alphabetically (from the global `collections` object). Each panel shows:
-  - the category name, its product count and a "Shop all" link
-  - the menu item's own sub-links (with product counts) when the menu has them,
-    otherwise the collection's real product types (`collection.all_types`) as
-    filter links
+  alphabetically (from the global `collections` object).
+
+  The dropdown has two views (snippets/pp-category-mega-panel.liquid):
+  - "all" (the Shop by category button): every category side by side, each
+    with its image, sub-categories and a "Shop all" link
+  - one panel per category (its top nav link): all its sub-categories and
+    its popular products
 
   @param {linklist} [menu] - Menu whose links are the categories.
 {% enddoc %}
@@ -18,24 +20,25 @@
     assign use_menu = true
   endif
   assign max_categories = 12
+  assign category_count = 0
 -%}
 
-{%- capture mega_tabs -%}
-  {%- assign tab_count = 0 -%}
+{%- capture mega_columns -%}
   {%- if use_menu -%}
     {%- for link in menu.links -%}
-      {%- if tab_count >= max_categories -%}{%- break -%}{%- endif -%}
+      {%- if category_count >= max_categories -%}{%- break -%}{%- endif -%}
       {%- if link.type == 'collection_link' and link.object.all_products_count == 0 and link.links.size == 0 -%}{%- continue -%}{%- endif -%}
-      {%- assign tab_count = tab_count | plus: 1 -%}
-      {%- assign tab_key = link.handle | default: link.title | handleize -%}
-      <a href="{{ link.url }}" class="pp-catmega__tab{% if tab_count == 1 %} is-active{% endif %}" data-catmega-tab="{{ tab_key | escape }}">{{ link.title | escape }} <span aria-hidden="true">›</span></a>
+      {%- assign category_count = category_count | plus: 1 -%}
+      {%- assign link_collection = blank -%}
+      {%- if link.type == 'collection_link' -%}{%- assign link_collection = link.object -%}{%- endif -%}
+      {%- render 'pp-category-mega-panel', layout: 'column', label: link.title, url: link.url, panel_collection: link_collection, child_links: link.links -%}
     {%- endfor -%}
   {%- else -%}
     {%- for collection in collections -%}
-      {%- if tab_count >= max_categories -%}{%- break -%}{%- endif -%}
+      {%- if category_count >= max_categories -%}{%- break -%}{%- endif -%}
       {%- if collection.handle == 'frontpage' or collection.handle == 'all' or collection.all_products_count == 0 -%}{%- continue -%}{%- endif -%}
-      {%- assign tab_count = tab_count | plus: 1 -%}
-      <a href="{{ collection.url }}" class="pp-catmega__tab{% if tab_count == 1 %} is-active{% endif %}" data-catmega-tab="{{ collection.handle | escape }}">{{ collection.title | escape }} <span aria-hidden="true">›</span></a>
+      {%- assign category_count = category_count | plus: 1 -%}
+      {%- render 'pp-category-mega-panel', layout: 'column', label: collection.title, url: collection.url, panel_collection: collection -%}
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
@@ -47,47 +50,30 @@
       {%- if panel_count >= max_categories -%}{%- break -%}{%- endif -%}
       {%- if link.type == 'collection_link' and link.object.all_products_count == 0 and link.links.size == 0 -%}{%- continue -%}{%- endif -%}
       {%- assign panel_count = panel_count | plus: 1 -%}
-      {%- assign panel_first = false -%}{%- if panel_count == 1 -%}{%- assign panel_first = true -%}{%- endif -%}
       {%- assign panel_key = link.handle | default: link.title | handleize -%}
-      {%- assign panel_collection = blank -%}
-      {%- if link.type == 'collection_link' -%}{%- assign panel_collection = link.object -%}{%- endif -%}
-      {%- render 'pp-category-mega-panel',
-        key: panel_key,
-        label: link.title,
-        url: link.url,
-        panel_collection: panel_collection,
-        child_links: link.links,
-        is_first: panel_first
-      -%}
+      {%- assign link_collection = blank -%}
+      {%- if link.type == 'collection_link' -%}{%- assign link_collection = link.object -%}{%- endif -%}
+      {%- render 'pp-category-mega-panel', layout: 'panel', key: panel_key, label: link.title, url: link.url, panel_collection: link_collection, child_links: link.links -%}
     {%- endfor -%}
   {%- else -%}
     {%- for collection in collections -%}
       {%- if panel_count >= max_categories -%}{%- break -%}{%- endif -%}
       {%- if collection.handle == 'frontpage' or collection.handle == 'all' or collection.all_products_count == 0 -%}{%- continue -%}{%- endif -%}
       {%- assign panel_count = panel_count | plus: 1 -%}
-      {%- assign panel_first = false -%}{%- if panel_count == 1 -%}{%- assign panel_first = true -%}{%- endif -%}
-      {%- render 'pp-category-mega-panel',
-        key: collection.handle,
-        label: collection.title,
-        url: collection.url,
-        panel_collection: collection,
-        is_first: panel_first
-      -%}
+      {%- render 'pp-category-mega-panel', layout: 'panel', key: collection.handle, label: collection.title, url: collection.url, panel_collection: collection -%}
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
 
 <div class="pp-catmega" id="ppCategoryMega" data-pp-catmega hidden>
   <div class="pp-catmega__surface">
-    {%- if tab_count > 0 -%}
-      <div class="pp-catmega__body">
-        <nav class="pp-catmega__rail" aria-label="Categories">
-          {{ mega_tabs }}
-        </nav>
-        <div class="pp-catmega__panels">
-          {{ mega_panels }}
+    {%- if category_count > 0 -%}
+      <div class="pp-catmega__panel pp-catmega__panel--all" data-catmega-panel="all" hidden>
+        <div class="pp-catmega__cols" style="--pp-catmega-cols: {{ category_count | at_most: 6 }};">
+          {{ mega_columns }}
         </div>
       </div>
+      {{ mega_panels }}
     {%- else -%}
       <p class="pp-catmega__empty">No categories to show yet.</p>
     {%- endif -%}

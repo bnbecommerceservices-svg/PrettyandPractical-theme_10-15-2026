@@ -1,48 +1,43 @@
 {% doc %}
-  One panel of the "Shop by category" dropdown (snippets/pp-category-mega.liquid).
-  Everything shown comes from the store: a "Shop all" link for the category,
-  then its sub-categories (the menu item's sub-links) with their product counts,
-  or the collection's own product types when the menu item has no sub-links.
+  One category in the "Shop by category" dropdown (snippets/pp-category-mega.liquid).
+  Everything shown comes from the store: the category's sub-categories (the
+  menu item's sub-links) or, when it has none, the collection's own product
+  types as filter links.
 
-  @param {string} key - Matches the rail tab's data-catmega-tab value.
+  layout 'column': a column of the "all categories" view, with the category
+  image, name, product count, up to 6 sub-links and a "Shop all" link.
+  layout 'panel': the panel a top nav link opens, with every sub-link and
+  the collection's first 4 products as "Popular in" tiles.
+
+  @param {string} layout - 'column' or 'panel'.
+  @param {string} key - Matches the nav link's data-catmega-open value.
   @param {string} label - Category name.
   @param {string} url - Category link.
   @param {collection} [panel_collection] - The collection, when the category is one.
   @param {link[]} [child_links] - The menu item's sub-links, if it has any.
-  @param {boolean} [is_first] - Shows this panel when the dropdown first opens.
 {% enddoc %}
 
 {%- liquid
   assign panel_count = 0
+  assign panel_image = blank
   if panel_collection != blank
     assign panel_count = panel_collection.all_products_count | default: 0
+    assign panel_image = panel_collection.featured_image | default: panel_collection.products.first.featured_image
   endif
   assign has_children = false
   if child_links != blank and child_links.size > 0
     assign has_children = true
   endif
+  assign link_limit = 18
+  if layout == 'column'
+    assign link_limit = 6
+  endif
 -%}
-
-{%- capture chevron -%}
-  <svg class="pp-catmega__item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-{%- endcapture -%}
 
 {%- capture panel_items -%}
   {%- if has_children -%}
-    {%- for child in child_links limit: 12 -%}
-      {%- assign child_count = blank -%}
-      {%- if child.type == 'collection_link' -%}{%- assign child_count = child.object.all_products_count -%}{%- endif -%}
-      <li>
-        <a class="pp-catmega__item" href="{{ child.url }}">
-          <span class="pp-catmega__item-text">
-            <span class="pp-catmega__item-name">{{ child.title | escape }}</span>
-            {%- if child_count != blank -%}
-              <span class="pp-catmega__item-count">{{ child_count }} {% if child_count == 1 %}product{% else %}products{% endif %}</span>
-            {%- endif -%}
-          </span>
-          {{ chevron }}
-        </a>
-      </li>
+    {%- for child in child_links limit: link_limit -%}
+      <li><a class="pp-catmega__link" href="{{ child.url }}">{{ child.title | escape }}</a></li>
     {%- endfor -%}
   {%- elsif panel_collection != blank and panel_collection.all_types.size > 0 -%}
     {%- assign seen = '|' -%}
@@ -52,7 +47,7 @@
       {%- assign type_key = type_label | downcase -%}
       {%- assign seen_key = '|' | append: type_key | append: '|' -%}
       {%- if type_label == blank or seen contains seen_key -%}{%- continue -%}{%- endif -%}
-      {%- if shown >= 12 -%}{%- break -%}{%- endif -%}
+      {%- if shown >= link_limit -%}{%- break -%}{%- endif -%}
       {%- assign seen = seen | append: type_key | append: '|' -%}
       {%- assign shown = shown | plus: 1 -%}
       {%- comment -%} One link covering every spelling of the type, e.g. "Plant Stand" and "Plant stand". {%- endcomment -%}
@@ -66,36 +61,71 @@
           {%- assign type_query = type_query | append: 'filter.p.product_type=' | append: other_value -%}
         {%- endif -%}
       {%- endfor -%}
-      <li>
-        <a class="pp-catmega__item" href="{{ url }}?{{ type_query }}">
-          <span class="pp-catmega__item-text">
-            <span class="pp-catmega__item-name">{{ type_label | escape }}</span>
-          </span>
-          {{ chevron }}
-        </a>
-      </li>
+      <li><a class="pp-catmega__link" href="{{ url }}?{{ type_query }}">{{ type_label | escape }}</a></li>
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
+{%- assign panel_items = panel_items | strip -%}
 
-<div class="pp-catmega__panel{% if is_first %} is-active{% endif %}" data-catmega-panel="{{ key | escape }}"{% unless is_first %} hidden{% endunless %}>
-  <div class="pp-catmega__head">
-    <div class="pp-catmega__heading">
-      <h3 class="pp-catmega__title">{{ label | escape }}</h3>
-      {%- if panel_count > 0 -%}
-        <p class="pp-catmega__meta">{{ panel_count }} {% if panel_count == 1 %}product{% else %}products{% endif %}</p>
-      {%- endif -%}
-    </div>
-    <a class="pp-catmega__all" href="{{ url }}">
-      Shop all {{ label | escape }}
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+{%- capture arrow -%}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+{%- endcapture -%}
+
+{%- capture count_text -%}
+  {%- if panel_count > 0 -%}{{ panel_count }} {% if panel_count == 1 %}product{% else %}products{% endif %}{%- endif -%}
+{%- endcapture -%}
+
+{%- if layout == 'column' -%}
+  <div class="pp-catmega__col">
+    <a class="pp-catmega__col-head" href="{{ url }}">
+      <span class="pp-catmega__thumb">
+        {%- if panel_image != blank -%}
+          {{ panel_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: '', width: 80, height: 80 }}
+        {%- else -%}
+          <span aria-hidden="true">{{ label | slice: 0 }}</span>
+        {%- endif -%}
+      </span>
+      <span class="pp-catmega__col-text">
+        <span class="pp-catmega__col-title">{{ label | escape }}</span>
+        {%- if count_text != blank -%}<span class="pp-catmega__count">{{ count_text }}</span>{%- endif -%}
+      </span>
     </a>
+    {%- if panel_items != blank -%}
+      <ul class="pp-catmega__links" role="list">{{ panel_items }}</ul>
+    {%- endif -%}
+    <a class="pp-catmega__shop-all" href="{{ url }}">Shop all {{ arrow }}</a>
   </div>
-
-  {%- assign panel_items = panel_items | strip -%}
-  {%- if panel_items != blank -%}
-    <ul class="pp-catmega__grid">
-      {{ panel_items }}
-    </ul>
-  {%- endif -%}
-</div>
+{%- else -%}
+  <div class="pp-catmega__panel" data-catmega-panel="{{ key | escape }}" hidden>
+    <div class="pp-catmega__panel-main">
+      <div class="pp-catmega__panel-head">
+        <p class="pp-catmega__panel-title">{{ label | escape }}</p>
+        {%- if count_text != blank -%}<span class="pp-catmega__count">{{ count_text }}</span>{%- endif -%}
+      </div>
+      {%- if panel_items != blank -%}
+        <ul class="pp-catmega__links" role="list">{{ panel_items }}</ul>
+      {%- endif -%}
+      <a class="pp-catmega__shop-all" href="{{ url }}">Shop all {{ label | escape }} {{ arrow }}</a>
+    </div>
+    {%- if panel_collection != blank and panel_collection.products.size > 0 -%}
+      <div class="pp-catmega__popular">
+        <p class="pp-catmega__popular-title">Popular in {{ label | escape }}</p>
+        <ul class="pp-catmega__tiles" role="list">
+          {%- for tile_product in panel_collection.products limit: 4 -%}
+            <li>
+              <a class="pp-catmega__tile" href="{{ tile_product.url }}">
+                <span class="pp-catmega__tile-media">
+                  {%- if tile_product.featured_image != blank -%}
+                    {{ tile_product.featured_image | image_url: width: 360 | image_tag: loading: 'lazy', alt: '', sizes: '180px' }}
+                  {%- endif -%}
+                </span>
+                <span class="pp-catmega__tile-title">{{ tile_product.title | escape }}</span>
+                <span class="pp-catmega__tile-price">{{ tile_product.price | money }}</span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

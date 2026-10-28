@@ -1447,13 +1447,12 @@
 
     let megaCloseTimer = 0;
     let megaOpenedAt = 0;
-    const firstCategoryKey = categoryMega?.querySelector('[data-catmega-tab]')?.getAttribute('data-catmega-tab') || '';
+    // The Shop by category button opens every category ("all"); a top nav link opens its own panel.
+    const firstCategoryKey = 'all';
 
     function setCategoryPanel(key) {
       if (!(categoryMega instanceof HTMLElement) || !key) return;
-      categoryMega.querySelectorAll('[data-catmega-tab]').forEach(function (tab) {
-        tab.classList.toggle('is-active', tab.getAttribute('data-catmega-tab') === key);
-      });
+      if (!categoryMega.querySelector('[data-catmega-panel="' + CSS.escape(key) + '"]')) key = 'all';
       categoryMega.querySelectorAll('[data-catmega-panel]').forEach(function (panel) {
         const isActive = panel.getAttribute('data-catmega-panel') === key;
         panel.classList.toggle('is-active', isActive);
@@ -1521,12 +1520,6 @@
       categoryNav.querySelectorAll('[data-catmega-open]').forEach(function (link) {
         link.addEventListener('mouseenter', function () {
           openCategoryMega(link.getAttribute('data-catmega-open'));
-        });
-      });
-
-      categoryMega.querySelectorAll('[data-catmega-tab]').forEach(function (tab) {
-        tab.addEventListener('mouseenter', function () {
-          openCategoryMega(tab.getAttribute('data-catmega-tab'));
         });
       });
 
@@ -1698,7 +1691,7 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        closeMegaGroups();
+        closeCategoryMega();
         if (drawer && drawer.classList.contains('is-open')) closeDrawer();
         if (mobileSearchPanel && mobileSearchPanel.classList.contains('is-open')) closeMobileSearch();
         if (accountSheet && accountSheet.classList.contains('is-open')) closeAccountSheet();
@@ -1706,7 +1699,7 @@
     });
 
     window.addEventListener('resize', function () {
-      if (window.innerWidth < 990) closeMegaGroups();
+      if (window.innerWidth < 990) closeCategoryMega();
       if (!isMobileViewport()) closeAccountSheet();
     });
 
