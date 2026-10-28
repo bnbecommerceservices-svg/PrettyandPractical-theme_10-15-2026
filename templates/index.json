@@ -41,7 +41,7 @@
           "settings": {
             "icon": "truck",
             "heading": "Free Delivery",
-            "text": "Orders Over $120"
+            "text": "Australia-wide, excl. some remote postcodes"
           }
         },
         "value_2": {
@@ -244,7 +244,7 @@
         "featured_title": "Pretty & Practical",
         "featured_description": "Your destination for stylish, functional, and high-quality home and lifestyle products. We believe the perfect balance of beauty and utility can transform everyday living into something truly special.",
         "feature_tick_1": "Curated home décor & furniture",
-        "feature_tick_2": "Australia wide delivery",
+        "feature_tick_2": "Free delivery Australia-wide",
         "feature_tick_3": "Style that works every day",
         "featured_save_label": "Save now",
         "featured_primary_label": "About us",
