@@ -1365,3 +1365,14 @@
     gap: 4px;
   }
 }
+
+/* 3D benefit icons. */
+.pp-main .pp-trust-item svg.pp-icon3d {
+  width: 22px;
+  height: 22px;
+}
+
+.pp-cart-page__support-row svg.pp-icon3d {
+  width: 30px;
+  height: 30px;
+}

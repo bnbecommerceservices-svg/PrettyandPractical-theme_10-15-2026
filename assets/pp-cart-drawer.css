@@ -989,3 +989,18 @@ body.pp-cart-drawer-open {
     --animation-speed: 0.01ms;
   }
 }
+
+/* 3D benefit icons: no tile behind them. */
+.pp-cart-shell .pp-trust-icon {
+  background: none;
+}
+
+.pp-cart-shell .pp-trust-icon svg.pp-icon3d {
+  width: 26px;
+  height: 26px;
+}
+
+.pp-cart-page__support-row svg.pp-icon3d {
+  width: 30px;
+  height: 30px;
+}

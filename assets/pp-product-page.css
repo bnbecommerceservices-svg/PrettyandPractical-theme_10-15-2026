@@ -5523,3 +5523,21 @@ product-recommendations.product-recommendations .pp-recommend {
     padding: 0 16px;
   }
 }
+
+/* 3D benefit icons: no circle behind them. */
+.pp-product-page .pp-assurance__icon {
+  width: 36px;
+  height: 36px;
+  background: none;
+  box-shadow: none;
+}
+
+.pp-product-page .pp-assurance__icon svg.pp-icon3d {
+  width: 34px;
+  height: 34px;
+}
+
+.pp-pdp-v2 .pp-cart-trust svg.pp-icon3d {
+  width: 26px;
+  height: 26px;
+}

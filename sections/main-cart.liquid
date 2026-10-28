@@ -488,20 +488,11 @@
 
           <div class="pp-summary__trust">
             <span class="pp-trust-item">
-              <svg viewBox="0 0 24 24" fill="currentColor" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
-                <path d="m9 12 2 2 4-4" stroke="#fff" fill="none"></path>
-              </svg>
+              {% render 'pp-icon-3d', icon: 'secure', uid: 'cartsum-secure' %}
               Secure checkout
             </span>
             <span class="pp-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M10 17h4V5H2v12h3"></path>
-                <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"></path>
-                <path d="M14 17h1"></path>
-                <circle cx="7.5" cy="17.5" r="2.5"></circle>
-                <circle cx="17.5" cy="17.5" r="2.5"></circle>
-              </svg>
+              {% render 'pp-icon-3d', icon: 'truck', uid: 'cartsum-truck' %}
               {% if free_shipping_threshold_enabled %}
                 Free shipping over {{ threshold_money }}
               {% else %}
@@ -509,10 +500,7 @@
               {% endif %}
             </span>
             <span class="pp-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                <path d="M3 3v5h5"></path>
-              </svg>
+              {% render 'pp-icon-3d', icon: 'returns', uid: 'cartsum-returns' %}
               Delivery calculated at checkout
             </span>
           </div>

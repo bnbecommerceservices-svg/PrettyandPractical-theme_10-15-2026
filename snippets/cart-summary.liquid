@@ -139,32 +139,23 @@
     </button>
   </div>
 
+  {%- assign cs_uid = 'cs-' | append: section_id | append: is_drawer -%}
   <div class="pp-trust" role="list" aria-label="Store benefits">
     <div class="pp-trust-item" role="listitem">
       <span class="pp-trust-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/>
-          <path d="M9 12l2 2 4-4"/>
-        </svg>
+        {% render 'pp-icon-3d', icon: 'secure', uid: cs_uid %}
       </span>
       Secure checkout
     </div>
     <div class="pp-trust-item" role="listitem">
       <span class="pp-trust-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 1 0 3-6.7"/>
-          <path d="M3 4v5h5"/>
-        </svg>
+        {% render 'pp-icon-3d', icon: 'returns', uid: cs_uid %}
       </span>
       Returns policy
     </div>
     <div class="pp-trust-item" role="listitem">
       <span class="pp-trust-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M1 7h13v10H1zM14 11h5l3 3v3h-8z"/>
-          <circle cx="6" cy="18" r="2"/>
-          <circle cx="18" cy="18" r="2"/>
-        </svg>
+        {% render 'pp-icon-3d', icon: 'truck', uid: cs_uid %}
       </span>
       Shipping calculated at checkout
     </div>
@@ -294,29 +285,24 @@
       </div>
     {% endif %}
 
+    {%- assign cs_support_uid = cs_uid | append: '-support' -%}
     <div class="pp-cart-page__support" role="list" aria-label="Store benefits">
       <div class="pp-cart-page__support-row" role="listitem">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v9H5v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-        </svg>
+        {% render 'pp-icon-3d', icon: 'secure', uid: cs_support_uid %}
         <div>
           <strong>Secure checkout</strong>
           <span>Your payment details are protected</span>
         </div>
       </div>
       <div class="pp-cart-page__support-row" role="listitem">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M5 12a7 7 0 1 0 2-5M5 6v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        {% render 'pp-icon-3d', icon: 'returns', uid: cs_support_uid %}
         <div>
           <strong>Easy returns</strong>
           <span>Hassle-free returns within 30 days</span>
         </div>
       </div>
       <div class="pp-cart-page__support-row" role="listitem">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 7h10v10H4V7Zm10 3h3l3 3v4h-6v-7ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-        </svg>
+        {% render 'pp-icon-3d', icon: 'truck', uid: cs_support_uid %}
         <div>
           <strong>{{ settings.free_delivery_title | escape }}</strong>
           <span>{{ settings.free_delivery_detail | escape }}</span>

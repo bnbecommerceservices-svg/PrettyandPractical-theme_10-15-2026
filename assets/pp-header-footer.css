@@ -3673,3 +3673,11 @@ span.pp-nav-link {
     font-size: 12px;
   }
 }
+
+/* 3D benefit icons (snippets/pp-icon-3d.liquid), used across the site. */
+.pp-icon3d {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  filter: drop-shadow(0 3px 4px rgb(15 23 42 / 0.18));
+}
