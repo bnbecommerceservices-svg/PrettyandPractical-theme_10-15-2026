@@ -107,74 +107,28 @@
   align-items: center;
 }
 
-/* 3D hero: "4 [mirror] 4" that tilts towards the pointer (pp-404.js sets --rx/--ry). */
+/* Hero: a flat "404" in the theme orange. */
 .pp-404 .pp-404__hero {
-  --rx: 0deg;
-  --ry: 0deg;
-  position: relative;
-  width: 100%;
-  max-width: 620px;
-  padding: 24px 0 40px;
-  perspective: 900px;
-}
-
-.pp-404 .pp-404__stage {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: clamp(6px, 2vw, 18px);
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  transform-style: preserve-3d;
-  transition: transform .5s cubic-bezier(.2, .8, .2, 1);
+  padding: 24px 0 32px;
 }
 
 .pp-404 .pp-404__digit {
-  position: relative;
   display: block;
   font-family: var(--pp-font-heading);
   font-weight: 800;
   font-size: clamp(120px, 24vw, 220px);
   line-height: .82;
   letter-spacing: -0.04em;
-  color: #e0481e;
-  transform: translateZ(30px);
-  text-shadow:
-    1px 1px 0 #d9481b,
-    2px 2px 0 #cf431a,
-    3px 3px 0 #c53f18,
-    4px 4px 0 #bb3a16,
-    5px 5px 0 #b13614,
-    6px 6px 0 #a83211,
-    7px 7px 0 #a22d0d,
-    10px 18px 22px rgb(15 23 42 / .28);
+  color: var(--pp-primary);
 }
 
-/* Lit front face drawn over the extruded text. */
-.pp-404 .pp-404__digit::after {
-  content: attr(data-d);
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, #ffd2bf 0%, #ff9d76 32%, #e8532a 70%, #e0481e 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: none;
-}
-
-.pp-404 .pp-404__mirror {
-  display: block;
-  width: clamp(92px, 17vw, 158px);
-  transform: translateZ(60px);
-  animation: pp404-float 5s ease-in-out infinite;
-}
-
-.pp-404 .pp-404__mirror svg {
+.pp-404 .pp-404__plant svg {
   width: 100%;
   height: auto;
-  overflow: visible;
-  filter: drop-shadow(0 14px 14px rgb(15 23 42 / .22));
 }
 
 .pp-404 .pp-404__plant {
@@ -182,72 +136,6 @@
   flex-shrink: 0;
   width: clamp(40px, 8vw, 70px);
   margin-left: clamp(-10px, -1vw, -4px);
-  transform: translateZ(45px);
-  animation: pp404-sway 6s ease-in-out infinite;
-  transform-origin: 50% 100%;
-}
-
-.pp-404 .pp-404__plant svg {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 8px 8px rgb(15 23 42 / .2));
-}
-
-.pp-404 .pp-404__shadow {
-  position: absolute;
-  left: 50%;
-  bottom: 14px;
-  width: 72%;
-  height: 26px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(15 23 42 / .2), rgb(15 23 42 / 0));
-}
-
-.pp-404 .pp-404__orb {
-  position: absolute;
-  z-index: 0;
-  border-radius: 50%;
-  animation: pp404-float 7s ease-in-out infinite;
-}
-
-.pp-404 .pp-404__orb--a {
-  top: 4px;
-  left: 4%;
-  width: 54px;
-  height: 54px;
-  background: radial-gradient(circle at 32% 28%, #ffe0d2 0%, #ff9d76 45%, #e0481e 100%);
-  box-shadow: 0 12px 20px rgb(224 72 30 / .28);
-}
-
-.pp-404 .pp-404__orb--b {
-  top: 46%;
-  right: 2%;
-  width: 30px;
-  height: 30px;
-  background: radial-gradient(circle at 32% 28%, #8a9ab0 0%, #52627a 45%, #0f172a 100%);
-  box-shadow: 0 10px 16px rgb(15 23 42 / .25);
-  animation-delay: -2s;
-}
-
-.pp-404 .pp-404__orb--c {
-  bottom: 30px;
-  left: 10%;
-  width: 22px;
-  height: 22px;
-  background: radial-gradient(circle at 32% 28%, #fff 0%, #ffe0d2 50%, #ffb594 100%);
-  box-shadow: 0 8px 14px rgb(224 72 30 / .2);
-  animation-delay: -4s;
-}
-
-@keyframes pp404-float {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -10px; }
-}
-
-@keyframes pp404-sway {
-  0%, 100% { rotate: -2deg; }
-  50% { rotate: 2deg; }
 }
 
 .pp-404 .pp-404__eyebrow {
@@ -514,11 +402,6 @@
     font-size: 15px;
   }
 
-  .pp-404 .pp-404__orb--b {
-    top: 6px;
-    right: 8%;
-  }
-
   .pp-404 .pp-404__products {
     margin-top: 48px;
     padding-top: 32px;
@@ -526,17 +409,5 @@
 
   .pp-404 .pp-404__products-title {
     font-size: 21px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pp-404 .pp-404__mirror,
-  .pp-404 .pp-404__plant,
-  .pp-404 .pp-404__orb {
-    animation: none;
-  }
-
-  .pp-404 .pp-404__stage {
-    transition: none;
   }
 }
