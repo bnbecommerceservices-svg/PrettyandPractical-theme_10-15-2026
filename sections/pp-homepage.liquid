@@ -316,7 +316,11 @@
           </a>
         </div>
 
-        <ul class="pp-cats" role="list">
+        <div class="pp-carousel pp-cats-carousel" data-pp-carousel>
+        <button type="button" class="pp-carousel__nav pp-carousel__nav--prev" data-pp-carousel-prev aria-label="Previous categories" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <ul class="pp-cats" role="list" data-pp-carousel-track>
           {% for link in cat_links %}
             {% liquid
               assign category_collection = blank
@@ -354,6 +358,10 @@
             </li>
           {% endfor %}
         </ul>
+        <button type="button" class="pp-carousel__nav pp-carousel__nav--next" data-pp-carousel-next aria-label="More categories" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        </div>
       </div>
     </section>
   {% endif %}
