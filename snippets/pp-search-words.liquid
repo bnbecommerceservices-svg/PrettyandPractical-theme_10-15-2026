@@ -1,0 +1,49 @@
+{% doc %}
+  Outputs text as space-padded, lowercase, singular words, so search terms and
+  product titles compare the same way: "Plant Stands" -> " plant stand ",
+  "Wall Shelves" -> " wall shelf ", "Planter Boxes" -> " planter box ".
+
+  @param {string} text - Text to normalise.
+  @param {boolean} [drop_stop_words] - Leaves out words like "and", "for", "with".
+{% enddoc %}
+
+{%- liquid
+  assign stop_words = ' a an and for in of on the to with '
+  assign cleaned = text | downcase | replace: '-', ' ' | replace: '–', ' ' | replace: '&', ' ' | replace: ',', ' ' | replace: '.', ' ' | replace: '/', ' ' | replace: '(', ' ' | replace: ')', ' ' | replace: '"', ' ' | replace: '“', ' ' | replace: '”', ' ' | replace: "'", '' | replace: '’', '' | replace: '+', ' '
+  assign words = cleaned | split: ' '
+  assign normalised = ' '
+  for word in words
+    assign w = word | strip
+    if w == blank
+      continue
+    endif
+    if drop_stop_words
+      assign stop_key = ' ' | append: w | append: ' '
+      if stop_words contains stop_key
+        continue
+      endif
+    endif
+    assign w_size = w.size
+    assign tail2 = w | slice: -2, 2
+    assign tail3 = w | slice: -3, 3
+    assign tail4 = w | slice: -4, 4
+    assign es_plural = false
+    if tail3 == 'xes' or tail4 == 'ches' or tail4 == 'shes' or tail4 == 'sses'
+      assign es_plural = true
+    endif
+    if w_size > 4 and tail3 == 'ies'
+      assign w = w | remove_last: 'ies' | append: 'y'
+    elsif w_size > 4 and tail3 == 'ves'
+      assign w = w | remove_last: 'ves' | append: 'f'
+    elsif w_size > 3 and es_plural
+      assign w = w | remove_last: 'es'
+    elsif w_size > 2 and tail2 != 'ss' and tail2 != 'us' and tail2 != 'is'
+      assign last_char = w | slice: -1, 1
+      if last_char == 's'
+        assign w = w | remove_last: 's'
+      endif
+    endif
+    assign normalised = normalised | append: w | append: ' '
+  endfor
+  echo normalised
+-%}

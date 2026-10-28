@@ -3482,3 +3482,73 @@ body.is-locked {
     font-size: 13px;
   }
 }
+/* ── Search: related products under the exact matches (sections/search-results.liquid) ── */
+.pp-search-template .pp-search-related {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--pp-border-light);
+}
+
+.pp-search-template .pp-search-related__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-pill);
+  background: var(--pp-white);
+  color: var(--pp-text);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  transition: border-color var(--pp-transition), color var(--pp-transition);
+}
+
+.pp-search-template .pp-search-related__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.pp-search-template .pp-search-related__toggle:hover {
+  border-color: var(--pp-primary);
+  color: var(--pp-primary);
+}
+
+.pp-search-template .pp-search-related__toggle:focus-visible {
+  outline: 2px solid var(--pp-primary);
+  outline-offset: 2px;
+}
+
+.pp-search-template .pp-search-related__toggle svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--pp-transition);
+}
+
+.pp-search-template .pp-search-related[open] .pp-search-related__toggle svg {
+  transform: rotate(180deg);
+}
+
+.pp-search-template .pp-search-related[open] .pp-search-related__toggle span {
+  font-size: 0;
+}
+
+.pp-search-template .pp-search-related[open] .pp-search-related__toggle span::after {
+  content: "Hide related products";
+  font-size: 14px;
+}
+
+.pp-search-template .pp-search-related__title {
+  margin: 24px 0 4px;
+  font-family: var(--pp-font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--pp-text);
+}
+
+.pp-search-template .pp-search-related__note {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: var(--pp-text-secondary);
+}

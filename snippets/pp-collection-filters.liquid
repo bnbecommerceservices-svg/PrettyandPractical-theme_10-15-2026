@@ -7,6 +7,8 @@
   @param {string} source - desktop | drawer
   @param {string} section_id
   @param {filter[]} [filters] - defaults to collection.filters (search passes search.filters)
+  @param {string} [product_types] - Lowercase "|type|type|" list. When given, the Product type
+    filter only offers these types (search uses it to match the products it shows as results).
 {%- endcomment -%}
 
 {%- liquid
@@ -193,6 +195,10 @@
             <ul class="pp-fopts">
               {%- for value in filter.values -%}
                 {%- if value.count == 0 and value.active == false -%}{%- continue -%}{%- endif -%}
+                {%- if product_types != blank and filter.param_name == 'filter.p.product_type' and value.active == false -%}
+                  {%- assign type_key = value.label | strip | downcase | prepend: '|' | append: '|' -%}
+                  {%- unless product_types contains type_key -%}{%- continue -%}{%- endunless -%}
+                {%- endif -%}
                 {%- liquid
                   assign value_label = value.label
                   if filter.type == 'boolean'

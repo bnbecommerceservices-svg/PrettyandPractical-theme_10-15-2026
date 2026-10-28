@@ -11,7 +11,7 @@
     "main": {
       "type": "search-results",
       "settings": {
-        "products_per_page": 24,
+        "products_per_page": 36,
         "empty_state_menu": "",
         "support_page": ""
       }

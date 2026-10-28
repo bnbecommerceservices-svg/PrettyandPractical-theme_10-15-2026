@@ -570,6 +570,7 @@
                   id="ppSearchInput-{{ header_section.id }}"
                   type="search"
                   name="q"
+                  value="{% if request.page_type == 'search' %}{{ search.terms | escape }}{% endif %}"
                   placeholder="{{ fallback_search_placeholder | escape }}"
                   autocomplete="off"
                   autocorrect="off"
@@ -1007,6 +1008,7 @@
           id="ppMobileSearchInput-{{ header_section.id }}"
           type="search"
           name="q"
+          value="{% if request.page_type == 'search' %}{{ search.terms | escape }}{% endif %}"
           placeholder="{{ fallback_search_placeholder | escape }}"
           autocomplete="off"
         >

@@ -6,6 +6,13 @@
   Search results. Uses the collection page's layout, filters, product cards,
   pagination and script (pp-collection-page.js) so both pages look and work
   the same; the filters come from search.filters.
+
+  Shopify's search also returns products that only mention the words in their
+  description, or that its semantic search finds related. So the results are
+  split: products whose title or product type has every search word (singular
+  or plural) are the results, and the others are listed after them under
+  "Related products". When nothing matches exactly (a typo, say), every result
+  Shopify found is shown as before.
 {%- endcomment -%}
 
 {% liquid
@@ -93,6 +100,52 @@
   {% liquid
     assign product_results = search.results | where: 'object_type', 'product'
     assign total_results = paginate.items
+
+    capture query_words_text
+      render 'pp-search-words', text: search_terms, drop_stop_words: true
+    endcapture
+    assign query_words = query_words_text | strip | split: ' '
+    assign exact_ids = '|'
+    assign exact_types = '|'
+    assign exact_count = 0
+    if query_words.size > 0
+      for product in product_results
+        capture product_words
+          render 'pp-search-words', text: product.title
+          render 'pp-search-words', text: product.type
+        endcapture
+        assign product_words = product_words | replace: '  ', ' '
+        assign is_exact = true
+        for word in query_words
+          # The last word may still be being typed, so it can match the start of a word.
+          assign word_key = ' ' | append: word
+          unless forloop.last
+            assign word_key = word_key | append: ' '
+          endunless
+          unless product_words contains word_key
+            assign is_exact = false
+            break
+          endunless
+        endfor
+        if is_exact
+          assign exact_ids = exact_ids | append: product.id | append: '|'
+          assign type_key = product.type | strip | downcase
+          assign exact_types = exact_types | append: type_key | append: '|'
+          assign exact_count = exact_count | plus: 1
+        endif
+      endfor
+    endif
+    assign split_results = false
+    assign related_count = 0
+    if exact_count > 0 and exact_count < product_results.size
+      assign split_results = true
+      assign related_count = product_results.size | minus: exact_count
+    endif
+    # Counts reflect the split when every result is on this page.
+    assign result_count = total_results
+    if split_results and paginate.pages == 1
+      assign result_count = exact_count
+    endif
     assign shown_from = 0
     assign shown_to = 0
     if total_results > 0
@@ -128,7 +181,7 @@
           </nav>
           {% if search.performed %}
             <h1 id="search-title" class="pp-search-title">Results for &ldquo;{{ search_terms_escaped }}&rdquo;</h1>
-            <p class="pp-search-count"><strong>{{ total_results }}</strong> {% if total_results == 1 %}result{% else %}results{% endif %}</p>
+            <p class="pp-search-count"><strong>{{ result_count }}</strong> {% if result_count == 1 %}result{% else %}results{% endif %}{% if split_results %} · {{ related_count }} related{% endif %}</p>
           {% else %}
             <h1 id="search-title" class="pp-search-title">Search</h1>
           {% endif %}
@@ -177,7 +230,13 @@
           <div class="pp-wrap">
             <div class="pp-collection-layout">
               <aside class="pp-sidebar" aria-label="Product filters" id="sidebar-filters" data-filter-source="desktop">
-                {% render 'pp-collection-filters', source: 'desktop', section_id: section.id, filters: search.filters %}
+                {% liquid
+                  assign filter_types = blank
+                  if split_results
+                    assign filter_types = exact_types
+                  endif
+                  render 'pp-collection-filters', source: 'desktop', section_id: section.id, filters: search.filters, product_types: filter_types
+                %}
               </aside>
 
               <div class="pp-collection-results">
@@ -208,6 +267,8 @@
                       <p class="pp-toolbar__count">
                         {% if shown_from == 0 %}
                           Showing 0 of {{ total_results }} results for &ldquo;{{ search_terms_escaped }}&rdquo;
+                        {% elsif split_results and paginate.pages == 1 %}
+                          {{ exact_count }} {% if exact_count == 1 %}result{% else %}results{% endif %} for &ldquo;{{ search_terms_escaped }}&rdquo;
                         {% else %}
                           Showing {{ shown_from }}–{{ shown_to }} of {{ total_results }} results for &ldquo;{{ search_terms_escaped }}&rdquo;
                         {% endif %}
@@ -300,8 +361,17 @@
                 </div>
 
                 <div class="pp-grid" id="product-grid" aria-label="Search results for {{ search_terms_escaped }}" data-pp-page-size="{{ products_per_page }}">
+                  {% assign card_index = 0 %}
                   {% for product in product_results %}
-                    {% render 'pp-collection-product-card', product: product, card_index: forloop.index %}
+                    {% liquid
+                      assign id_key = '|' | append: product.id | append: '|'
+                      if split_results and exact_ids contains id_key
+                        assign card_index = card_index | plus: 1
+                        render 'pp-collection-product-card', product: product, card_index: card_index
+                      elsif split_results == false
+                        render 'pp-collection-product-card', product: product, card_index: forloop.index
+                      endif
+                    %}
                   {% else %}
                     <div class="pp-grid__empty">
                       <p class="pp-grid__empty-title">No products match these filters</p>
@@ -310,6 +380,27 @@
                     </div>
                   {% endfor %}
                 </div>
+
+                {% if split_results %}
+                  <details class="pp-search-related">
+                    <summary class="pp-search-related__toggle">
+                      <span>Show {{ related_count }} related {% if related_count == 1 %}product{% else %}products{% endif %}</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </summary>
+                    <h2 class="pp-search-related__title">Related products</h2>
+                    <p class="pp-search-related__note">These don&rsquo;t match &ldquo;{{ search_terms_escaped }}&rdquo; by name, but mention it or are similar.</p>
+                    <div class="pp-grid pp-search-related__grid">
+                      {% assign card_index = exact_count %}
+                      {% for product in product_results %}
+                        {% assign id_key = '|' | append: product.id | append: '|' %}
+                        {% unless exact_ids contains id_key %}
+                          {% assign card_index = card_index | plus: 1 %}
+                          {% render 'pp-collection-product-card', product: product, card_index: card_index %}
+                        {% endunless %}
+                      {% endfor %}
+                    </div>
+                  </details>
+                {% endif %}
 
                 {% if paginate.pages > 1 %}
                   <nav class="pp-pagination" aria-label="Pagination">
@@ -376,7 +467,7 @@
             </button>
           </div>
           <div class="pp-drawer__body" id="drawer-filters">
-            {% render 'pp-collection-filters', source: 'drawer', section_id: section.id, filters: search.filters %}
+            {% render 'pp-collection-filters', source: 'drawer', section_id: section.id, filters: search.filters, product_types: filter_types %}
           </div>
           <div class="pp-drawer__foot">
             <a href="{{ clear_url }}" class="pp-drawer__clear">Clear all</a>
@@ -516,9 +607,9 @@
       "id": "products_per_page",
       "label": "Products per page",
       "min": 8,
-      "max": 36,
+      "max": 48,
       "step": 4,
-      "default": 24
+      "default": 36
     },
     {
       "type": "link_list",
