@@ -199,32 +199,76 @@
   {% endif %}
 
   {% liquid
-    assign bestsellers_product_1 = section.settings.bestsellers_product_1 | default: all_products['1-2m-oversized-luxury-decorative-wall-mirror-crushed-diamond-full-length-mirror']
-    assign bestsellers_product_2 = section.settings.bestsellers_product_2 | default: all_products['1-2m-wall-led-bathroom-vanity-mirror-smart-backlit-front-lighted-anti-fog']
-    assign bestsellers_product_3 = section.settings.bestsellers_product_3 | default: all_products['tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg']
-    assign bestsellers_product_4 = section.settings.bestsellers_product_4 | default: all_products['high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame']
-    if bestsellers_product_1 == blank
-      assign bestsellers_product_1 = all_products['1-2m-oversized-luxury-decorative-wall-mirror-crushed-diamond-full-length-mirror']
+    assign cat_menu = section.settings.category_menu
+    assign cat_links = blank
+    if cat_menu != blank
+      assign cat_links = cat_menu.links
     endif
-    if bestsellers_product_2 == blank
-      assign bestsellers_product_2 = all_products['1-2m-wall-led-bathroom-vanity-mirror-smart-backlit-front-lighted-anti-fog']
-    endif
-    if bestsellers_product_3 == blank
-      assign bestsellers_product_3 = all_products['tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg']
-    endif
-    if bestsellers_product_4 == blank
-      assign bestsellers_product_4 = all_products['high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame']
-    endif
-    assign has_picked_bestsellers = false
-    if bestsellers_product_1 != blank or bestsellers_product_2 != blank or bestsellers_product_3 != blank or bestsellers_product_4 != blank
-      assign has_picked_bestsellers = true
-    endif
-    assign bestsellers_view_url = '/collections/home-decor'
+    assign bestsellers_view_url = routes.all_products_collection_url
     if bestsellers_collection != blank
       assign bestsellers_view_url = bestsellers_collection.url
     endif
+    assign bestsellers_max = 12
   %}
-  {% if has_picked_bestsellers or bestsellers_collection != blank and bestsellers_collection.products_count > 0 %}
+  {%- comment -%}
+    Best sellers carousel: the products picked in the settings come first, then
+    products from each department in turn (so it mixes categories), up to 12.
+    With no picks, the "Bestsellers collection" fills it instead.
+  {%- endcomment -%}
+  {%- capture bestsellers_cards -%}
+    {%- assign bs_shown = 0 -%}
+    {%- assign bs_ids = '|' -%}
+    {%- for index in (1..4) -%}
+      {%- liquid
+        assign product = blank
+        case index
+          when 1
+            assign product = section.settings.bestsellers_product_1
+          when 2
+            assign product = section.settings.bestsellers_product_2
+          when 3
+            assign product = section.settings.bestsellers_product_3
+          when 4
+            assign product = section.settings.bestsellers_product_4
+        endcase
+      -%}
+      {%- if product != blank -%}
+        {%- assign bs_key = '|' | append: product.id | append: '|' -%}
+        {%- unless bs_ids contains bs_key -%}
+          {%- assign bs_ids = bs_ids | append: product.id | append: '|' -%}
+          {%- assign bs_shown = bs_shown | plus: 1 -%}
+          {%- render 'pp-home-product-card', product: product -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if bestsellers_collection != blank -%}
+      {%- for product in bestsellers_collection.products limit: bestsellers_max -%}
+        {%- if bs_shown >= bestsellers_max -%}{%- break -%}{%- endif -%}
+        {%- assign bs_key = '|' | append: product.id | append: '|' -%}
+        {%- if bs_ids contains bs_key or product.featured_image == blank -%}{%- continue -%}{%- endif -%}
+        {%- assign bs_ids = bs_ids | append: product.id | append: '|' -%}
+        {%- assign bs_shown = bs_shown | plus: 1 -%}
+        {%- render 'pp-home-product-card', product: product -%}
+      {%- endfor -%}
+    {%- elsif cat_links != blank -%}
+      {%- for round in (0..2) -%}
+        {%- for link in cat_links -%}
+          {%- if bs_shown >= bestsellers_max or link.type != 'collection_link' -%}{%- continue -%}{%- endif -%}
+          {%- assign dept_products = link.object.products -%}
+          {%- assign product = dept_products[round] -%}
+          {%- if product == blank or product.featured_image == blank -%}{%- continue -%}{%- endif -%}
+          {%- assign bs_key = '|' | append: product.id | append: '|' -%}
+          {%- if bs_ids contains bs_key -%}{%- continue -%}{%- endif -%}
+          {%- assign bs_ids = bs_ids | append: product.id | append: '|' -%}
+          {%- assign bs_shown = bs_shown | plus: 1 -%}
+          {%- render 'pp-home-product-card', product: product -%}
+        {%- endfor -%}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endcapture -%}
+  {%- assign bestsellers_cards = bestsellers_cards | strip -%}
+  {% if bestsellers_cards != blank %}
     <section class="pp-rail pp-section pp-section--white" aria-labelledby="bestsellers-title-{{ section.id }}">
       <div class="pp-wrap">
         <div class="pp-section-head">
@@ -240,34 +284,16 @@
           </a>
         </div>
 
-        <div class="pp-rail__grid" id="bestsellers-grid">
-          {% if has_picked_bestsellers %}
-            {% for index in (1..4) %}
-              {% liquid
-                assign product = nil
-                case index
-                  when 1
-                    assign product = bestsellers_product_1
-                  when 2
-                    assign product = bestsellers_product_2
-                  when 3
-                    assign product = bestsellers_product_3
-                  when 4
-                    assign product = bestsellers_product_4
-                endcase
-              %}
-              {% if product != blank %}
-                {% render 'pp-home-product-card', product: product %}
-              {% endif %}
-            {% endfor %}
-          {% else %}
-            {% for product in bestsellers_collection.products limit: section.settings.products_per_row %}
-              {% assign product_image = product.featured_media.preview_image | default: product.featured_image %}
-              {% if product_image != blank %}
-                {% render 'pp-home-product-card', product: product %}
-              {% endif %}
-            {% endfor %}
-          {% endif %}
+        <div class="pp-carousel" data-pp-carousel>
+          <button type="button" class="pp-carousel__nav pp-carousel__nav--prev" data-pp-carousel-prev aria-label="Previous products" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="pp-rail__grid pp-carousel__track" id="bestsellers-grid" data-pp-carousel-track>
+            {{ bestsellers_cards }}
+          </div>
+          <button type="button" class="pp-carousel__nav pp-carousel__nav--next" data-pp-carousel-next aria-label="More products" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
         </div>
       </div>
     </section>
@@ -275,16 +301,9 @@
 
   {%- comment -%}
     Shop by category: the departments in the menu picked in "Shop by category menu"
-    (the same menu as the header dropdown and the /collections page). Each circle
-    shows the collection's own image and its real product count.
+    (the same menu as the header dropdown and the /collections page). Each card
+    shows the collection's own image, its real product count and its sub-categories.
   {%- endcomment -%}
-  {% liquid
-    assign cat_menu = section.settings.category_menu
-    assign cat_links = blank
-    if cat_menu != blank
-      assign cat_links = cat_menu.links
-    endif
-  %}
   {% if cat_links != blank and cat_links.size > 0 %}
     <section class="pp-section" aria-labelledby="cats-heading-{{ section.id }}">
       <div class="pp-wrap">
@@ -295,59 +314,62 @@
               <p class="pp-section-head__sub">{{ section.settings.categories_subheading }}</p>
             {% endif %}
           </div>
+          <a href="{{ routes.collections_url }}" class="pp-view-all">
+            All categories
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
         </div>
 
-        {%- comment -%}
-          Circles in one row: centred when they fit, scrolling sideways (swipe,
-          or the arrows on desktop) when there are more than fit.
-        {%- endcomment -%}
-        <div class="pp-cats" data-pp-cats>
-          <button type="button" class="pp-cats__nav pp-cats__nav--prev" data-pp-cats-prev aria-label="Previous categories" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <ul class="pp-cats__track" data-pp-cats-track role="list">
-            {% for link in cat_links %}
-              {% liquid
-                assign category_collection = blank
-                if link.type == 'collection_link'
-                  assign category_collection = link.object
+        <ul class="pp-depts" role="list">
+          {% for link in cat_links %}
+            {% liquid
+              assign category_collection = blank
+              if link.type == 'collection_link'
+                assign category_collection = link.object
+              endif
+              if category_collection != blank and category_collection.all_products_count == 0 and link.links.size == 0
+                continue
+              endif
+              assign category_image = blank
+              assign category_count = blank
+              if category_collection != blank
+                assign category_image = category_collection.featured_image | default: category_collection.image
+                if category_collection.all_products_count == 1
+                  assign category_count = '1 product'
+                elsif category_collection.all_products_count > 1
+                  assign category_count = category_collection.all_products_count | append: ' products'
                 endif
-                if category_collection != blank and category_collection.all_products_count == 0 and link.links.size == 0
-                  continue
-                endif
-                assign category_image = blank
-                assign category_count = blank
-                if category_collection != blank
-                  assign category_image = category_collection.featured_image | default: category_collection.image
-                  if category_collection.all_products_count > 0
-                    assign category_count = category_collection.all_products_count | append: ' products'
-                    if category_collection.all_products_count == 1
-                      assign category_count = '1 product'
-                    endif
-                  endif
-                endif
-              %}
-              <li class="pp-cats__item">
-                <a href="{{ link.url }}" class="pp-cats__link">
-                  <span class="pp-cats__circle">
-                    {% if category_image != blank %}
-                      <img src="{{ category_image | image_url: width: 400, height: 400, crop: 'center' }}" alt="" width="200" height="200" loading="lazy" decoding="async">
-                    {% else %}
-                      <span class="pp-cats__initial" aria-hidden="true">{{ link.title | slice: 0 }}</span>
-                    {% endif %}
-                  </span>
-                  <h3 class="pp-cats__name">{{ link.title | escape }}</h3>
-                  {% if category_count != blank %}
-                    <span class="pp-cats__count">{{ category_count }}</span>
+              endif
+            %}
+            <li class="pp-depts__item">
+              <a href="{{ link.url }}" class="pp-depts__card">
+                <span class="pp-depts__media">
+                  {% if category_image != blank %}
+                    <img src="{{ category_image | image_url: width: 600, height: 450, crop: 'center' }}" alt="" width="300" height="225" loading="lazy" decoding="async">
+                  {% else %}
+                    <span class="pp-depts__initial" aria-hidden="true">{{ link.title | slice: 0 }}</span>
                   {% endif %}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
-          <button type="button" class="pp-cats__nav pp-cats__nav--next" data-pp-cats-next aria-label="More categories" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        </div>
+                  {% if category_count != blank %}
+                    <span class="pp-depts__count">{{ category_count }}</span>
+                  {% endif %}
+                </span>
+                <span class="pp-depts__body">
+                  <h3 class="pp-depts__name">{{ link.title | escape }}</h3>
+                  {% if link.links.size > 0 %}
+                    <span class="pp-depts__subs">
+                      {%- for child in link.links limit: 3 -%}{{ child.title | escape }}{% unless forloop.last %} · {% endunless %}{%- endfor -%}
+                      {%- if link.links.size > 3 %} · +{{ link.links.size | minus: 3 }} more{% endif -%}
+                    </span>
+                  {% endif %}
+                  <span class="pp-depts__cta">
+                    Shop now
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </span>
+                </span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
       </div>
     </section>
   {% endif %}
@@ -681,12 +703,11 @@
     });
   });
 
-  // Category circles: show the arrows only when the row scrolls, and grey
-  // out the one at the end it has reached.
-  document.querySelectorAll('[data-pp-cats]').forEach(function (rail) {
-    var track = rail.querySelector('[data-pp-cats-track]');
-    var prev = rail.querySelector('[data-pp-cats-prev]');
-    var next = rail.querySelector('[data-pp-cats-next]');
+  // Carousels: arrows appear only when the row scrolls, and grey out at either end.
+  document.querySelectorAll('[data-pp-carousel]').forEach(function (rail) {
+    var track = rail.querySelector('[data-pp-carousel-track]');
+    var prev = rail.querySelector('[data-pp-carousel-prev]');
+    var next = rail.querySelector('[data-pp-carousel-next]');
     if (!track || !prev || !next) return;
 
     function update() {
@@ -694,20 +715,19 @@
       var scrolls = max > 2;
       prev.hidden = !scrolls;
       next.hidden = !scrolls;
-      rail.classList.toggle('is-scrollable', scrolls);
       prev.disabled = track.scrollLeft <= 2;
       next.disabled = track.scrollLeft >= max - 2;
-      rail.classList.toggle('is-at-end', next.disabled);
     }
 
     function step(direction) {
-      track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: 'smooth' });
+      track.scrollBy({ left: direction * track.clientWidth * 0.85, behavior: 'smooth' });
     }
 
     prev.addEventListener('click', function () { step(-1); });
     next.addEventListener('click', function () { step(1); });
     track.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
+    window.addEventListener('load', update);
     update();
   });
 {% endjavascript %}
@@ -719,7 +739,7 @@
     { "type": "checkbox", "id": "show_ticker", "label": "Show announcement ticker", "default": true },
     { "type": "text", "id": "page_heading", "label": "Page heading (H1, hidden)", "info": "Main search heading for the homepage, read by Google and screen readers. Say what the store sells.", "default": "Furniture, Home Décor & Plant Stands Online in Australia" },
     { "type": "text", "id": "values_aria_label", "label": "Values aria label", "default": "Why shop with us" },
-    { "type": "link_list", "id": "category_menu", "label": "Shop by category menu", "info": "The departments shown as circles. Uses the same menu as the header dropdown." },
+    { "type": "link_list", "id": "category_menu", "label": "Shop by category menu", "info": "The departments shown as cards. Uses the same menu as the header dropdown." },
     { "type": "text", "id": "categories_heading", "label": "Categories heading", "default": "Shop by Category" },
     { "type": "text", "id": "categories_subheading", "label": "Categories subheading", "default": "Find your next favourite piece across our most-loved categories." },
     { "type": "collection", "id": "bestsellers_collection", "label": "Bestsellers collection" },
@@ -729,7 +749,7 @@
     { "type": "product", "id": "bestsellers_product_4", "label": "Bestseller product 4" },
     { "type": "text", "id": "bestsellers_heading", "label": "Bestsellers heading", "default": "Bestsellers right now" },
     { "type": "text", "id": "bestsellers_subheading", "label": "Bestsellers subheading", "default": "Customer favourites this season." },
-    { "type": "text", "id": "bestsellers_link_label", "label": "Bestsellers link label", "default": "View all" },
+    { "type": "text", "id": "bestsellers_link_label", "label": "Bestsellers link label", "default": "Shop all" },
     { "type": "range", "id": "products_per_row", "label": "Products per rail", "min": 2, "max": 8, "step": 1, "default": 4 },
     { "type": "text", "id": "sale_badge_label", "label": "Sale badge label", "default": "Sale" },
     { "type": "text", "id": "bestseller_badge_tag", "label": "Bestseller badge tag" },
