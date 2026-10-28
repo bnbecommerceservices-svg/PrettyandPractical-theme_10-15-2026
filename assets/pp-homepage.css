@@ -511,8 +511,6 @@
 .pp-homepage-storefront .pp-values {
   margin-top: 12px;
   padding: 24px 0;
-  border-top: 1px solid var(--pp-border-light);
-  border-bottom: 1px solid var(--pp-border-light);
 }
 
 .pp-homepage-storefront .pp-values .pp-section-head,
@@ -551,17 +549,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--pp-primary-light, #fff1ec);
-  color: var(--pp-primary);
+  width: 56px;
+  height: 56px;
 }
 
 .pp-homepage-storefront .pp-value__icon svg {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 6px 6px rgb(15 23 42 / 0.2));
+  transition: transform 0.3s ease;
+}
+
+.pp-homepage-storefront .pp-value:hover .pp-value__icon svg {
+  transform: translateY(-3px) scale(1.05);
 }
 
 .pp-homepage-storefront .pp-value__text h3 {
