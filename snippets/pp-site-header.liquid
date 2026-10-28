@@ -499,8 +499,8 @@
       <div class="pp-ticker__track">
         {% for i in (1..6) %}
           <span class="pp-ticker__group"{% if i > 1 %} aria-hidden="true"{% endif %}>
-            <span class="pp-ticker__item"><strong>Free delivery</strong> Australia-wide (excl. some remote postcodes)</span>
-            <span class="pp-ticker__dot" aria-hidden="true"></span>
+            {% if settings.free_delivery_message != blank %}<span class="pp-ticker__item">{{ settings.free_delivery_message | escape }}</span>
+            <span class="pp-ticker__dot" aria-hidden="true"></span>{% endif %}
             <span class="pp-ticker__item">Get $10 off on your first order</span>
             <span class="pp-ticker__dot" aria-hidden="true"></span>
             <span class="pp-ticker__item">30 day hassle free returns</span>
@@ -1084,7 +1084,7 @@
       <h2 id="ppWelcomeTitle">A little something for your first order</h2>
       <p class="pp-welcome__text">Join the list and get $10 off on your first order.</p>
       <ul class="pp-welcome__perks">
-        <li>Free delivery Australia-wide (excl. some remote postcodes)</li>
+        {% if settings.free_delivery_message != blank %}<li>{{ settings.free_delivery_message | escape }}</li>{% endif %}
         <li>30 day returns</li>
         <li>Secure checkout with Shop Pay and major cards</li>
       </ul>

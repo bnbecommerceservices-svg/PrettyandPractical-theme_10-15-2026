@@ -318,8 +318,8 @@
           <path d="M4 7h10v10H4V7Zm10 3h3l3 3v4h-6v-7ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
         </svg>
         <div>
-          <strong>Free delivery</strong>
-          <span>Australia-wide, excl. some remote postcodes</span>
+          <strong>{{ settings.free_delivery_title | escape }}</strong>
+          <span>{{ settings.free_delivery_detail | escape }}</span>
         </div>
       </div>
     </div>

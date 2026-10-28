@@ -2382,5 +2382,42 @@
         "info": "Uses the Shopify vendor field, which Nexus sets when a product is assigned to a seller."
       }
     ]
+  },
+  {
+    "name": "Delivery messages",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Delivery wording used across the store. The homepage benefit icons are edited in the Homepage section."
+      },
+      {
+        "type": "text",
+        "id": "free_delivery_message",
+        "label": "Full message",
+        "info": "Announcement bar, welcome popup, Shop by category menu, product page and cart.",
+        "default": "Free delivery Australia-wide (excl. some remote postcodes)"
+      },
+      {
+        "type": "text",
+        "id": "free_delivery_title",
+        "label": "Short title",
+        "info": "Benefit rows on product, cart and collection pages.",
+        "default": "Free delivery Australia-wide"
+      },
+      {
+        "type": "text",
+        "id": "free_delivery_detail",
+        "label": "Detail",
+        "info": "Shown under the short title.",
+        "default": "Excludes some remote postcodes."
+      },
+      {
+        "type": "text",
+        "id": "free_delivery_card",
+        "label": "Product card line",
+        "info": "Under the price on product cards. Leave blank to hide it.",
+        "default": "Free delivery to most of Australia"
+      }
+    ]
   }
 ]

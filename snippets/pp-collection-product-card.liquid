@@ -158,7 +158,7 @@
         <span class="pp-price__was">{{ compare_at_price | money }}</span>
       {% endif %}
     </div>
-    <p class="pp-card__ship">Free delivery to most of Australia</p>
+    {% if settings.free_delivery_card != blank %}<p class="pp-card__ship">{{ settings.free_delivery_card | escape }}</p>{% endif %}
     <div class="pp-card__cta">
       {% if product.available == false %}
         <span class="pp-card-cta pp-card-cta--soldout">Sold out</span>

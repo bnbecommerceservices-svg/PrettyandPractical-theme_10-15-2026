@@ -93,7 +93,7 @@
     {%- endif -%}
 
     <div class="pp-catmega__foot">
-      <p>Free delivery Australia-wide (excl. some remote postcodes) · 30-day returns</p>
+      <p>{% if settings.free_delivery_message != blank %}{{ settings.free_delivery_message | escape }} · {% endif %}30-day returns</p>
       <div class="pp-catmega__foot-links">
         <a href="{{ routes.collections_url }}">All categories <span aria-hidden="true">→</span></a>
         <a href="{{ routes.all_products_collection_url }}">Shop all products <span aria-hidden="true">→</span></a>

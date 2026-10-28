@@ -505,7 +505,7 @@
               {% if free_shipping_threshold_enabled %}
                 Free shipping over {{ threshold_money }}
               {% else %}
-                Free delivery Australia-wide (excl. some remote postcodes)
+                {{ settings.free_delivery_message | escape }}
               {% endif %}
             </span>
             <span class="pp-trust-item">
