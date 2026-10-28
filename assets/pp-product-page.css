@@ -5394,3 +5394,23 @@ product-recommendations.product-recommendations .pp-recommend {
     animation: none;
   }
 }
+/* Breadcrumb: the product itself is plain text, kept to one line. */
+.pp-pdp-v2 .pp-breadcrumbs li.pp-breadcrumbs__current {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--pp-text-secondary);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pp-pdp-v2 .pp-breadcrumbs ol {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.pp-pdp-v2 .pp-breadcrumbs li:not(.pp-breadcrumbs__current) {
+  flex-shrink: 0;
+}

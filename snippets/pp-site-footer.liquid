@@ -161,37 +161,14 @@ Renders the Pretty & Practical black multi-column footer.
     assign twitter_url = blank
   endif
 
-  assign shop_labels = 'New Arrival|Home & Garden|Garden & Outdoor|Furniture|TV Trolley / Stand|Pets' | split: '|'
-  assign shop_handles = 'new-arrival|home-garden|garden-outdoor|furniture|tv-stands|pets' | split: '|'
-  assign pp_tv_url = '/collections/tv-stands'
-  if collections['tv-stands'].url != blank
-    assign pp_tv_url = collections['tv-stands'].url
-  elsif collections['tv-trolley-stand'].url != blank
-    assign pp_tv_url = collections['tv-trolley-stand'].url
-  endif
-  assign pp_garden_url = blank
-  assign pp_garden_try = 'garden-outdoor,garden-and-outdoor,outdoor-garden,garden,home-garden,home-and-garden' | split: ','
-  for h in pp_garden_try
-    if pp_garden_url == blank and collections[h].url != blank
-      assign pp_garden_url = collections[h].url
-    endif
-  endfor
-  if pp_garden_url == blank
-    for c in collections
-      assign ct = c.title | downcase
-      if pp_garden_url == blank and ct == 'garden & outdoor'
-        assign pp_garden_url = c.url
-      endif
-    endfor
-  endif
-  if pp_garden_url == blank
-    assign pp_garden_url = routes.all_products_collection_url
-  endif
-  assign pp_outdoor_url = pp_garden_url
-  if collections['outdoor'].products_count > 0
-    assign pp_outdoor_url = collections['outdoor'].url
-  endif
+  # "Shop" column: the departments of the footer's Shop menu (the "Shop by category" menu),
+  # or every collection with products when no menu is picked.
+  assign shop_heading = footer_section.settings.heading_explore | default: 'Shop'
+  assign shop_menu = footer_section.settings.menu_explore
 %}
+
+{%- capture shop_entry_text -%}{%- render 'pp-category-entries', menu: shop_menu, limit: 8 -%}{%- endcapture -%}
+{%- assign shop_entries = shop_entry_text | strip | split: '§' -%}
 
 <div class="pp-site-footer" {{ footer_section.shopify_attributes }}>
   {%- comment -%} The homepage has its own values row, so the strip would repeat it. {%- endcomment -%}
@@ -267,64 +244,14 @@ Renders the Pretty & Practical black multi-column footer.
           </div>
         </div>
 
-        <nav class="pp-foot__col" aria-label="Shop">
-          <h3 class="pp-foot__heading">Shop</h3>
+        <nav class="pp-foot__col" aria-label="{{ shop_heading | escape }}">
+          <h3 class="pp-foot__heading">{{ shop_heading | escape }}</h3>
           <ul class="pp-foot__links">
-            {% for label in shop_labels %}
-              {% liquid
-                assign shop_handle = shop_handles[forloop.index0]
-                assign shop_url = blank
-                assign label_down = label | downcase
-                assign label_handle = label | handleize
-                if shop_handle == 'tv-stands' or shop_handle == 'tv-trolley-stand' or label_handle == 'tv-trolley-stand'
-                  assign shop_url = pp_tv_url
-                elsif shop_handle == 'outdoor' or label_handle == 'outdoor'
-                  assign shop_url = pp_outdoor_url
-                elsif shop_handle == 'garden-outdoor' or label_handle == 'garden-outdoor'
-                  assign shop_url = pp_garden_url
-                endif
-
-                assign candidate = collections[shop_handle]
-                if candidate != blank
-                  assign shop_url = candidate.url
-                endif
-
-                if shop_url == blank
-                  assign candidate = collections[label_handle]
-                  if candidate != blank
-                    assign shop_url = candidate.url
-                  endif
-                endif
-
-                if shop_url == blank
-                  for c in collections
-                    assign c_title = c.title | downcase
-                    assign c_handle = c.handle
-                    if shop_url == blank
-                      if c_handle == shop_handle or c_handle == label_handle or c_title == label_down
-                        assign shop_url = c.url
-                      elsif c_title contains label_down or label_down contains c_title
-                        assign shop_url = c.url
-                      endif
-                    endif
-                  endfor
-                endif
-
-                if shop_url == blank and linklists['main-menu'] != blank
-                  for link in linklists['main-menu'].links
-                    assign link_title = link.title | downcase
-                    if shop_url == blank and link_title == label_down
-                      assign shop_url = link.url
-                    endif
-                  endfor
-                endif
-
-                if shop_url == blank
-                  assign shop_url = '/collections/' | append: shop_handle
-                endif
-              %}
-              <li><a href="{{ shop_url }}">{{ label | escape }}</a></li>
+            {% for entry in shop_entries %}
+              {% assign entry_parts = entry | split: '¦' %}
+              <li><a href="{{ entry_parts[1] }}">{{ entry_parts[0] | escape }}</a></li>
             {% endfor %}
+            <li><a href="{{ routes.collections_url }}">All categories</a></li>
           </ul>
         </nav>
 

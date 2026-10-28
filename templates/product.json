@@ -11,7 +11,9 @@
   "sections": {
     "main": {
       "type": "product-information",
-      "settings": {}
+      "settings": {
+        "category_menu": "shop-by-category"
+      }
     },
     "judgeme_reviews": {
       "type": "pp-judgeme-product-reviews",

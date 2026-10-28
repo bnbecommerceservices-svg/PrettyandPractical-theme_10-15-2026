@@ -68,6 +68,59 @@
     endfor
   endif
   assign breadcrumb_fallback = blank
+
+  # Breadcrumb path from the "Shop by category" menu: the department and sub-category
+  # holding this product. The collection the shopper came from wins when it's in the menu.
+  assign crumb_menu = section.settings.category_menu
+  assign crumb_department = blank
+  assign crumb_sub = blank
+  assign product_collection_handles = '|'
+  for col in product.collections
+    assign product_collection_handles = product_collection_handles | append: col.handle | append: '|'
+  endfor
+  assign preferred_handle = ''
+  if collection != blank
+    assign preferred_handle = collection.handle
+  endif
+  if crumb_menu != blank and crumb_menu.links.size > 0
+    for pass in (1..2)
+      for link in crumb_menu.links
+        for child in link.links
+          if child.type != 'collection_link'
+            continue
+          endif
+          assign child_key = '|' | append: child.object.handle | append: '|'
+          if pass == 1 and child.object.handle == preferred_handle and product_collection_handles contains child_key
+            assign crumb_department = link
+            assign crumb_sub = child
+          elsif pass == 2 and product_collection_handles contains child_key
+            assign crumb_department = link
+            assign crumb_sub = child
+          endif
+          if crumb_sub != blank
+            break
+          endif
+        endfor
+        if crumb_sub != blank
+          break
+        endif
+      endfor
+      if crumb_sub != blank
+        break
+      endif
+    endfor
+    if crumb_department == blank
+      for link in crumb_menu.links
+        if link.type == 'collection_link'
+          assign link_key = '|' | append: link.object.handle | append: '|'
+          if product_collection_handles contains link_key
+            assign crumb_department = link
+            break
+          endif
+        endif
+      endfor
+    endif
+  endif
   assign feature_source_blob = ''
   assign bullet_metafield = product.metafields.custom.bullet_points
   if bullet_metafield == blank
@@ -551,17 +604,46 @@
     <div class="pp-wrap">
       <ol>
         <li><a href="{{ routes.root_url }}">Home</a></li>
-        <li aria-hidden="true">/</li>
-        <li><a href="{{ routes.all_products_collection_url }}">Shop</a></li>
-        {% if current_collection != blank %}
+        {%- if crumb_department != blank %}
           <li aria-hidden="true">/</li>
-          <li aria-current="page">
-            <a href="{{ current_collection.url }}">{{ current_collection.title }}</a>
-          </li>
-        {% endif %}
+          <li><a href="{{ crumb_department.url }}">{{ crumb_department.title | escape }}</a></li>
+          {%- if crumb_sub != blank %}
+            <li aria-hidden="true">/</li>
+            <li><a href="{{ crumb_sub.url }}">{{ crumb_sub.title | escape }}</a></li>
+          {%- endif %}
+        {%- elsif current_collection != blank %}
+          <li aria-hidden="true">/</li>
+          <li><a href="{{ current_collection.url }}">{{ current_collection.title | escape }}</a></li>
+        {%- endif %}
+        <li aria-hidden="true">/</li>
+        <li class="pp-breadcrumbs__current" aria-current="page">{{ product.title | escape }}</li>
       </ol>
     </div>
   </nav>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {%- assign crumb_position = 1 -%}
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": {{ request.origin | append: routes.root_url | json }}}
+        {%- if crumb_department != blank -%}
+          {%- assign crumb_position = crumb_position | plus: 1 -%}
+          ,{"@type": "ListItem", "position": {{ crumb_position }}, "name": {{ crumb_department.title | json }}, "item": {{ request.origin | append: crumb_department.url | json }}}
+          {%- if crumb_sub != blank -%}
+            {%- assign crumb_position = crumb_position | plus: 1 -%}
+            ,{"@type": "ListItem", "position": {{ crumb_position }}, "name": {{ crumb_sub.title | json }}, "item": {{ request.origin | append: crumb_sub.url | json }}}
+          {%- endif -%}
+        {%- elsif current_collection != blank -%}
+          {%- assign crumb_position = crumb_position | plus: 1 -%}
+          ,{"@type": "ListItem", "position": {{ crumb_position }}, "name": {{ current_collection.title | json }}, "item": {{ request.origin | append: current_collection.url | json }}}
+        {%- endif -%}
+        {%- assign crumb_position = crumb_position | plus: 1 -%}
+        ,{"@type": "ListItem", "position": {{ crumb_position }}, "name": {{ product.title | json }}, "item": {{ request.origin | append: product.url | json }}}
+      ]
+    }
+  </script>
 
   <section class="pp-hero" aria-labelledby="product-title">
     <div class="pp-wrap">
@@ -1121,7 +1203,14 @@
 {% schema %}
 {
   "name": "Product Information",
-  "settings": [],
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "category_menu",
+      "label": "Shop by category menu",
+      "info": "Departments with nested sub-categories. Sets the breadcrumb: Home › Department › Sub-category › Product."
+    }
+  ],
   "blocks": [
     {
       "type": "@app"
