@@ -14,7 +14,7 @@
         "heading": "Shop by category",
         "subheading": "Browse every collection in the Pretty & Practical range.",
         "breadcrumb_label": "Collections",
-        "menu": "",
+        "menu": "shop-by-category",
         "show_types": true,
         "types_heading": "Shop by product type"
       }

@@ -3,11 +3,13 @@
   Collections with no products are skipped.
 
   @param {collection} collection - The collection to show.
+  @param {string} [heading_tag] - Tag for the collection name (default "h2").
 {% enddoc %}
 
 {%- liquid
   assign card_count = collection.all_products_count | default: 0
   assign card_image = collection.featured_image
+  assign card_heading = heading_tag | default: 'h2'
 -%}
 {%- if card_count > 0 -%}
   <li class="pp-clist__card">
@@ -31,7 +33,7 @@
       </span>
       <div class="pp-clist__info">
         <div>
-          <h2 class="pp-clist__name">{{ collection.title | escape }}</h2>
+          <{{ card_heading }} class="pp-clist__name">{{ collection.title | escape }}</{{ card_heading }}>
           <span class="pp-clist__count">{{ card_count }} {% if card_count == 1 %}product{% else %}products{% endif %}</span>
         </div>
         <span class="pp-clist__arrow" aria-hidden="true">

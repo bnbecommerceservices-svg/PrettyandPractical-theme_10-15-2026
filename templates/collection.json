@@ -3,6 +3,7 @@
     "main": {
       "type": "main-collection",
       "settings": {
+        "category_menu": "shop-by-category",
         "layout_type": "grid",
         "product_card_size": "medium",
         "mobile_product_card_size": "small",

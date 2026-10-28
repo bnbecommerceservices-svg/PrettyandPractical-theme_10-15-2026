@@ -105,8 +105,10 @@
         collection: collection,
         fallback_banner: section.settings.fallback_banner,
         banner_height: section.settings.banner_height,
-        overlay_color: section.settings.banner_overlay_color
+        overlay_color: section.settings.banner_overlay_color,
+        category_menu: section.settings.category_menu
       %}
+      {% render 'pp-collection-subcats', menu: section.settings.category_menu, collection: collection %}
 
       <div
         id="CollectionFiltersForm-{{ section.id }}"
@@ -349,6 +351,16 @@
     ]
   },
   "settings": [
+    {
+      "type": "header",
+      "content": "Categories"
+    },
+    {
+      "type": "link_list",
+      "id": "category_menu",
+      "label": "Shop by category menu",
+      "info": "Departments with nested sub-categories. Used for the breadcrumb and the sub-category chips under the banner."
+    },
     {
       "type": "header",
       "content": "Collection banner"

@@ -5,6 +5,9 @@
   guidance (shopify.dev/docs/storefronts/themes/architecture/templates/list-collections):
   - Collections come from the global `collections` object (alphabetical), or
     from a menu picked in the theme editor when a custom order is wanted.
+  - When that menu has nested items (departments with sub-categories), the page
+    is grouped: each department gets a heading, a "Shop all" link and a grid of
+    its sub-categories. Departments without sub-categories share one grid.
   - Card images use `collection.featured_image`, which is the collection image
     or, when none is set, the first product's featured image.
   - Counts use `collection.all_products_count`.
@@ -16,11 +19,78 @@
 {%- liquid
   assign menu = section.settings.menu
   assign total_products = collections.all.all_products_count | default: 0
+  assign grouped = false
+  if menu != blank and menu.links.size > 0
+    for link in menu.links
+      if link.links.size > 0
+        assign grouped = true
+        break
+      endif
+    endfor
+  endif
 -%}
+
+{%- assign department_count = 0 -%}
+{%- capture department_blocks -%}
+  {%- if grouped -%}
+    {%- capture single_cards -%}
+      {%- for link in menu.links -%}
+        {%- if link.links.size == 0 and link.type == 'collection_link' and link.object.all_products_count > 0 -%}
+          {%- render 'pp-collection-list-card', collection: link.object -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- for link in menu.links -%}
+      {%- if link.links.size == 0 -%}{%- continue -%}{%- endif -%}
+      {%- capture child_cards -%}
+        {%- for child in link.links -%}
+          {%- if child.type == 'collection_link' and child.object.all_products_count > 0 -%}
+            {%- render 'pp-collection-list-card', collection: child.object, heading_tag: 'h3' -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {%- if child_cards == blank -%}{%- continue -%}{%- endif -%}
+      {%- liquid
+        assign department_count = department_count | plus: 1
+        assign dept_count = 0
+        if link.type == 'collection_link'
+          assign dept_count = link.object.all_products_count | default: 0
+        endif
+        assign dept_id = 'pp-clist-' | append: link.handle
+      -%}
+      <section class="pp-clist__dept" id="{{ dept_id }}" aria-labelledby="{{ dept_id }}-title">
+        <div class="pp-clist__dept-head">
+          <div>
+            <h2 id="{{ dept_id }}-title" class="pp-clist__dept-title"><a href="{{ link.url }}">{{ link.title | escape }}</a></h2>
+            {%- if dept_count > 0 -%}
+              <p class="pp-clist__dept-meta">{{ dept_count }} {% if dept_count == 1 %}product{% else %}products{% endif %}</p>
+            {%- endif -%}
+          </div>
+          <a class="pp-clist__dept-all" href="{{ link.url }}">Shop all {{ link.title | escape }} <span aria-hidden="true">→</span></a>
+        </div>
+        <ul class="pp-clist__grid" role="list">
+          {{ child_cards }}
+        </ul>
+      </section>
+    {%- endfor -%}
+    {%- if single_cards != blank -%}
+      <section class="pp-clist__dept" aria-labelledby="pp-clist-more-title">
+        <div class="pp-clist__dept-head">
+          <h2 id="pp-clist-more-title" class="pp-clist__dept-title">More categories</h2>
+        </div>
+        <ul class="pp-clist__grid" role="list">
+          {{ single_cards }}
+        </ul>
+      </section>
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+{%- assign department_blocks = department_blocks | strip -%}
 
 {%- assign collection_count = 0 -%}
 {%- capture collection_cards -%}
-  {%- if menu != blank and menu.links.size > 0 -%}
+  {%- if grouped -%}
+  {%- elsif menu != blank and menu.links.size > 0 -%}
     {%- for link in menu.links -%}
       {%- if link.type == 'collection_link' and link.object != blank and link.object.all_products_count > 0 -%}
         {%- assign collection_count = collection_count | plus: 1 -%}
@@ -53,7 +123,10 @@
         <p class="pp-clist__sub">{{ section.settings.subheading | escape }}</p>
       {%- endif -%}
       <p class="pp-clist__stats">
-        {%- if collection_count > 0 -%}
+        {%- if grouped and department_count > 0 -%}
+          <span>{{ department_count }} {% if department_count == 1 %}department{% else %}departments{% endif %}</span>
+          {%- assign collection_count = department_count -%}
+        {%- elsif collection_count > 0 -%}
           <span>{{ collection_count }} {% if collection_count == 1 %}collection{% else %}collections{% endif %}</span>
         {%- endif -%}
         {%- if collection_count > 0 and total_products > 0 -%}
@@ -63,11 +136,24 @@
           <a href="{{ routes.all_products_collection_url }}">Shop all {{ total_products }} products</a>
         {%- endif -%}
       </p>
+      {%- if grouped and department_count > 1 -%}
+        <nav class="pp-clist__jump" aria-label="Departments">
+          <ul class="pp-clist__chips" role="list">
+            {%- for link in menu.links -%}
+              {%- if link.links.size > 0 -%}
+                <li><a class="pp-clist__chip" href="#pp-clist-{{ link.handle }}">{{ link.title | escape }}</a></li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
     </div>
   </div>
 
   <div class="pp-wrap">
-    {%- if collection_cards != blank -%}
+    {%- if department_blocks != blank -%}
+      {{ department_blocks }}
+    {%- elsif collection_cards != blank -%}
       <ul class="pp-clist__grid" role="list">
         {{ collection_cards }}
       </ul>
@@ -111,7 +197,7 @@
   </div>
 </section>
 
-{%- if collection_cards != blank -%}
+{%- if collection_cards != blank or department_blocks != blank -%}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -216,6 +302,67 @@
   }
 
   .pp-clist__stats a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .pp-clist__jump {
+    margin-top: 20px;
+  }
+
+  .pp-clist__dept {
+    scroll-margin-top: 140px;
+  }
+
+  .pp-clist__dept + .pp-clist__dept {
+    margin-top: 48px;
+    padding-top: 40px;
+    border-top: 1px solid var(--pp-border-light, #f3f4f6);
+  }
+
+  .pp-clist__dept-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .pp-clist__dept-title {
+    margin: 0;
+    font-family: var(--pp-font-heading);
+    font-size: clamp(20px, 2.2vw, 26px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--pp-navy, #111827);
+  }
+
+  .pp-clist__dept-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .pp-clist__dept-title a:hover {
+    color: var(--pp-primary, #e8532a);
+  }
+
+  .pp-clist__dept-meta {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--pp-text-secondary, #4b5563);
+  }
+
+  .pp-clist__dept-all {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--pp-primary, #e8532a);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .pp-clist__dept-all:hover {
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -422,6 +569,18 @@
       margin-top: 40px;
       padding-top: 28px;
     }
+
+    .pp-clist__dept + .pp-clist__dept {
+      margin-top: 32px;
+      padding-top: 28px;
+    }
+
+    .pp-clist__dept-head {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -465,8 +624,8 @@
     {
       "type": "link_list",
       "id": "menu",
-      "label": "Collection order",
-      "info": "Optional. Pick a menu of collection links to choose which collections show and in what order. Leave empty to show every collection alphabetically."
+      "label": "Shop by category menu",
+      "info": "Optional. A menu of collection links sets which collections show and their order. Nested items group the page by department. Leave empty to show every collection alphabetically."
     },
     {
       "type": "checkbox",

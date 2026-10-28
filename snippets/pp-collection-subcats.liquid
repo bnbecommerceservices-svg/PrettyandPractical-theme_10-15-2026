@@ -1,0 +1,68 @@
+{% doc %}
+  Sub-category chips under the collection banner, read from the "Shop by category" menu.
+
+  On a department (a top-level menu item) the chips are its sub-categories, with
+  "All" selected. On a sub-category they are its sister sub-categories, with
+  "All {department}" leading back up. Nothing shows when the collection isn't in the menu.
+
+  @param {linklist} [menu] - Menu of departments with nested sub-categories.
+  @param {collection} collection - The collection being shown.
+{% enddoc %}
+
+{%- liquid
+  assign department = blank
+  if menu != blank and menu.links.size > 0
+    for link in menu.links
+      if link.type == 'collection_link' and link.object.handle == collection.handle
+        assign department = link
+        break
+      endif
+      for child in link.links
+        if child.type == 'collection_link' and child.object.handle == collection.handle
+          assign department = link
+          break
+        endif
+      endfor
+      if department != blank
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- if department != blank and department.links.size > 0 -%}
+  {%- assign on_department = false -%}
+  {%- if department.type == 'collection_link' and department.object.handle == collection.handle -%}
+    {%- assign on_department = true -%}
+  {%- endif -%}
+  <nav class="pp-subcats" aria-label="{{ department.title | escape }} categories">
+    <div class="pp-wrap">
+      <ul class="pp-subcats__list" role="list">
+        <li>
+          <a class="pp-subcats__chip{% if on_department %} is-current{% endif %}" href="{{ department.url }}"{% if on_department %} aria-current="page"{% endif %}>
+            {%- if on_department -%}All{%- else -%}All {{ department.title | escape }}{%- endif -%}
+          </a>
+        </li>
+        {%- for child in department.links -%}
+          {%- liquid
+            assign is_current = false
+            if child.type == 'collection_link' and child.object.handle == collection.handle
+              assign is_current = true
+            endif
+            assign child_count = 0
+            if child.type == 'collection_link'
+              assign child_count = child.object.all_products_count | default: 0
+            endif
+          -%}
+          {%- if child.type == 'collection_link' and child_count == 0 -%}{%- continue -%}{%- endif -%}
+          <li>
+            <a class="pp-subcats__chip{% if is_current %} is-current{% endif %}" href="{{ child.url }}"{% if is_current %} aria-current="page"{% endif %}>
+              {{- child.title | escape -}}
+              {%- if child_count > 0 -%}<span class="pp-subcats__count">{{ child_count }}</span>{%- endif -%}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </nav>
+{%- endif -%}

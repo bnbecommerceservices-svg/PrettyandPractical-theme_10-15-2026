@@ -1,6 +1,7 @@
 {% doc %}
   Outputs the store's real categories as text for the header to split:
-  entries separated by "§", fields by "¦" (title¦url¦key).
+  entries separated by "§", fields by "¦" (title¦url¦key¦state). State is
+  "active" when the shopper is on that category or one of its sub-categories.
 
   Categories are the links of the given menu; when no menu is given, every
   collection that has products, alphabetically. The key matches the panel
@@ -13,6 +14,10 @@
 {%- liquid
   assign entry_limit = limit | default: 12
   assign entry_count = 0
+  assign template_collection_handle = request.page_type
+  if request.page_type == 'collection'
+    assign template_collection_handle = collection.handle
+  endif
   if menu != blank and menu.links.size > 0
     for link in menu.links
       if entry_count >= entry_limit
@@ -22,10 +27,14 @@
         continue
       endif
       assign entry_key = link.handle | default: link.title | handleize
+      assign entry_state = ''
+      if link.active or link.child_active
+        assign entry_state = 'active'
+      endif
       if entry_count > 0
         echo '§'
       endif
-      echo link.title | append: '¦' | append: link.url | append: '¦' | append: entry_key
+      echo link.title | append: '¦' | append: link.url | append: '¦' | append: entry_key | append: '¦' | append: entry_state
       assign entry_count = entry_count | plus: 1
     endfor
   else
@@ -39,7 +48,11 @@
       if entry_count > 0
         echo '§'
       endif
-      echo collection.title | append: '¦' | append: collection.url | append: '¦' | append: collection.handle
+      assign entry_state = ''
+      if collection.handle == template_collection_handle
+        assign entry_state = 'active'
+      endif
+      echo collection.title | append: '¦' | append: collection.url | append: '¦' | append: collection.handle | append: '¦' | append: entry_state
       assign entry_count = entry_count | plus: 1
     endfor
   endif

@@ -3401,3 +3401,84 @@ body.is-locked {
   right: auto !important;
   left: 0 !important;
 }
+/* ── Sub-category chips under the banner (snippets/pp-collection-subcats.liquid) ── */
+.pp-collection-template .pp-subcats {
+  background: var(--pp-white);
+  border-bottom: 1px solid var(--pp-border-light);
+  padding: 14px 0;
+}
+
+.pp-collection-template .pp-subcats__list {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pp-collection-template .pp-subcats__list::-webkit-scrollbar {
+  display: none;
+}
+
+.pp-collection-template .pp-subcats__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-pill);
+  background: var(--pp-white);
+  color: var(--pp-text);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color var(--pp-transition), color var(--pp-transition), background-color var(--pp-transition);
+}
+
+.pp-collection-template .pp-subcats__chip:hover {
+  border-color: var(--pp-primary);
+  color: var(--pp-primary);
+}
+
+.pp-collection-template .pp-subcats__chip:focus-visible {
+  outline: 2px solid var(--pp-primary);
+  outline-offset: 2px;
+}
+
+.pp-collection-template .pp-subcats__count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: var(--pp-radius-pill);
+  background: var(--pp-bg-subtle);
+  color: var(--pp-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pp-collection-template .pp-subcats__chip.is-current {
+  border-color: var(--pp-primary);
+  background: var(--pp-primary);
+  color: var(--pp-white);
+}
+
+.pp-collection-template .pp-subcats__chip.is-current .pp-subcats__count {
+  background: rgb(255 255 255 / 0.22);
+  color: var(--pp-white);
+}
+
+@media (max-width: 749px) {
+  .pp-collection-template .pp-subcats {
+    padding: 10px 0;
+  }
+
+  .pp-collection-template .pp-subcats__chip {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}

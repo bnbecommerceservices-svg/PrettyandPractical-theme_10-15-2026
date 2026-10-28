@@ -100,15 +100,20 @@
   assign cart_count = cart.item_count | default: 0
 
   assign pp_use_menu_mega = false
+  # With a "Shop by category" menu, its departments fill the category row and the mobile menu.
+  assign use_department_row = false
   if category_blocks == blank or category_blocks.size == 0
-    if category_menu != blank and category_menu.links != blank and category_menu.links.size > 0
+    if dropdown_menu != blank and dropdown_menu.links.size > 0
+      assign use_department_row = true
+      assign category_menu_links = dropdown_menu.links
+    elsif category_menu != blank and category_menu.links != blank and category_menu.links.size > 0
       assign category_menu_links = category_menu.links
     elsif category_menu_handle != blank and linklists[category_menu_handle].links != blank and linklists[category_menu_handle].links.size > 0
       assign category_menu_links = linklists[category_menu_handle].links
     endif
   endif
 
-  if category_menu_links != blank and category_menu_links.size > 0
+  if use_department_row == false and category_menu_links != blank and category_menu_links.size > 0
     for link in category_menu_links
       if link.links != blank and link.links.size > 0
         assign pp_use_menu_mega = true
@@ -228,7 +233,7 @@
       {% endif %}
       {% endunless %}
     {% endfor %}
-  {% elsif category_menu_links != blank and category_menu_links.size > 0 %}
+  {% elsif use_department_row == false and category_menu_links != blank and category_menu_links.size > 0 %}
     {% for link in category_menu_links %}
       {% liquid
         assign loop_handle = link.title | handleize
@@ -245,7 +250,7 @@
         assign entry_parts = entry | split: '¦'
         assign entry_url = entry_parts[1]
         assign entry_active = false
-        if request.path == entry_url
+        if request.path == entry_url or entry_parts[3] == 'active'
           assign entry_active = true
         endif
         assign mega_menu_id = 'ppMegaMenu-' | append: header_section.id | append: '-' | append: entry_parts[2]

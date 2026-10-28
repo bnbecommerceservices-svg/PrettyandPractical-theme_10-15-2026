@@ -23,6 +23,7 @@
         "announcements_label": "Store updates",
         "utility_menu_label": "Utility navigation",
         "category_menu": "main-menu",
+        "category_dropdown_menu": "shop-by-category",
         "category_nav_label": "Shop categories",
         "customer_account_menu": "",
         "wishlist_link": "/pages/wishlist",
