@@ -59,57 +59,46 @@
     endcapture
   -%}
 
-  <div class="pp-totals">
-    <div class="pp-total-row">
-      <span class="pp-label">Subtotal</span>
-      <span class="pp-value" data-testid="cart-subtotal-value">{{ subtotal_price }}</span>
-    </div>
-    {% if real_discount_total > 0 %}
-      <div class="pp-total-row pp-total-row--discount">
-        <span class="pp-label">Discount</span>
-        <span class="pp-value">-{{ discount_price }}</span>
-      </div>
-      {% if cart.cart_level_discount_applications.size > 0 or discount_codes.size > 0 %}
-        <ul class="pp-summary-discounts" role="list" aria-label="{{ 'content.discounts' | t }}">
-          {% for discount_application in cart.cart_level_discount_applications %}
-            <li>{{ discount_application.title | escape }}</li>
-          {% endfor %}
-          {% for discount_code in discount_codes %}
-            {% unless cart_level_discount_titles contains discount_code %}
-              <li>{{ discount_code | escape }}</li>
-            {% endunless %}
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endif %}
-    <div class="pp-total-row">
-      <span class="pp-label">Shipping</span>
-      {% if cart_discount_progress_enabled and cart_discount_threshold_cents > 0 and cart.items_subtotal_price >= cart_discount_threshold_cents %}
-        <span class="pp-value pp-value-free">FREE</span>
-      {% else %}
-        <span class="pp-value pp-value-pending">At checkout</span>
-      {% endif %}
-    </div>
-    <div class="pp-total-row">
-      <span class="pp-label">Estimated tax</span>
-      <span class="pp-value pp-value-pending">At checkout</span>
-    </div>
-    <div class="pp-totals-divider" aria-hidden="true"></div>
-    <div class="pp-grand">
-      <span class="pp-label">Total</span>
-      <text-component
-        class="pp-value"
-        ref="cartTotal"
-        value="{{ grand_total_price | strip_html }}"
-        data-testid="cart-total-value"
-      >
-        {{ grand_total_price }}
-      </text-component>
-    </div>
-    <div class="pp-grand-note">{{ cart_drawer_note | strip }}</div>
-  </div>
-
+  {%- comment -%}
+    Standard drawer order: only the products scroll. This summary is the fixed
+    footer: subtotal, tax note, Checkout, View full cart, then a slim row of
+    trust badges and the payment logos (pp-cart-drawer.css).
+  {%- endcomment -%}
+  {%- assign cs_uid = 'cs-' | append: section_id | append: is_drawer -%}
   <div class="pp-cart-actions">
+    <div class="pp-totals">
+      {% if real_discount_total > 0 %}
+        <div class="pp-total-row pp-total-row--discount">
+          <span class="pp-label">Discount</span>
+          <span class="pp-value">-{{ discount_price }}</span>
+        </div>
+        {% if cart.cart_level_discount_applications.size > 0 or discount_codes.size > 0 %}
+          <ul class="pp-summary-discounts" role="list" aria-label="{{ 'content.discounts' | t }}">
+            {% for discount_application in cart.cart_level_discount_applications %}
+              <li>{{ discount_application.title | escape }}</li>
+            {% endfor %}
+            {% for discount_code in discount_codes %}
+              {% unless cart_level_discount_titles contains discount_code %}
+                <li>{{ discount_code | escape }}</li>
+              {% endunless %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endif %}
+      <div class="pp-grand">
+        <span class="pp-label">Subtotal</span>
+        <text-component
+          class="pp-value"
+          ref="cartTotal"
+          value="{{ grand_total_price | strip_html }}"
+          data-testid="cart-total-value"
+        >
+          {{ grand_total_price }}
+        </text-component>
+      </div>
+      <div class="pp-grand-note">{{ cart_drawer_note | strip }}</div>
+    </div>
+
     <button
       type="submit"
       id="checkout"
@@ -134,41 +123,39 @@
     <a href="{{ routes.cart_url }}" class="pp-view-cart">
       <span class="button-text">View full cart</span>
     </a>
-    <button type="button" class="pp-continue-link" on:click="cart-drawer-component/close">
-      <span class="button-text">&larr; Continue shopping</span>
-    </button>
-  </div>
 
-  {%- assign cs_uid = 'cs-' | append: section_id | append: is_drawer -%}
-  <div class="pp-trust" role="list" aria-label="Store benefits">
-    <div class="pp-trust-item" role="listitem">
-      <span class="pp-trust-icon" aria-hidden="true">
-        {% render 'pp-icon-3d', icon: 'secure', uid: cs_uid %}
-      </span>
-      Secure checkout
-    </div>
-    <div class="pp-trust-item" role="listitem">
-      <span class="pp-trust-icon" aria-hidden="true">
-        {% render 'pp-icon-3d', icon: 'returns', uid: cs_uid %}
-      </span>
-      Returns policy
-    </div>
-    <div class="pp-trust-item" role="listitem">
-      <span class="pp-trust-icon" aria-hidden="true">
-        {% render 'pp-icon-3d', icon: 'truck', uid: cs_uid %}
-      </span>
-      Shipping calculated at checkout
-    </div>
-  </div>
+    <div class="pp-cart-extras">
+      <div class="pp-trust" role="list" aria-label="Store benefits">
+        <div class="pp-trust-item" role="listitem">
+          <span class="pp-trust-icon" aria-hidden="true">
+            {% render 'pp-icon-3d', icon: 'secure', uid: cs_uid %}
+          </span>
+          Secure checkout
+        </div>
+        <div class="pp-trust-item" role="listitem">
+          <span class="pp-trust-icon" aria-hidden="true">
+            {% render 'pp-icon-3d', icon: 'returns', uid: cs_uid %}
+          </span>
+          30-day returns
+        </div>
+        <div class="pp-trust-item" role="listitem">
+          <span class="pp-trust-icon" aria-hidden="true">
+            {% render 'pp-icon-3d', icon: 'truck', uid: cs_uid %}
+          </span>
+          Free delivery
+        </div>
+      </div>
 
-  <div class="pp-pay">
-    <div class="pp-pay-label">We accept</div>
-    {%- comment -%} Same payment logos as the footer (pp-site-footer). {%- endcomment -%}
-    {%- assign pp_payment_types = 'american_express,apple_pay,google_pay,master,paypal,shopify_pay,unionpay,visa' | split: ',' -%}
-    <div class="pp-pay-marks" aria-label="Accepted payment methods">
-      {%- for type in pp_payment_types -%}
-        <span class="pp-pay-mark">{{ type | payment_type_svg_tag }}</span>
-      {%- endfor -%}
+      <div class="pp-pay">
+        <div class="pp-pay-label">We accept</div>
+        {%- comment -%} Same payment logos as the footer (pp-site-footer). {%- endcomment -%}
+        {%- assign pp_payment_types = 'american_express,apple_pay,google_pay,master,paypal,shopify_pay,unionpay,visa' | split: ',' -%}
+        <div class="pp-pay-marks" aria-label="Accepted payment methods">
+          {%- for type in pp_payment_types -%}
+            <span class="pp-pay-mark">{{ type | payment_type_svg_tag }}</span>
+          {%- endfor -%}
+        </div>
+      </div>
     </div>
   </div>
 {% else %}

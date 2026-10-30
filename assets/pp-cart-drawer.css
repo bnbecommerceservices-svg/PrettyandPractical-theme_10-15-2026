@@ -370,12 +370,11 @@ body.pp-cart-drawer-open {
   transition: transform 200ms ease;
 }
 
-.pp-fav-thumb svg {
-  width: 38px;
-  height: 38px;
-  fill: none;
-  stroke: var(--pp-text-muted);
-  stroke-width: 1.5;
+.pp-fav-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
 }
 
 .pp-fav-card:hover .pp-fav-thumb {
@@ -383,11 +382,25 @@ body.pp-cart-drawer-open {
 }
 
 .pp-fav-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   margin-top: 6px;
-  color: var(--pp-text-secondary);
+  color: var(--pp-text);
   font-size: 12px;
+  font-weight: 600;
   line-height: 1.3;
-  text-align: center;
+  text-align: left;
+}
+
+.pp-fav-price {
+  margin-top: 2px;
+  color: var(--pp-primary);
+  font-family: var(--pp-font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
 }
 
 .pp-line-item {
@@ -964,6 +977,162 @@ body.pp-cart-drawer-open {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/*
+  Standard drawer order: the header and free delivery strip at the top, the
+  products in the middle (the only part that scrolls), and a fixed footer:
+  subtotal, tax note, Checkout, View full cart, then one slim row of trust
+  badges and one row of payment logos.
+*/
+.pp-cart-perk {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 24px 0;
+  padding: 10px 14px;
+  border-radius: var(--pp-radius-md);
+  background: var(--pp-primary-light);
+  color: var(--pp-navy);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pp-cart-perk svg {
+  flex-shrink: 0;
+  color: var(--pp-primary);
+}
+
+.pp-cart-footer {
+  padding: 16px 24px calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+.pp-cart-shell .pp-cart-actions .pp-totals {
+  gap: 4px;
+  margin: 0 0 12px;
+}
+
+.pp-cart-shell .pp-cart-actions .pp-grand {
+  margin: 0;
+}
+
+.pp-cart-shell .pp-cart-actions .pp-grand .pp-label {
+  font-size: 15px;
+}
+
+.pp-cart-shell .pp-cart-actions .pp-grand .pp-value {
+  font-size: 18px;
+}
+
+.pp-cart-shell .pp-cart-actions .pp-grand-note {
+  margin: 0;
+}
+
+.pp-cart-shell .pp-checkout {
+  height: 54px;
+}
+
+.pp-cart-shell .pp-view-cart {
+  margin-top: 2px;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.pp-cart-extras {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--pp-border-light);
+}
+
+.pp-cart-shell .pp-cart-extras .pp-trust {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pp-cart-shell .pp-cart-extras .pp-trust-item {
+  flex-direction: row;
+  gap: 5px;
+  color: var(--pp-text-secondary);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.pp-cart-shell .pp-cart-extras .pp-trust-icon,
+.pp-cart-shell .pp-cart-extras .pp-trust-icon svg.pp-icon3d {
+  width: 18px;
+  height: 18px;
+}
+
+.pp-cart-shell .pp-cart-extras .pp-pay {
+  margin-top: 10px;
+}
+
+.pp-cart-shell .pp-cart-extras .pp-pay-label {
+  display: none;
+}
+
+.pp-cart-shell .pp-cart-extras .pp-pay-marks {
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.pp-cart-shell .pp-cart-extras .pp-pay-mark,
+.pp-cart-shell .pp-cart-extras .pp-pay-mark svg,
+.pp-cart-shell .pp-cart-extras .pp-pay-mark .icon-svg {
+  height: 20px;
+}
+
+/* Very narrow phones: drop the trust icons so the three labels stay on one line. */
+@media (max-width: 360px) {
+  .pp-cart-shell .pp-cart-extras .pp-trust-icon {
+    display: none;
+  }
+
+  .pp-cart-shell .pp-cart-extras .pp-trust-item {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pp-cart-shell .pp-cart-header {
+    min-height: 60px;
+    padding: 12px 16px;
+  }
+
+  .pp-cart-shell .pp-cart-title {
+    font-size: 18px;
+  }
+
+  .pp-cart-perk {
+    margin: 10px 16px 0;
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+
+  .pp-cart-shell .pp-cart-body {
+    padding: 0 16px;
+  }
+
+  .pp-cart-footer {
+    padding: 12px 16px calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pp-cart-shell .pp-cart-actions .pp-totals {
+    margin-bottom: 10px;
+  }
+
+  .pp-cart-shell .pp-checkout {
+    height: 52px;
+    font-size: 15px;
   }
 }
 

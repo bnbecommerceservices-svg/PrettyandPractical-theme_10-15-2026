@@ -62,36 +62,28 @@
             <path d="M5 12h14M13 5l7 7-7 7"/>
           </svg>
         </a>
-        <div class="pp-empty-fav-label">Or shop our favourites</div>
-        <div class="pp-empty-favs">
-          <a href="{{ empty_furniture_collection.url | default: routes.all_products_collection_url }}" class="pp-fav-card">
-            <div class="pp-fav-thumb">
-              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="10" y="22" width="44" height="22" rx="3"/>
-                <path d="M14 44v6M50 44v6"/>
-              </svg>
-            </div>
-            <div class="pp-fav-title">Linen Sofa</div>
-          </a>
-          <a href="{{ empty_decor_collection.url | default: routes.all_products_collection_url }}" class="pp-fav-card">
-            <div class="pp-fav-thumb">
-              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="14" y="20" width="36" height="28" rx="2"/>
-                <path d="M14 30h36"/>
-              </svg>
-            </div>
-            <div class="pp-fav-title">Oak Shelf</div>
-          </a>
-          <a href="{{ empty_lighting_collection.url | default: routes.all_products_collection_url }}" class="pp-fav-card">
-            <div class="pp-fav-thumb">
-              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="32" cy="28" r="12"/>
-                <path d="M20 50l4-12M44 50l-4-12M26 50h12"/>
-              </svg>
-            </div>
-            <div class="pp-fav-title">Arc Lamp</div>
-          </a>
-        </div>
+        {%- liquid
+          assign empty_favs_collection = settings.empty_state_collection
+          if empty_favs_collection == blank or empty_favs_collection.products_count == 0
+            assign empty_favs_collection = collections.all
+          endif
+        -%}
+        {%- if empty_favs_collection.products_count > 0 -%}
+          <div class="pp-empty-fav-label">Or shop our favourites</div>
+          <div class="pp-empty-favs">
+            {%- for fav in empty_favs_collection.products limit: 3 -%}
+              <a href="{{ fav.url }}" class="pp-fav-card">
+                <div class="pp-fav-thumb">
+                  {%- if fav.featured_image != blank -%}
+                    {{ fav.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', sizes: '120px' }}
+                  {%- endif -%}
+                </div>
+                <div class="pp-fav-title">{{ fav.title | escape }}</div>
+                <div class="pp-fav-price">{{ fav.price | money }}</div>
+              </a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
       </div>
     {% else %}
       <div class="pp-cart-page__empty" role="status" aria-live="polite">

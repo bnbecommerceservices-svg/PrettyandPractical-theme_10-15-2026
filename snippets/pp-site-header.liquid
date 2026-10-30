@@ -969,6 +969,13 @@
               </button>
             </header>
 
+            {%- if settings.free_delivery_message != blank -%}
+              <div class="pp-cart-perk">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>
+                <span>{{ settings.free_delivery_message | escape }}</span>
+              </div>
+            {%- endif -%}
+
             {% if show_cart_discount_progress %}
               <div class="pp-ship-strip">
                 <div class="pp-ship-label">{{ cart_ship_label_markup }}</div>
