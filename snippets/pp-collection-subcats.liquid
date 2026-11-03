@@ -3,7 +3,10 @@
 
   On a department (a top-level menu item) the chips are its sub-categories, with
   "All" selected. On a sub-category they are its sister sub-categories, with
-  "All {department}" leading back up. Nothing shows when the collection isn't in the menu.
+  "All {department}" leading back up; when the sub-category has its own
+  sub-categories (the third menu level), they follow as image tiles. On a
+  third-level collection the chips are its sisters, with "All {sub-category}"
+  leading back up. Nothing shows when the collection isn't in the menu.
 
   @param {linklist} [menu] - Menu of departments with nested sub-categories.
   @param {collection} collection - The collection being shown.
@@ -11,6 +14,8 @@
 
 {%- liquid
   assign department = blank
+  assign parent = blank
+  assign current_link = blank
   if menu != blank and menu.links.size > 0
     for link in menu.links
       if link.type == 'collection_link' and link.object.handle == collection.handle
@@ -20,6 +25,17 @@
       for child in link.links
         if child.type == 'collection_link' and child.object.handle == collection.handle
           assign department = link
+          assign current_link = child
+          break
+        endif
+        for grandchild in child.links
+          if grandchild.type == 'collection_link' and grandchild.object.handle == collection.handle
+            assign department = link
+            assign parent = child
+            break
+          endif
+        endfor
+        if parent != blank
           break
         endif
       endfor
@@ -28,22 +44,28 @@
       endif
     endfor
   endif
+
+  # The level whose links become chips, and the "All" chip leading back up.
+  assign chip_owner = department
+  if parent != blank
+    assign chip_owner = parent
+  endif
 -%}
 
-{%- if department != blank and department.links.size > 0 -%}
-  {%- assign on_department = false -%}
-  {%- if department.type == 'collection_link' and department.object.handle == collection.handle -%}
-    {%- assign on_department = true -%}
+{%- if chip_owner != blank and chip_owner.links.size > 0 -%}
+  {%- assign on_owner = false -%}
+  {%- if chip_owner.type == 'collection_link' and chip_owner.object.handle == collection.handle -%}
+    {%- assign on_owner = true -%}
   {%- endif -%}
-  <nav class="pp-subcats" aria-label="{{ department.title | escape }} categories">
+  <nav class="pp-subcats" aria-label="{{ chip_owner.title | escape }} categories">
     <div class="pp-wrap">
       <ul class="pp-subcats__list" role="list">
         <li>
-          <a class="pp-subcats__chip{% if on_department %} is-current{% endif %}" href="{{ department.url }}"{% if on_department %} aria-current="page"{% endif %}>
-            {%- if on_department -%}All{%- else -%}All {{ department.title | escape }}{%- endif -%}
+          <a class="pp-subcats__chip{% if on_owner %} is-current{% endif %}" href="{{ chip_owner.url }}"{% if on_owner %} aria-current="page"{% endif %}>
+            {%- if on_owner -%}All{%- else -%}All {{ chip_owner.title | escape }}{%- endif -%}
           </a>
         </li>
-        {%- for child in department.links -%}
+        {%- for child in chip_owner.links -%}
           {%- liquid
             assign is_current = false
             if child.type == 'collection_link' and child.object.handle == collection.handle
@@ -63,6 +85,34 @@
           </li>
         {%- endfor -%}
       </ul>
+
+      {%- if current_link != blank and current_link.links.size > 0 -%}
+        <ul class="pp-subcats__tiles" role="list" aria-label="Shop {{ current_link.title | escape }} by type">
+          {%- for sub in current_link.links -%}
+            {%- liquid
+              assign sub_count = 0
+              assign sub_image = blank
+              if sub.type == 'collection_link'
+                assign sub_count = sub.object.all_products_count | default: 0
+                assign sub_image = sub.object.featured_image | default: sub.object.products.first.featured_image
+              endif
+            -%}
+            {%- if sub.type == 'collection_link' and sub_count == 0 -%}{%- continue -%}{%- endif -%}
+            <li>
+              <a class="pp-subcats__tile" href="{{ sub.url }}">
+                <span class="pp-subcats__tile-media">
+                  {%- if sub_image != blank -%}
+                    {{ sub_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', width: 120, height: 120 }}
+                  {%- else -%}
+                    <span aria-hidden="true">{{ sub.title | slice: 0 }}</span>
+                  {%- endif -%}
+                </span>
+                <span class="pp-subcats__tile-title">{{ sub.title | escape }}</span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
     </div>
   </nav>
 {%- endif -%}

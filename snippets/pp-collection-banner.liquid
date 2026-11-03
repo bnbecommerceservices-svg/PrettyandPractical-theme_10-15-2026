@@ -88,13 +88,25 @@
     assign banner_img = collection.image | default: collection.featured_image
   endif
 
-  # Department this collection sits under in the "Shop by category" menu, for the breadcrumb.
+  # Department (and, for a third-level collection, the sub-category) this collection
+  # sits under in the "Shop by category" menu, for the breadcrumb.
   assign crumb_parent = blank
+  assign crumb_mid = blank
   if category_menu != blank and category_menu.links.size > 0
     for link in category_menu.links
       for child in link.links
         if child.type == 'collection_link' and child.object.handle == collection.handle
           assign crumb_parent = link
+          break
+        endif
+        for grandchild in child.links
+          if grandchild.type == 'collection_link' and grandchild.object.handle == collection.handle
+            assign crumb_parent = link
+            assign crumb_mid = child
+            break
+          endif
+        endfor
+        if crumb_mid != blank
           break
         endif
       endfor
@@ -158,6 +170,12 @@
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
         {%- endif %}
+        {%- if crumb_mid != blank %}
+        <a href="{{ crumb_mid.url }}">{{ crumb_mid.title | escape }}</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+        {%- endif %}
         <span class="pp-breadcrumb__current" aria-current="page">{{ banner_title | escape }}</span>
       </nav>
       <div class="pp-collection-hero__content">
@@ -180,7 +198,11 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
       {"@type": "ListItem", "position": 1, "name": "Home", "item": {{ request.origin | append: routes.root_url | json }}},
-      {%- if crumb_parent != blank %}
+      {%- if crumb_mid != blank %}
+      {"@type": "ListItem", "position": 2, "name": {{ crumb_parent.title | json }}, "item": {{ request.origin | append: crumb_parent.url | json }}},
+      {"@type": "ListItem", "position": 3, "name": {{ crumb_mid.title | json }}, "item": {{ request.origin | append: crumb_mid.url | json }}},
+      {"@type": "ListItem", "position": 4, "name": {{ banner_title | json }}, "item": {{ request.origin | append: collection.url | json }}}
+      {%- elsif crumb_parent != blank %}
       {"@type": "ListItem", "position": 2, "name": {{ crumb_parent.title | json }}, "item": {{ request.origin | append: crumb_parent.url | json }}},
       {"@type": "ListItem", "position": 3, "name": {{ banner_title | json }}, "item": {{ request.origin | append: collection.url | json }}}
       {%- else %}

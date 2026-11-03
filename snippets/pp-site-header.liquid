@@ -294,7 +294,13 @@
                 {% if forloop.index0 > 0 %},{% endif %}
                 {
                   "name": {{ child_link.title | json }},
-                  "url": {{ child_link.url | json }}
+                  "url": {{ child_link.url | json }},
+                  "items": [
+                    {% for grandchild_link in child_link.links %}
+                      {% if forloop.index0 > 0 %},{% endif %}
+                      {"name": {{ grandchild_link.title | json }}, "url": {{ grandchild_link.url | json }}}
+                    {% endfor %}
+                  ]
                 }
               {% endfor %}
             ]
@@ -1598,8 +1604,15 @@
       if (viewAllText) {
         viewAllText.textContent = 'View all ' + data.name;
       }
+      function subpanelLink(item, extraClass) {
+        return '<a href="' + escapeHtml(item.url || '#') + '" class="pp-subpanel-item' + extraClass + '"><span>' + escapeHtml(item.name || '') + '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></a>';
+      }
+      // A sub-category's own sub-categories (the third menu level) follow it, indented.
       drawerSubpanelList.innerHTML = data.items.map(function (item) {
-        return '<a href="' + escapeHtml(item.url || '#') + '" class="pp-subpanel-item"><span>' + escapeHtml(item.name || '') + '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></a>';
+        const children = Array.isArray(item.items) ? item.items : [];
+        return subpanelLink(item, children.length ? ' pp-subpanel-item--parent' : '') + children.map(function (child) {
+          return subpanelLink(child, ' pp-subpanel-item--sub');
+        }).join('');
       }).join('');
       drawerSubpanel.removeAttribute('hidden');
       requestAnimationFrame(function () {
