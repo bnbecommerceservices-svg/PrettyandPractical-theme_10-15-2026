@@ -1175,7 +1175,7 @@ span.pp-nav-link {
   display: block;
   padding-bottom: 12px;
   margin-bottom: 8px;
-  border-bottom: 1px solid #eef0f3;
+  border-bottom: 1px solid #e7e9ee;
   color: #0f172a;
   font-family: var(--pp-font-heading);
   font-size: 15px;
@@ -1311,6 +1311,7 @@ span.pp-nav-link {
   font-size: 13.5px;
   font-weight: 700;
   line-height: 1.2;
+  white-space: nowrap;
   text-align: center;
   text-decoration: none;
   transition: background-color 160ms ease;
@@ -1323,11 +1324,18 @@ span.pp-nav-link {
 
 .pp-catmega__eyebrow {
   margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e7e9ee;
   color: #6b7280;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.pp-catmega__intro .pp-catmega__eyebrow {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .pp-catmega__links--grid {
@@ -1341,6 +1349,37 @@ span.pp-nav-link {
 .pp-catmega__links--grid > li > .pp-catmega__link:not(.pp-catmega__link--sub) {
   color: #111827;
   font-weight: 600;
+}
+
+/* The theme's global link colour outranks single-class rules. */
+.pp-catmega a.pp-catmega__col-head,
+.pp-catmega__links--grid > li > a.pp-catmega__link:not(.pp-catmega__link--sub) {
+  color: #111827;
+}
+
+.pp-catmega a.pp-catmega__link {
+  color: #374151;
+}
+
+.pp-catmega a.pp-catmega__link--parent {
+  color: #111827;
+}
+
+.pp-catmega a.pp-catmega__link--sub {
+  color: #4b5563;
+}
+
+.pp-catmega a.pp-catmega__shop-all {
+  color: var(--pp-primary-dark);
+}
+
+.pp-catmega a.pp-catmega__col-head:hover,
+.pp-catmega a.pp-catmega__link:hover {
+  color: var(--pp-primary-dark);
+}
+
+.pp-catmega a.pp-catmega__shop-all:hover {
+  color: #9a2e10;
 }
 
 .pp-catmega__link:focus-visible,
