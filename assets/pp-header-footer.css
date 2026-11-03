@@ -1346,14 +1346,8 @@ span.pp-nav-link {
   align-items: start;
 }
 
-.pp-catmega__links--grid > li > .pp-catmega__link:not(.pp-catmega__link--sub) {
-  color: #111827;
-  font-weight: 600;
-}
-
 /* The theme's global link colour outranks single-class rules. */
-.pp-catmega a.pp-catmega__col-head,
-.pp-catmega__links--grid > li > a.pp-catmega__link:not(.pp-catmega__link--sub) {
+.pp-catmega a.pp-catmega__col-head {
   color: #111827;
 }
 
