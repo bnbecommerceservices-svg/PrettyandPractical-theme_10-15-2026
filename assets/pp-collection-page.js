@@ -155,9 +155,28 @@
     }
   };
 
+  // Intro and "About" text: clamped with a "Read more" button, shown only
+  // when the text is longer than the clamp. The full text is always in the page.
+  const bindClamps = (root) => {
+    root.querySelectorAll('[data-pp-clamp]').forEach((block) => {
+      const body = block.querySelector('[data-pp-clamp-body]');
+      const toggle = block.querySelector('[data-pp-clamp-toggle]');
+      const label = block.querySelector('[data-pp-clamp-label]');
+      if (!body || !toggle) return;
+      toggle.hidden = body.scrollHeight <= body.clientHeight + 2;
+      toggle.addEventListener('click', () => {
+        const open = block.classList.toggle('is-expanded');
+        toggle.setAttribute('aria-expanded', String(open));
+        if (label) label.textContent = open ? 'Read less' : 'Read more';
+      });
+    });
+  };
+
   init = (root) => {
     if (!(root instanceof HTMLElement) || root.dataset.ppCollectionReady === 'true') return;
     root.dataset.ppCollectionReady = 'true';
+
+    bindClamps(root);
 
     if (!root.querySelector('[data-pp-collection-form]')) return;
 

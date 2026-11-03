@@ -1,0 +1,165 @@
+{% doc %}
+  SEO content under the products, everything from the store:
+  - "About {collection}": the collection's custom.seo_content rich text
+    metafield, shown as a few lines with "Read more" (the full text stays in
+    the page for search engines)
+  - "{collection} FAQs": the custom.faqs metafield (a list of FAQ metaobjects
+    with question and answer), as an accordion
+  - "Shop related categories": the other categories in the same department of
+    the "Shop by category" menu, for internal links
+  The content shows only on the first page, so page 2+ does not repeat it.
+
+  Also prints the structured data: CollectionPage with the products on this
+  page as an ItemList, and FAQPage when the collection has FAQs.
+
+  @param {collection} collection - The collection.
+  @param {linklist} [menu] - The "Shop by category" menu.
+  @param {number} [page_number] - The current page (paginate.current_page).
+  @param {number} [page_offset] - Products before this page (paginate.current_offset).
+{% enddoc %}
+
+{%- liquid
+  assign seo_content = collection.metafields.custom.seo_content
+  assign faqs = collection.metafields.custom.faqs.value
+  assign faq_count = 0
+  for faq in faqs
+    if faq.question.value != blank and faq.answer.value != blank
+      assign faq_count = faq_count | plus: 1
+    endif
+  endfor
+
+  # Related categories: the department this collection sits in (or is) in the menu.
+  assign related_owner = blank
+  if menu != blank and menu.links.size > 0
+    for link in menu.links
+      if link.type == 'collection_link' and link.object.handle == collection.handle
+        assign related_owner = link
+        break
+      endif
+      for child in link.links
+        if child.type == 'collection_link' and child.object.handle == collection.handle
+          assign related_owner = link
+          break
+        endif
+        for grandchild in child.links
+          if grandchild.type == 'collection_link' and grandchild.object.handle == collection.handle
+            assign related_owner = link
+            break
+          endif
+        endfor
+        if related_owner != blank
+          break
+        endif
+      endfor
+      if related_owner != blank
+        break
+      endif
+    endfor
+  endif
+
+  capture related_links
+    if related_owner != blank
+      for child in related_owner.links
+        if child.type == 'collection_link'
+          if child.object.handle == collection.handle or child.object.all_products_count == 0
+            continue
+          endif
+        endif
+        assign related_title = child.title | escape
+        echo '<li><a class="pp-collection-seo__chip" href="' | append: child.url | append: '">' | append: related_title | append: '</a></li>'
+      endfor
+    endif
+  endcapture
+  assign related_links = related_links | strip
+  assign seo_text = seo_content | strip_html | strip
+-%}
+
+{%- if page_number == 1 or page_number == blank -%}
+  {%- if seo_text != blank or faq_count > 0 or related_links != blank -%}
+    <section class="pp-collection-seo" aria-label="About {{ collection.title | escape }}">
+      <div class="pp-wrap">
+        {%- if seo_text != blank -%}
+          <div class="pp-collection-seo__about" data-pp-clamp>
+            <h2 class="pp-collection-seo__title">About {{ collection.title | escape }}</h2>
+            <div class="pp-collection-seo__body rte" id="CollectionAbout" data-pp-clamp-body>
+              {{ seo_content | metafield_tag }}
+            </div>
+            <button type="button" class="pp-readmore" data-pp-clamp-toggle aria-controls="CollectionAbout" aria-expanded="false" hidden>
+              <span data-pp-clamp-label>Read more</span>
+            </button>
+          </div>
+        {%- endif -%}
+
+        {%- if faq_count > 0 -%}
+          <div class="pp-collection-faq">
+            <h2 class="pp-collection-seo__title">{{ collection.title | escape }} FAQs</h2>
+            <div class="pp-collection-faq__list">
+              {%- for faq in faqs -%}
+                {%- if faq.question.value == blank or faq.answer.value == blank -%}{%- continue -%}{%- endif -%}
+                <details class="pp-collection-faq__item"{% if forloop.first %} open{% endif %}>
+                  <summary class="pp-collection-faq__q">
+                    <h3>{{ faq.question.value | escape }}</h3>
+                    <svg class="pp-collection-faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                  </summary>
+                  <div class="pp-collection-faq__a">{{ faq.answer.value | escape | newline_to_br }}</div>
+                </details>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- if related_links != blank -%}
+          <nav class="pp-collection-seo__related" aria-label="Related categories">
+            <h2 class="pp-collection-seo__title">Shop related categories</h2>
+            <ul class="pp-collection-seo__chips" role="list">{{ related_links }}</ul>
+          </nav>
+        {%- endif -%}
+      </div>
+    </section>
+  {%- endif -%}
+{%- endif -%}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": {{ collection.title | json }},
+    "url": {{ request.origin | append: collection.url | json }},
+    {%- if collection.description != blank %}
+    "description": {{ collection.description | strip_html | strip | truncatewords: 60 | json }},
+    {%- endif %}
+    {%- if collection.image %}
+    "image": {{ collection.image | image_url: width: 1200 | prepend: 'https:' | json }},
+    {%- endif %}
+    "isPartOf": {"@type": "WebSite", "name": {{ shop.name | json }}, "url": {{ request.origin | append: routes.root_url | json }}},
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": {{ collection.products_count }},
+      "itemListElement": [
+        {%- for product in collection.products -%}
+          {"@type": "ListItem", "position": {{ page_offset | default: 0 | plus: forloop.index }}, "url": {{ request.origin | append: product.url | json }}, "name": {{ product.title | json }}}{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    }
+  }
+</script>
+
+{%- if faq_count > 0 -%}
+  {%- unless page_number > 1 -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {%- assign faq_shown = 0 -%}
+        {%- for faq in faqs -%}
+          {%- if faq.question.value == blank or faq.answer.value == blank -%}{%- continue -%}{%- endif -%}
+          {%- if faq_shown > 0 %},{% endif -%}
+          {%- assign faq_shown = faq_shown | plus: 1 -%}
+          {"@type": "Question", "name": {{ faq.question.value | json }}, "acceptedAnswer": {"@type": "Answer", "text": {{ faq.answer.value | json }}}}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+  {%- endunless -%}
+{%- endif -%}

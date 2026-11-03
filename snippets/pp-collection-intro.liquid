@@ -1,0 +1,26 @@
+{% doc %}
+  The intro paragraph above the products: the collection description from the
+  admin, kept in full in the page for search engines and shown as two lines
+  with "Read more" so the products stay near the top. Only on the first page.
+
+  @param {collection} collection - The collection.
+  @param {number} [page_number] - The current page (paginate.current_page).
+{% enddoc %}
+
+{%- liquid
+  assign intro_html = collection.description | strip
+  assign intro_text = intro_html | strip_html | strip
+-%}
+
+{%- if intro_text != blank and page_number < 2 -%}
+  <div class="pp-wrap">
+    <div class="pp-collection-intro" data-pp-clamp>
+      <div class="pp-collection-intro__text rte" id="CollectionIntro" data-pp-clamp-body>
+        {{ intro_html }}
+      </div>
+      <button type="button" class="pp-readmore" data-pp-clamp-toggle aria-controls="CollectionIntro" aria-expanded="false" hidden>
+        <span data-pp-clamp-label>Read more</span>
+      </button>
+    </div>
+  </div>
+{%- endif -%}

@@ -3660,3 +3660,266 @@ body.is-locked {
   color: #fff !important;
   font-weight: 700 !important;
 }
+
+/* SEO intro above the products (pp-collection-intro). */
+.pp-collection-template .pp-collection-intro {
+  max-width: 860px;
+  padding: 18px 0 4px;
+}
+
+.pp-collection-template .pp-collection-intro__text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--pp-text-secondary);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.pp-collection-template .pp-collection-intro__text > * {
+  display: inline;
+  margin: 0;
+}
+
+.pp-collection-template .pp-collection-intro__text > * + *::before {
+  content: ' ';
+}
+
+.pp-collection-template .pp-collection-intro.is-expanded .pp-collection-intro__text {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+.pp-collection-template .pp-collection-intro.is-expanded .pp-collection-intro__text > * {
+  display: block;
+  margin: 0 0 10px;
+}
+
+.pp-collection-template .pp-collection-intro.is-expanded .pp-collection-intro__text > * + *::before {
+  content: none;
+}
+
+.pp-collection-template .pp-collection-intro__text a,
+.pp-collection-template .pp-collection-seo__body a {
+  color: var(--pp-primary-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pp-collection-template button.pp-readmore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pp-primary-dark);
+  font-family: var(--pp-font-heading);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pp-collection-template .pp-readmore[hidden] {
+  display: none;
+}
+
+.pp-collection-template button.pp-readmore:hover {
+  color: #9a2e10;
+  text-decoration: underline;
+}
+
+.pp-collection-template .pp-readmore:focus-visible,
+.pp-collection-template .pp-collection-faq__q:focus-visible,
+.pp-collection-template .pp-collection-seo__chip:focus-visible {
+  outline: 2px solid var(--pp-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* SEO content under the products (pp-collection-seo). */
+.pp-collection-template .pp-collection-seo {
+  margin-top: 48px;
+  padding: 48px 0 56px;
+  border-top: 1px solid var(--pp-border);
+  background: var(--pp-bg-subtle);
+}
+
+.pp-collection-template .pp-collection-seo .pp-wrap {
+  display: grid;
+  gap: 44px;
+}
+
+.pp-collection-template .pp-collection-seo__about,
+.pp-collection-template .pp-collection-faq,
+.pp-collection-template .pp-collection-seo__related {
+  max-width: 860px;
+}
+
+.pp-collection-template .pp-collection-seo__title {
+  margin: 0 0 16px;
+  color: var(--pp-text);
+  font-family: var(--pp-font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.pp-collection-template .pp-collection-seo__body {
+  position: relative;
+  max-height: 11.5em;
+  overflow: hidden;
+  color: var(--pp-text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.pp-collection-template .pp-collection-seo__body::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 3em;
+  background: linear-gradient(rgb(247 248 250 / 0), var(--pp-bg-subtle));
+  pointer-events: none;
+}
+
+.pp-collection-template .pp-collection-seo__about.is-expanded .pp-collection-seo__body {
+  max-height: none;
+}
+
+.pp-collection-template .pp-collection-seo__about.is-expanded .pp-collection-seo__body::after,
+.pp-collection-template .pp-collection-seo__about:has(.pp-readmore[hidden]) .pp-collection-seo__body::after {
+  content: none;
+}
+
+.pp-collection-template .pp-collection-seo__body h2,
+.pp-collection-template .pp-collection-seo__body h3 {
+  margin: 20px 0 8px;
+  color: var(--pp-text);
+  font-family: var(--pp-font-heading);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.pp-collection-template .pp-collection-seo__body p,
+.pp-collection-template .pp-collection-seo__body ul,
+.pp-collection-template .pp-collection-seo__body ol {
+  margin: 0 0 12px;
+}
+
+.pp-collection-template .pp-collection-seo__body ul,
+.pp-collection-template .pp-collection-seo__body ol {
+  padding-left: 20px;
+}
+
+.pp-collection-template .pp-collection-faq__list {
+  border-top: 1px solid var(--pp-border);
+}
+
+.pp-collection-template .pp-collection-faq__item {
+  border-bottom: 1px solid var(--pp-border);
+}
+
+.pp-collection-template .pp-collection-faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 2px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.pp-collection-template .pp-collection-faq__q::-webkit-details-marker {
+  display: none;
+}
+
+.pp-collection-template .pp-collection-faq__q h3 {
+  margin: 0;
+  color: var(--pp-text);
+  font-family: var(--pp-font-body);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pp-collection-template .pp-collection-faq__q:hover h3 {
+  color: var(--pp-primary-dark);
+}
+
+.pp-collection-template .pp-collection-faq__icon {
+  flex-shrink: 0;
+  color: var(--pp-text-secondary);
+  transition: transform var(--pp-transition);
+}
+
+.pp-collection-template .pp-collection-faq__item[open] .pp-collection-faq__icon {
+  transform: rotate(180deg);
+  color: var(--pp-primary-dark);
+}
+
+.pp-collection-template .pp-collection-faq__a {
+  padding: 0 2px 20px;
+  color: var(--pp-text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.pp-collection-template .pp-collection-seo__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pp-collection-template .pp-collection-seo__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-pill);
+  background: var(--pp-white);
+  color: var(--pp-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color var(--pp-transition), color var(--pp-transition);
+}
+
+.pp-collection-template .pp-collection-seo__chip:hover {
+  border-color: var(--pp-primary);
+  color: var(--pp-primary-dark);
+}
+
+@media (max-width: 749px) {
+  .pp-collection-template .pp-collection-intro {
+    padding-top: 14px;
+  }
+
+  .pp-collection-template .pp-collection-intro__text {
+    font-size: 14px;
+  }
+
+  .pp-collection-template .pp-collection-seo {
+    margin-top: 32px;
+    padding: 36px 0 40px;
+  }
+
+  .pp-collection-template .pp-collection-seo .pp-wrap {
+    gap: 36px;
+  }
+
+  .pp-collection-template .pp-collection-seo__title {
+    font-size: 19px;
+  }
+
+  .pp-collection-template .pp-collection-faq__q h3 {
+    font-size: 15px;
+  }
+}
