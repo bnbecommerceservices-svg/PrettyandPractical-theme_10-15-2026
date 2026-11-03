@@ -8,7 +8,8 @@
   layout 'column': a column of the "all categories" view, with the category
   name, up to 8 sub-links and a "Shop all" link.
   layout 'panel': the full-width panel a top nav link opens: the category name,
-  a short line from its collection description and a "Shop all" button, next to
+  a short line (its collection description, or its sub-category names) and a
+  "Shop all" button, next to
   every sub-link (and its own sub-links, the third menu level, indented under it).
 
   @param {string} layout - 'column' or 'panel'.
@@ -91,10 +92,14 @@
     assign panel_blurb = blank
     if panel_collection != blank and panel_collection.description != blank
       assign panel_blurb = panel_collection.description | strip_html | truncatewords: 22
+    elsif has_children
+      assign child_titles = child_links | map: 'title' | join: ', ' | downcase
+      assign panel_blurb = 'Browse ' | append: child_titles | append: '.'
     endif
   -%}
   <div class="pp-catmega__panel" data-catmega-panel="{{ key | escape }}" hidden>
     <div class="pp-catmega__intro">
+      <p class="pp-catmega__eyebrow">Department</p>
       <p class="pp-catmega__panel-title">{{ label | escape }}</p>
       {%- if panel_blurb != blank -%}<p class="pp-catmega__blurb">{{ panel_blurb }}</p>{%- endif -%}
       <a class="pp-catmega__shop-btn" href="{{ url }}">Shop all {{ label | escape }}</a>
