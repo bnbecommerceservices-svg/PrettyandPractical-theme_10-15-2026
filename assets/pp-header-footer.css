@@ -1379,44 +1379,10 @@ span.pp-nav-link {
 .pp-catmega__link:focus-visible,
 .pp-catmega__col-head:focus-visible,
 .pp-catmega__shop-all:focus-visible,
-.pp-catmega__shop-btn:focus-visible,
-.pp-catmega__foot a:focus-visible {
+.pp-catmega__shop-btn:focus-visible {
   outline: 2px solid var(--pp-primary);
   outline-offset: 2px;
   border-radius: 6px;
-}
-
-.pp-catmega__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 28px;
-  border-top: 1px solid #eef0f3;
-  background: #f8fafc;
-}
-
-.pp-catmega__foot p {
-  margin: 0;
-  color: #64748b;
-  font-size: 12.5px;
-}
-
-.pp-catmega__foot a {
-  color: #0f172a;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.pp-catmega__foot a:hover {
-  color: var(--pp-primary);
-}
-
-.pp-catmega__foot-links {
-  display: flex;
-  gap: 20px;
 }
 
 .pp-catmega__empty {
