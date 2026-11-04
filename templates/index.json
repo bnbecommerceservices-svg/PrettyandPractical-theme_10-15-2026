@@ -11,7 +11,7 @@
             "heading": "Home Decor Items for Wall",
             "text": "Time to define your wall story with mirrors, canvas art and statement pieces for Australian homes.",
             "button_label": "Shop home decor",
-            "link": "/collections/home-decor"
+            "link": "/collections/wall-and-decorative-mirrors"
           }
         },
         "hero_2": {
@@ -22,7 +22,7 @@
             "heading": "Furniture for Every Room",
             "text": "Bedroom, dining, living and office pieces that blend style with everyday function.",
             "button_label": "Shop furniture",
-            "link": "/collections/furniture"
+            "link": "/collections/accent-furniture"
           }
         },
         "hero_3": {
@@ -33,7 +33,7 @@
             "heading": "Plant Stands & Outdoor Living",
             "text": "Stylish plant stands and outdoor-ready pieces for balconies, patios and gardens.",
             "button_label": "Shop outdoor",
-            "link": "/collections/plant-stands"
+            "link": "/collections/plant-stands-and-racks"
           }
         },
         "value_1": {
@@ -249,7 +249,7 @@
         "featured_save_label": "Save now",
         "featured_primary_label": "About us",
         "featured_secondary_label": "Shop bestsellers",
-        "secondary_collection": "furniture",
+        "secondary_collection": "accent-furniture",
         "secondary_product_1": "tufted-velvet-vanity-chair-with-back-upholstered-stool-accent-elegant-curved-leg",
         "secondary_product_2": "contemporary-wide-square-solid-marble-side-table-storage-center-table-home-decor",
         "secondary_product_3": "high-grade-marble-stone-round-nesting-sofa-side-end-table-with-gold-metal-frame",

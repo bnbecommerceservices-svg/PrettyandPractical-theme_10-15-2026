@@ -1020,7 +1020,7 @@ body.pp-header-locked .content-for-layout {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: clamp(12px, 1.6vw, 22px);
+  gap: clamp(8px, 1.1vw, 22px);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -1038,10 +1038,13 @@ body.pp-header-locked .content-for-layout {
   min-height: 46px;
   border-bottom: 1px solid transparent;
   color: #222;
-  font-size: 14px;
+  font-size: clamp(12px, 0.9vw, 14px);
   font-weight: 500;
-  white-space: nowrap;
-  flex-shrink: 0;
+  line-height: 1.2;
+  text-align: center;
+  /* Every department stays in the row: on narrower screens a long name wraps onto two lines. */
+  flex: 0 1 auto;
+  min-width: 0;
   transition: color var(--pp-transition), border-color var(--pp-transition);
 }
 
@@ -1054,7 +1057,7 @@ span.pp-nav-link {
   align-items: center;
   gap: 8px;
   height: 36px;
-  margin-right: 10px;
+  margin-right: 6px;
   padding: 0 14px;
   border: 0;
   border-radius: 8px;
@@ -1161,8 +1164,20 @@ span.pp-nav-link {
 .pp-catmega__cols {
   display: grid;
   grid-template-columns: repeat(var(--pp-catmega-cols, 5), minmax(0, 1fr));
-  gap: 28px 24px;
+  gap: 28px 20px;
   padding: 28px 28px 24px;
+}
+
+/* Every category on one row, so the column heads share a two-line height and their rules line up. */
+.pp-catmega__cols .pp-catmega__col-head {
+  display: flex;
+  align-items: flex-end;
+  min-height: calc(2 * 1.3em + 12px);
+}
+
+.pp-catmega__cols .pp-catmega__link {
+  padding: 7px 0;
+  font-size: 14px;
 }
 
 .pp-catmega__col {
@@ -1394,8 +1409,7 @@ span.pp-nav-link {
 
 @media (max-width: 1200px) {
   .pp-catmega__cols {
-    grid-template-columns: repeat(min(var(--pp-catmega-cols, 5), 5), minmax(0, 1fr));
-    gap: 24px 18px;
+    gap: 24px 16px;
     padding-inline: 24px;
   }
 
@@ -1403,7 +1417,21 @@ span.pp-nav-link {
 
 @media (max-width: 1000px) {
   .pp-catmega__cols {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* The button keeps its icon only so every department name still fits beside it. */
+  .pp-catmega-trigger {
+    padding: 0 10px;
+  }
+
+  .pp-catmega-trigger > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .pp-catmega__panel:not(.pp-catmega__panel--all) {
