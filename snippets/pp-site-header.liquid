@@ -927,7 +927,7 @@
       </div>
     {% endif %}
 
-    <div class="pp-cart-body" aria-label="{{ 'accessibility.cart' | t }}">
+    <div class="pp-cart-body cart-drawer__content" aria-label="{{ 'accessibility.cart' | t }}">
       {% render 'cart-products', force_empty: true, is_drawer: true %}
     </div>
   {% endcapture %}
@@ -988,7 +988,7 @@
               </div>
             {% endif %}
 
-            <div class="pp-cart-body" aria-label="{{ 'accessibility.cart' | t }}">
+            <div class="pp-cart-body cart-drawer__content" aria-label="{{ 'accessibility.cart' | t }}">
               {% render 'cart-products', is_drawer: true %}
             </div>
 

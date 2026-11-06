@@ -1026,3 +1026,15 @@ body.pp-cart-drawer-open {
   width: 30px;
   height: 30px;
 }
+
+/* Judge.me cart drawer widget ("Customers rate this store").
+   Judge.me puts it in .cart-drawer__content, which is .pp-cart-body here.
+   If it ever lands on the drawer element itself (outside the panel), hide it:
+   otherwise it shows on the page between the header and the category bar. */
+cart-drawer-component > #jdgm-cart-drawer-widget {
+  display: none !important;
+}
+
+.pp-cart-body > #jdgm-cart-drawer-widget {
+  margin: 8px 20px 20px;
+}
