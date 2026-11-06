@@ -1038,3 +1038,17 @@ cart-drawer-component > #jdgm-cart-drawer-widget {
 .pp-cart-body > #jdgm-cart-drawer-widget {
   margin: 8px 20px 20px;
 }
+
+/* Judge.me's "Customers rate this store" box: brand-orange stars.
+   Judge.me writes its teal (#108474) inline on each star group as a
+   scoped variable, so it has to be overridden here with !important. */
+#jdgm-cart-drawer-widget,
+#jdgm-cart-drawer-widget [class*="jm-"] {
+  --jm-widget-primary-color: #e8532a !important;
+  --jm-review-widget-star-and-histogram-color: #e8532a !important;
+  --jm-review-widget-button-color: #e8532a !important;
+}
+
+#jdgm-cart-drawer-widget .jm-star-rating {
+  --v2c8a9f7e: #e8532a !important;
+}
