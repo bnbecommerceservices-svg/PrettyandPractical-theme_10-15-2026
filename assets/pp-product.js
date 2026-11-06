@@ -650,13 +650,15 @@
       headers: { Accept: 'application/json' }
     });
     const cart = await response.json();
+    // The cart badge counts different products (cart lines), not total quantity.
+    const productCount = Array.isArray(cart.items) ? cart.items.length : 0;
     document.querySelectorAll('.pp-header-cart-count').forEach((countEl) => {
-      countEl.textContent = cart.item_count;
-      countEl.setAttribute('aria-label', `${cart.item_count} item${cart.item_count === 1 ? '' : 's'} in cart`);
+      countEl.textContent = productCount;
+      countEl.setAttribute('aria-label', `${productCount} item${productCount === 1 ? '' : 's'} in cart`);
     });
     document.querySelectorAll('.pp-header__cart, .pp-cart-btn').forEach((cartButton) => {
-      cartButton.setAttribute('data-count', String(cart.item_count));
-      cartButton.setAttribute('aria-label', `Cart - ${cart.item_count} item${cart.item_count === 1 ? '' : 's'}`);
+      cartButton.setAttribute('data-count', String(productCount));
+      cartButton.setAttribute('aria-label', `Cart - ${productCount} item${productCount === 1 ? '' : 's'}`);
     });
     document.dispatchEvent(new CustomEvent('cart:update', {
       bubbles: true,

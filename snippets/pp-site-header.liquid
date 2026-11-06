@@ -97,7 +97,8 @@
     endif
   endif
 
-  assign cart_count = cart.item_count | default: 0
+  # The cart badge counts different products (cart lines), not total quantity.
+  assign cart_count = cart.items.size | default: 0
 
   assign pp_use_menu_mega = false
   # With a "Shop by category" menu, its departments fill the category row and the mobile menu.
@@ -900,7 +901,7 @@
   {% capture empty_cart_drawer_content %}
     <header class="pp-cart-header">
       <h2 class="pp-cart-title" id="cart-drawer-heading-empty">Your Cart</h2>
-      <span class="pp-cart-count">{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</span>
+      <span class="pp-cart-count">{{ cart.items.size }} item{% if cart.items.size != 1 %}s{% endif %}</span>
       <button
         ref="closeButton"
         on:click="cart-drawer-component/close"
@@ -961,7 +962,7 @@
           {% else %}
             <header class="pp-cart-header">
               <h2 class="pp-cart-title" id="cart-drawer-heading">Your Cart</h2>
-              <span class="pp-cart-count">{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</span>
+              <span class="pp-cart-count">{{ cart.items.size }} item{% if cart.items.size != 1 %}s{% endif %}</span>
               <button
                 ref="closeButton"
                 on:click="cart-drawer-component/close"
@@ -1859,15 +1860,16 @@
           return response.json();
         })
         .then(function (cart) {
-          if (cart && cart.item_count !== undefined) updatePrettyCartCount(cart.item_count);
+          if (cart && Array.isArray(cart.items)) updatePrettyCartCount(cart.items.length);
         })
         .catch(function () {});
     }
 
     document.addEventListener('cart:update', function (event) {
-      const cartCount = event.detail?.resource?.item_count;
-      if (cartCount !== undefined) {
-        updatePrettyCartCount(cartCount);
+      // Count different products (cart lines), not total quantity.
+      const items = event.detail?.resource?.items;
+      if (Array.isArray(items)) {
+        updatePrettyCartCount(items.length);
       } else {
         refreshPrettyCartCount();
       }
