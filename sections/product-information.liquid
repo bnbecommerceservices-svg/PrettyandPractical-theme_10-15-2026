@@ -21,14 +21,20 @@
   assign review_rating = product.metafields.reviews.rating.value.rating | default: product.metafields.judgeme.rating
   assign review_scale = product.metafields.reviews.rating.value.scale_max | default: 5
   assign review_count = product.metafields.reviews.rating_count.value | default: product.metafields.reviews.rating_count | default: product.metafields.judgeme.review_count
-  if review_rating == blank
-    assign review_rating = 4.8
+  # Judge.me's badge data carries the rating when Shopify's review metafields are empty.
+  assign badge_data = product.metafields.judgeme.badge | replace: '"', "'"
+  if review_rating == blank and badge_data contains "data-average-rating='"
+    assign review_rating = badge_data | split: "data-average-rating='" | last | split: "'" | first | plus: 0
   endif
-  if review_count == blank or review_count < 1
-    assign review_count = 127
+  if review_count == blank and badge_data contains "data-number-of-reviews='"
+    assign review_count = badge_data | split: "data-number-of-reviews='" | last | split: "'" | first | plus: 0
+  endif
+  # Only real Judge.me ratings: a product without reviews shows a "Write a review" link instead.
+  assign has_review_summary = false
+  if review_rating != blank and review_count != blank and review_count > 0
+    assign has_review_summary = true
   endif
   assign review_rating_rounded = review_rating | floor
-  assign has_review_summary = true
   assign review_app_provider = 'judgeme'
   assign has_fallback_review_app_markup = true
   assign has_review_app_content = true
@@ -821,17 +827,22 @@
               {% endif %}
             </div>
 
-            <div class="pp-rating-wrap" data-pp-rating-hover>
-              <a href="#reviews" class="pp-rating-row pp-rating-row--judgeme" id="reviews-link">
-                {% render 'pp-home-rating', product: product %}
-                <span class="pp-rating-num">{{ review_rating | round: 1 }}</span>
-                <span class="pp-rating-sep">·</span>
-                <span class="pp-rating-link">{{ review_count }} ratings</span>
-              </a>
-              <div class="pp-rating-popover" id="pp-rating-popover" role="tooltip">
-                {% render 'pp-rating-histogram', rating: review_rating, count: review_count, show_cta: true %}
+            {% if has_review_summary %}
+              <div class="pp-rating-wrap">
+                <a href="#reviews" class="pp-rating-row pp-rating-row--judgeme" id="reviews-link">
+                  {% render 'pp-home-rating', product: product %}
+                  <span class="pp-rating-num">{{ review_rating | round: 1 }}</span>
+                  <span class="pp-rating-sep">·</span>
+                  <span class="pp-rating-link">{{ review_count }} {% if review_count == 1 %}rating{% else %}ratings{% endif %}</span>
+                </a>
               </div>
-            </div>
+            {% else %}
+              <div class="pp-rating-wrap">
+                <a href="#reviews" class="pp-rating-row pp-rating-row--judgeme" id="reviews-link">
+                  <span class="pp-rating-link">No reviews yet · Write a review</span>
+                </a>
+              </div>
+            {% endif %}
 
             <p class="pp-brand-line">by <span class="pp-brand-line__name">Pretty &amp; Practical</span></p>
 

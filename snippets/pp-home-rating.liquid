@@ -1,16 +1,23 @@
 {%- liquid
-  assign rating_fill = 5
-  assign rating_value = product.metafields.reviews.rating.value.rating
-  if rating_value != blank
-    assign rating_fill = rating_value | floor
-    if rating_fill < 4
-      assign rating_fill = 4
+  # One row of stars from the product's real Judge.me rating; nothing is shown without one.
+  # Judge.me's own star badge is not rendered here, so the stars never show twice.
+  # The rating comes from Shopify's review metafields, or else from Judge.me's badge data.
+  assign rating_value = product.metafields.reviews.rating.value.rating | default: product.metafields.judgeme.rating
+  if rating_value == blank and product.metafields.judgeme.badge != blank
+    assign badge_data = product.metafields.judgeme.badge | replace: '"', "'"
+    if badge_data contains "data-average-rating='"
+      assign rating_value = badge_data | split: "data-average-rating='" | last | split: "'" | first | plus: 0
     endif
   endif
+  assign rating_fill = 0
+  if rating_value != blank
+    assign rating_fill = rating_value | round
+  endif
 -%}
-{%- render 'pp-judgeme-badge', product: product -%}
-<span class="pp-stars pp-card__rating-fallback" aria-label="{{ rating_fill }} out of 5 stars">
-  {%- for i in (1..5) -%}
-    <svg viewBox="2.4 2.2 19.2 19.6" aria-hidden="true"{% if i > rating_fill %} class="dim"{% endif %}><path d="M12 2.5l2.7 6.2 6.8.6-5.2 4.5 1.6 6.6L12 16.8 6.1 20.4l1.6-6.6L2.5 9.3l6.8-.6L12 2.5z"/></svg>
-  {%- endfor -%}
-</span>
+{%- if rating_fill > 0 -%}
+  <span class="pp-stars pp-card__rating-fallback" aria-label="{{ rating_value | round: 1 }} out of 5 stars">
+    {%- for i in (1..5) -%}
+      <svg viewBox="2.4 2.2 19.2 19.6" aria-hidden="true"{% if i > rating_fill %} class="dim"{% endif %}><path d="M12 2.5l2.7 6.2 6.8.6-5.2 4.5 1.6 6.6L12 16.8 6.1 20.4l1.6-6.6L2.5 9.3l6.8-.6L12 2.5z"/></svg>
+    {%- endfor -%}
+  </span>
+{%- endif -%}
