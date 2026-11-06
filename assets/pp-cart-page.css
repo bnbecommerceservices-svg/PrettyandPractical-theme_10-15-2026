@@ -1237,10 +1237,25 @@
   box-shadow: 0 10px 22px rgb(232 83 42 / 0.32);
 }
 
+@media (max-width: 1200px) {
+  /* Narrower quantity and total columns so the product name keeps room. */
+  .pp-main .pp-items__head,
+  .pp-main .pp-item {
+    grid-template-columns: minmax(0, 1fr) 136px 112px;
+    gap: 20px;
+  }
+}
+
 @media (max-width: 1024px) {
+  /* Items full width with the summary below: beside a 380px summary the
+     product name was squeezed to a few letters per line. */
   .pp-main .pp-cart-layout {
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
+  }
+
+  .pp-main .pp-summary {
+    position: static;
   }
 
   .pp-main .pp-recommend__grid:where(:not(.pp-cards):not(.pp-cards *)){
@@ -1254,7 +1269,8 @@
 
 @media (max-width: 860px) {
   .pp-main .pp-cart-layout {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr): a long product title must not widen the column past the screen. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .pp-main .pp-summary {

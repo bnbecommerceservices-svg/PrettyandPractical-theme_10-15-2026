@@ -559,22 +559,57 @@
         selection[optionPosition - 1] = pill.dataset.variantValue;
         if (selectionText) selectionText.textContent = getMeaningfulSelectionLabel();
         syncVariantDetails(findMatchingVariant());
+        updateQty(qty);
       });
     });
   });
 
+  // How many more of the selected variant can go in the cart: its stock or
+  // quantity limit minus what is already there. 99 when there is no limit.
+  function addableQty() {
+    const variant = findMatchingVariant();
+    if (!variant || typeof variant.maxQty !== 'number') return 99;
+    return Math.max(0, Math.min(99, variant.maxQty - (Number(variant.inCart) || 0)));
+  }
+
   function updateQty(newQty) {
-    qty = Math.max(1, Math.min(99, Number.isFinite(newQty) ? newQty : 1));
+    const limit = Math.max(1, addableQty());
+    qty = Math.max(1, Math.min(limit, Number.isFinite(newQty) ? newQty : 1));
     if (qtyInput) qtyInput.textContent = String(qty);
     if (qtyHidden) qtyHidden.value = String(qty);
     if (qtyMinus) qtyMinus.disabled = qty <= 1;
+    if (qtyPlus) qtyPlus.disabled = qty >= limit;
   }
+
+  // Keep each variant's in-cart count current after the cart changes.
+  function syncInCart(cart) {
+    if (!cart || !Array.isArray(cart.items) || !productData || !productData.variants) return;
+    productData.variants.forEach((variant) => {
+      variant.inCart = cart.items
+        .filter((item) => Number(item.variant_id) === Number(variant.id))
+        .reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    });
+    updateQty(qty);
+  }
+
+  document.addEventListener('cart:update', (event) => {
+    const cart = event.detail && event.detail.resource;
+    if (cart && Array.isArray(cart.items)) {
+      syncInCart(cart);
+    } else {
+      fetch(`${rootUrl}cart.js`, { headers: { Accept: 'application/json' } })
+        .then((response) => response.json())
+        .then(syncInCart)
+        .catch(() => {});
+    }
+  });
 
   updateQty(1);
 
   if (qtyMinus) qtyMinus.addEventListener('click', () => updateQty(qty - 1));
   if (qtyPlus) {
     qtyPlus.addEventListener('click', () => {
+      if (qty >= addableQty()) return;
       updateQty(qty + 1);
       qtyPlus.classList.add('is-pulsing');
       setTimeout(() => qtyPlus.classList.remove('is-pulsing'), 240);
@@ -655,6 +690,10 @@
     }
 
     if (variantIdInput) variantIdInput.value = matchingVariant.id;
+    if (addableQty() < 1) {
+      showToast(`You already have all ${matchingVariant.maxQty} available in your cart`, 'error');
+      return;
+    }
     updateQty(qty);
 
     const formData = new FormData();

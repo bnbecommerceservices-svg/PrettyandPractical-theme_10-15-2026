@@ -596,6 +596,15 @@
             if variant.inventory_management == 'shopify' and variant.inventory_quantity < 1
               assign variant_in_stock = false
             endif
+            # Most this variant can have in the cart: its quantity rule, capped by
+            # stock when Shopify tracks it and won't sell past zero. null = no limit.
+            assign variant_max_qty = variant.quantity_rule.max
+            if variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny'
+              assign variant_stock = variant.inventory_quantity | at_least: 0
+              if variant_max_qty == blank or variant_stock < variant_max_qty
+                assign variant_max_qty = variant_stock
+              endif
+            endif
             assign variant_savings = 0
             assign variant_percent_off = 0
             if variant.compare_at_price > variant.price
@@ -609,6 +618,8 @@
             "available": {{ variant.available | json }},
             "inStock": {{ variant_in_stock | json }},
             "sku": {{ variant.sku | json }},
+            "maxQty": {{ variant_max_qty | json }},
+            "inCart": {{ cart | item_count_for_variant: variant.id | json }},
             "price": {{ variant.price | money | json }},
             "priceValue": {{ variant.price | json }},
             "compareAtPrice": {{ variant.compare_at_price | money | json }},
