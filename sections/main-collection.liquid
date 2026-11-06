@@ -108,6 +108,7 @@
         overlay_color: section.settings.banner_overlay_color,
         category_menu: section.settings.category_menu
       %}
+      {% render 'pp-collection-intro', collection: collection, page_number: paginate.current_page %}
       {% render 'pp-collection-subcats', menu: section.settings.category_menu, collection: collection %}
 
       <div
@@ -317,6 +318,7 @@
           </div>
         </section>
 
+        {% render 'pp-collection-seo', collection: collection, menu: section.settings.category_menu, page_number: paginate.current_page, page_offset: paginate.current_offset %}
 
         <div class="pp-overlay" data-overlay aria-hidden="true"></div>
         <aside class="pp-drawer" id="filter-drawer" aria-label="Filter drawer" aria-hidden="true" data-filter-source="drawer">

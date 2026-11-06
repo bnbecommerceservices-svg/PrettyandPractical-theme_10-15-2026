@@ -85,9 +85,26 @@
   if pp_page_handle == 'sell-with-us' or pp_page_handle == 'seller-dashboard' or pp_page_handle == 'list-a-product' or pp_page_handle == 'bulk-list-products' or pp_page_handle == 'admin-dashboard' or pp_page_handle == 'product-listed' or pp_page_handle == 'ship-an-order' or pp_page_handle == 'bulk-upload-status' or pp_page_handle == 'shipment-recorded' or pp_page_handle == 'application-received'
     assign pp_noindex = true
   endif
+
+  # Filtered or re-sorted collection views repeat the main collection page: keep
+  # them out of search results but let crawlers follow their product links.
+  assign pp_noindex_follow = false
+  if request.page_type == 'collection'
+    if collection.sort_by != blank and collection.sort_by != collection.default_sort_by
+      assign pp_noindex_follow = true
+    endif
+    for filter in collection.filters
+      if filter.active_values.size > 0 or filter.min_value.value != blank or filter.max_value.value != blank
+        assign pp_noindex_follow = true
+        break
+      endif
+    endfor
+  endif
 %}
 {%- if pp_noindex -%}
   <meta name="robots" content="noindex, nofollow">
+{%- elsif pp_noindex_follow -%}
+  <meta name="robots" content="noindex, follow">
 {%- endif -%}
 
 <meta

@@ -363,7 +363,7 @@
     if section.settings.secondary_product_1 != blank or section.settings.secondary_product_2 != blank or section.settings.secondary_product_3 != blank or section.settings.secondary_product_4 != blank
       assign has_picked_new = true
     endif
-    assign secondary_view_url = secondary_collection.url | default: '/collections/furniture'
+    assign secondary_view_url = secondary_collection.url | default: '/collections/accent-furniture'
   %}
   {% if has_picked_new or secondary_collection != blank and secondary_collection.products_count > 0 %}
     <section class="pp-rail pp-section pp-section--white" aria-labelledby="secondary-rail-title-{{ section.id }}">

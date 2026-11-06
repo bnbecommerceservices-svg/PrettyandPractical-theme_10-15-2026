@@ -116,14 +116,13 @@
     endfor
   endif
 
-  # Label and intro come from the store: the department name for a sub-category, and the
-  # collection description from the admin. No made-up copy when the description is empty.
+  # The label comes from the store: the department name for a sub-category. The
+  # collection description is the intro under the banner (pp-collection-intro).
   if crumb_parent != blank
     assign banner_label = crumb_parent.title
   else
     assign banner_label = 'Shop the collection'
   endif
-  assign banner_blurb = collection.description | strip_html | strip | truncatewords: 32
 
   assign banner_h = banner_height | default: 200
   assign overlay_color = overlay_color | default: '#111827'
@@ -181,9 +180,6 @@
       <div class="pp-collection-hero__content">
         <p class="pp-collection-hero__label">{{ banner_label | escape }}</p>
         <h1 id="collection-title" class="pp-collection-title">{{ banner_title | escape }}</h1>
-        {% if banner_blurb != blank %}
-          <p class="pp-collection-desc">{{ banner_blurb | escape }}</p>
-        {% endif %}
         {% if banner_count > 0 %}
           <p class="pp-collection-hero__count">{{ banner_count }} products</p>
         {% endif %}

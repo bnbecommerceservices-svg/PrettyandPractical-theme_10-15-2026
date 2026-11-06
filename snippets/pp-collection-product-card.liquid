@@ -1,9 +1,7 @@
 {% liquid
   assign selected_variant = product.selected_or_first_available_variant
+  # Always the canonical /products/ URL, so search engines see one link per product.
   assign product_url = product.url
-  if collection != blank
-    assign product_url = product.url | within: collection
-  endif
   assign featured_image = product.featured_media.preview_image | default: product.featured_image
   # Second product image, shown when the card is hovered.
   assign hover_image = blank

@@ -780,3 +780,181 @@
     justify-self: start;
   }
 }
+
+/* Judge.me Review Widget (new version), styled through its own CSS variables so the
+   review cards, stars, rating bars and the write-a-review form all follow the brand.
+   Judge.me writes these variables inline on every element from its admin colour
+   settings, so they need !important to win. */
+[class*="jm-"] {
+  --jm-widget-primary-color: #e8532a !important;
+  --jm-review-widget-button-color: #e8532a !important;
+  --jm-review-widget-button-text-color: #fff !important;
+  --jm-review-widget-form-button-color: #e8532a !important;
+  --jm-review-widget-star-and-histogram-color: #e8532a !important;
+  --jm-review-widget-text-color: #111827 !important;
+  --jm-review-widget-lighter-text-color: #6b7280 !important;
+  --jm-review-widget-form-text-color: #111827 !important;
+  --jm-review-widget-form-field-background-color: #f9fafb !important;
+  --jm-widget-border-radius: 10px !important;
+}
+
+#judgeme_product_reviews .jm-review-widget {
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Section heading with the orange bar, as on the rest of the product page. */
+#judgeme_product_reviews .jm-review-widget-minimal-header__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #111827;
+  font-family: 'Sora', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+#judgeme_product_reviews .jm-review-widget-minimal-header__title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  background: #e8532a;
+}
+
+#judgeme_product_reviews .jm-button {
+  min-height: 46px;
+  padding: 0 22px;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background-color 0.22s ease;
+}
+
+#judgeme_product_reviews .jm-button--primary:hover {
+  --jm-review-widget-button-color: #c73e18 !important;
+  background-color: #c73e18;
+}
+
+/* "Be the first to write a review": the grey panel the old summary sat in. */
+#judgeme_product_reviews .jm-no-reviews-state__text {
+  color: #4b5563;
+  font-size: 16px;
+}
+
+#judgeme_product_reviews .jm-review-widget__header > .jm-center {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  padding: 32px 28px;
+  border-radius: 14px;
+  background: #f4f5f7;
+}
+
+@media (max-width: 767px) {
+  #judgeme_product_reviews .jm-review-widget-minimal-header__title {
+    font-size: 22px;
+  }
+}
+
+/* Judge.me's write-a-review form, stars and older widgets use its legacy "jdgm" styles,
+   which hard-code the colour from the Judge.me admin. These selectors are one step more
+   specific than Judge.me's own, so the brand orange wins without !important. */
+html:root {
+  --jdgm-primary-color: #e8532a;
+  --jdgm-secondary-color: rgba(232, 83, 42, 0.1);
+  --jdgm-star-color: #e8532a;
+  --jdgm-write-review-text-color: #fff;
+  --jdgm-write-review-bg-color: #e8532a;
+  --jdgm-paginate-color: #e8532a;
+  --jdgm-reviewer-name-color: #111827;
+  --jdgm-border-radius: 10px;
+}
+
+body .jdgm-star,
+body .jdgm-preview-badge .jdgm-star,
+body .jdgm-histogram .jdgm-star,
+body .jdgm-review-snippet-widget .jdgm-rev-snippet-widget__cards-container .jdgm-rev-snippet-card__rev-rating .jdgm-star,
+body .jdgm-write-review-modal .jdgm-write-review-modal__stars .jdgm-star,
+body .jdgm-write-review-modal .jdgm-write-review-modal__other-product-stars .jdgm-star {
+  color: #e8532a;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__content {
+  border-radius: 14px;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__title {
+  color: #111827;
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__nav-btn,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--contact-us,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--repeat-write-another,
+body .jdgm-write-review-modal .jdgm-write-review-modal__page .jdgm-picture-fieldset__delete,
+body .jdgm-write-review-modal .jdgm-write-review-modal__page .jdgm-picture-fieldset__delete:hover,
+body .jdgm-write-review-modal .jdgm-write-review-modal__chip-input:checked + .jdgm-write-review-modal__chip-label,
+body .jdgm-write-review-modal .jdgm-write-review-modal__chip-label:hover,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--leave-review:hover,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--repeat-not-now:hover {
+  background-color: #e8532a;
+  color: #fff;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__nav-btn,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--repeat-write-another,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--repeat-not-now,
+body .jdgm-write-review-modal .jdgm-write-review-modal__field-input,
+body .jdgm-write-review-modal .jdgm-write-review-modal__field-group--media-upload,
+body .jdgm-write-review-modal .jdgm-write-review-modal__page .jdgm-form__fieldset .jdgm-picture-fieldset__box--input {
+  border-radius: 10px;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__nav-btn:hover,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--contact-us:hover,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--repeat-write-another:hover {
+  background-color: #c73e18;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--leave-review,
+body .jdgm-write-review-modal .jdgm-write-review-modal__btn--repeat-not-now {
+  color: #e8532a;
+  border-color: #e8532a;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__field-input:focus,
+body .jdgm-write-review-modal .jdgm-write-review-modal__page .jdgm-form__fieldset .jdgm-picture-fieldset__box--input,
+body .jdgm-write-review-modal .jdgm-rev__slider-range::-webkit-slider-thumb {
+  border-color: #e8532a;
+}
+
+body .jdgm-write-review-modal .jdgm-write-review-modal__checkbox-input:checked + .jdgm-write-review-modal__checkbox-custom {
+  border-color: #e8532a;
+  background-color: #e8532a;
+}
+
+body .jdgm-write-review-modal .jdgm-rev__slider-range {
+  background-color: rgba(232, 83, 42, 0.2);
+}
+
+body .jdgm-write-review-modal .jdgm-coupon-banner {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), linear-gradient(90deg, #e8532a, #e8532a);
+}
+
+/* One orange focus ring on the review form's fields, in place of the browser's blue outline. */
+body .jdgm-write-review-modal .jdgm-write-review-modal__field-input:focus,
+body .jdgm-write-review-modal .jdgm-write-review-modal__field-input:focus-visible {
+  outline: none;
+  border-color: #e8532a;
+  box-shadow: 0 0 0 3px rgba(232, 83, 42, 0.18);
+}
+
+body .jdgm-write-review-modal :focus-visible {
+  outline-color: #e8532a;
+}
