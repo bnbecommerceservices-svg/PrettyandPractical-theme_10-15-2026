@@ -121,7 +121,7 @@
               <div class="pp-card__body">
                 <a href="{{ recommended_product.url }}" class="pp-card__title">{{ recommended_product.title }}</a>
                 <div class="pp-card__rating">
-                  {% render 'pp-judgeme-badge', product: recommended_product %}
+                  {% render 'pp-home-rating', product: recommended_product %}
                 </div>
                 <div class="pp-card__price">
                   <span class="pp-price{% if card_on_sale %} pp-price--sale{% endif %}">{{ card_variant.price | money }}</span>

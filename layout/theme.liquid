@@ -240,13 +240,7 @@ google-site-verification: google6f2b512ed5b8797f.html
     {% endif %}
     {% render 'pp-scroll-glow' %}
     <script src="{{ 'pp-page-scrollbar.js' | asset_url }}" defer></script>
-    <script>
-      window.jdgm = window.jdgm || {};
-      jdgm.SHOP_DOMAIN = {{ shop.permanent_domain | json }};
-      jdgm.PLATFORM = 'shopify';
-      jdgm.PUBLIC_TOKEN = {{ shop.metafields.judgeme.public_token | default: shop.metafields.judgeme.token | json }};
-    </script>
-    <script data-cfasync="false" src="https://cdnwidget.judge.me/widget_preloader.js" async></script>
+    {%- comment -%} Judge.me loads from its "Judge.me" app embed (Theme settings > App embeds). {%- endcomment -%}
   </body>
 </html>
 {%- endif -%}
