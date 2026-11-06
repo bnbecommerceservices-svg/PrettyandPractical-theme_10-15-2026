@@ -804,12 +804,45 @@
     });
   });
 
-  document.querySelectorAll('a[href="#reviews"]').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const reviews = document.getElementById('reviews');
-      if (!reviews) return;
-      e.preventDefault();
+  // Scroll to the reviews and keep aiming at them for a few seconds: sections
+  // above (recommendations, the reviews widget itself) load while the page
+  // scrolls and change height, which used to leave the shopper at the footer.
+  // Watches for 8 seconds, enough for a slow phone connection.
+  // Stops as soon as the shopper scrolls themselves.
+  function scrollToReviews() {
+    const reviews = document.getElementById('reviews');
+    if (!reviews) return;
+
+    // Stop below the fixed header so it doesn't cover the reviews heading.
+    const headerGroup = document.getElementById('header-group');
+    const headerFixed = headerGroup && ['fixed', 'sticky'].includes(getComputedStyle(headerGroup).position);
+    reviews.style.scrollMarginTop = `${(headerFixed ? headerGroup.offsetHeight : 0) + 16}px`;
+
+    const pageTop = () => reviews.getBoundingClientRect().top + window.scrollY;
+    let lastTop = pageTop();
+    const userEvents = ['wheel', 'touchstart', 'keydown'];
+    const check = window.setInterval(() => {
+      const top = pageTop();
+      if (Math.abs(top - lastTop) < 2) return;
+      lastTop = top;
       reviews.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+    const stop = () => {
+      window.clearInterval(check);
+      window.clearTimeout(timeout);
+      userEvents.forEach((type) => window.removeEventListener(type, stop));
+    };
+    const timeout = window.setTimeout(stop, 8000);
+
+    userEvents.forEach((type) => window.addEventListener(type, stop, { passive: true }));
+    reviews.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('a[href="#reviews"]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      if (!document.getElementById('reviews')) return;
+      event.preventDefault();
+      scrollToReviews();
     });
   });
 
@@ -826,15 +859,6 @@
     window.addEventListener('scroll', updateStickyBar, { passive: true });
     window.addEventListener('resize', updateStickyBar);
     updateStickyBar();
-  }
-
-  const reviewsLink = document.getElementById('reviews-link');
-  if (reviewsLink) {
-    reviewsLink.addEventListener('click', (event) => {
-      event.preventDefault();
-      const target = document.getElementById('reviews');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
   }
 
   document.querySelectorAll('[data-related-url]').forEach((container) => {
