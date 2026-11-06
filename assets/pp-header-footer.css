@@ -1316,17 +1316,23 @@ span.pp-nav-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  max-width: 100%;
   min-height: 42px;
   margin-top: 8px;
-  padding: 0 20px;
+  padding: 10px 22px;
   border-radius: 999px;
   background: var(--pp-primary);
   color: #fff;
   font-family: var(--pp-font-heading);
   font-size: 13.5px;
   font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap;
+  line-height: 1.3;
+  /* Long department names ("Home Organization & Storage") wrap inside the
+     intro column instead of running past its divider. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
   text-align: center;
   text-decoration: none;
   transition: background-color 160ms ease;
