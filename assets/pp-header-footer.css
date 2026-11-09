@@ -1020,10 +1020,49 @@ body.pp-header-locked .content-for-layout {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: clamp(8px, 1.1vw, 22px);
+  --pp-catrow-gap: clamp(12px, 1.1vw, 26px);
+  --pp-catrow-fade: 40px;
+  gap: var(--pp-catrow-gap);
   overflow-x: auto;
   overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 48px;
+  /* The row's width comes from the header, never from its departments,
+     so a long row scrolls instead of widening the page on phones. */
+  contain: inline-size;
+  min-width: 0;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fades at the row's edges when there are more departments to scroll to. */
+.pp-category-nav__inner::before,
+.pp-category-nav__inner::after {
+  content: "";
+  position: sticky;
+  z-index: 1;
+  flex: 0 0 var(--pp-catrow-fade);
+  align-self: stretch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.pp-category-nav__inner::before {
+  left: 0;
+  margin-right: calc(-1 * (var(--pp-catrow-fade) + var(--pp-catrow-gap)));
+  background: linear-gradient(to right, var(--pp-white, #fff) 20%, rgba(255, 255, 255, 0));
+}
+
+.pp-category-nav__inner::after {
+  right: 0;
+  margin-left: calc(-1 * (var(--pp-catrow-fade) + var(--pp-catrow-gap)));
+  background: linear-gradient(to left, var(--pp-white, #fff) 20%, rgba(255, 255, 255, 0));
+}
+
+.pp-category-nav__inner.has-more-start::before,
+.pp-category-nav__inner.has-more-end::after {
+  opacity: 1;
 }
 
 .pp-category-nav__inner::-webkit-scrollbar {
@@ -1038,13 +1077,13 @@ body.pp-header-locked .content-for-layout {
   min-height: 46px;
   border-bottom: 1px solid transparent;
   color: #222;
-  font-size: clamp(12px, 0.9vw, 14px);
+  font-size: clamp(13px, 0.9vw, 14px);
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
-  /* Every department stays in the row: on narrower screens a long name wraps onto two lines. */
-  flex: 0 1 auto;
-  min-width: 0;
+  /* Each department name stays on one line; when they don't all fit, the row scrolls sideways. */
+  white-space: nowrap;
+  flex: 0 0 auto;
   transition: color var(--pp-transition), border-color var(--pp-transition);
 }
 
@@ -1070,6 +1109,28 @@ span.pp-nav-link {
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
+  /* Stays on the left while the departments scroll past it. */
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  box-shadow: -16px 0 0 var(--pp-white, #fff), 6px 0 0 var(--pp-white, #fff);
+}
+
+.pp-catmega-trigger::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  left: calc(100% + 6px);
+  width: var(--pp-catrow-fade, 40px);
+  background: linear-gradient(to right, var(--pp-white, #fff) 15%, rgba(255, 255, 255, 0));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.pp-category-nav__inner.has-more-start .pp-catmega-trigger::after {
+  opacity: 1;
 }
 
 .pp-catmega-trigger svg {
@@ -1426,19 +1487,6 @@ span.pp-nav-link {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  /* The button keeps its icon only so every department name still fits beside it. */
-  .pp-catmega-trigger {
-    padding: 0 10px;
-  }
-
-  .pp-catmega-trigger > span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
 
   .pp-catmega__panel:not(.pp-catmega__panel--all) {
     grid-template-columns: 220px minmax(0, 1fr);
@@ -3116,14 +3164,28 @@ span.pp-nav-link {
     display: none !important;
   }
 
-  .pp-category-nav {
-    display: none;
+  /* Phones: the departments stay as one sideways-scrolling row under the header. */
+  .pp-category-nav__inner {
+    --pp-catrow-gap: 20px;
+    --pp-catrow-fade: 32px;
+    margin-inline: calc(-1 * var(--pp-wrap-pad, 16px));
+    padding-inline: var(--pp-wrap-pad, 16px);
+  }
+
+  /* Sticky fades line up with the row's padding, so pull them out to the screen edges. */
+  .pp-category-nav__inner::before {
+    left: calc(-1 * var(--pp-wrap-pad, 16px));
+  }
+
+  .pp-category-nav__inner::after {
+    right: calc(-1 * var(--pp-wrap-pad, 16px));
   }
 
   .pp-nav-link {
     gap: 6px;
-    padding: 0 10px;
-    font-size: 12.5px;
+    padding: 0 2px;
+    min-height: 42px;
+    font-size: 13px;
   }
 
   .pp-nav-icon {
