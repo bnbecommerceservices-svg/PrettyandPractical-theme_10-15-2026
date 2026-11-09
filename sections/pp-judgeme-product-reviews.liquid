@@ -39,18 +39,39 @@
   </div>
 </section>
 {%- comment -%}
-  If Judge.me's own Review Widget app block was also added to the product
-  section, keep only that one so the reviews don't show twice, and point the
-  "#reviews" star link at it. Runs before Judge.me's scripts fill the widgets.
+  Only one review widget per page. If Judge.me's own Review Widget app block is
+  also on this product page (added by Judge.me's "Install" button or by hand in
+  the theme editor, inside the product section or as its own section, above or
+  below this one), keep Judge.me's block and remove this section, so reviews
+  don't show twice and the two widgets don't share the id
+  "judgeme_product_reviews". An empty "#reviews" marker is put just before
+  Judge.me's block so the star link under the product title still scrolls to
+  the reviews. Runs now for blocks above this section, and again once the page
+  is parsed for blocks below it, before Judge.me's scripts fill the widgets.
+  See docs/judgeme-reviews.md.
 {%- endcomment -%}
 <script>
   (function () {
-    var appWidget = document.querySelector('.pp-app-blocks .jdgm-review-widget, .pp-app-blocks .jdgm-widget');
-    var own = document.getElementById('reviews');
-    if (!appWidget || !own) return;
-    own.remove();
-    var holder = appWidget.closest('.pp-app-block');
-    if (holder) holder.id = 'reviews';
+    function keepOneReviewWidget() {
+      var own = document.getElementById('reviews');
+      if (!own || !own.classList.contains('pp-creviews')) return true;
+      var widgets = document.querySelectorAll('.shopify-app-block .jdgm-review-widget');
+      var appWidget = null;
+      for (var i = 0; i < widgets.length; i++) {
+        if (!own.contains(widgets[i])) { appWidget = widgets[i]; break; }
+      }
+      if (!appWidget) return false;
+      own.remove();
+      var block = appWidget.closest('.shopify-app-block') || appWidget;
+      var marker = document.createElement('div');
+      marker.id = 'reviews';
+      marker.setAttribute('aria-hidden', 'true');
+      block.parentNode.insertBefore(marker, block);
+      return true;
+    }
+    if (!keepOneReviewWidget()) {
+      document.addEventListener('DOMContentLoaded', keepOneReviewWidget, { once: true });
+    }
   })();
 </script>
 
