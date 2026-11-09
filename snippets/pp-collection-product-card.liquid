@@ -183,3 +183,12 @@
     </div>
   </div>
 </article>
+
+{% stylesheet %}
+  /* The add-to-cart form's hidden status message is positioned absolutely.
+     Without a positioned card it lines up against the page instead, so in a
+     sideways-scrolling row of cards it sits off-screen and widens the page on phones. */
+  .pp-card {
+    position: relative;
+  }
+{% endstylesheet %}
