@@ -3800,3 +3800,197 @@ span.pp-nav-link {
   overflow: visible;
   filter: drop-shadow(0 3px 4px rgb(15 23 42 / 0.18));
 }
+
+/* =====================================================================
+   Phone header (768px and below)
+   One clean branded header: slim announcement bar, then menu / logo /
+   account + cart on one row, and the search bar under it. Categories live
+   in the menu drawer, so the category row is not shown on phones.
+   ===================================================================== */
+@media (max-width: 768px) {
+  .pp-site-header .pp-category-nav {
+    display: none !important;
+  }
+
+  /* Announcement bar: slimmer and lighter. */
+  .pp-site-header .pp-announcement {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  .pp-site-header .pp-announcement__ticker {
+    min-height: 30px;
+  }
+
+  .pp-site-header .pp-announcement__close {
+    flex-basis: 40px;
+    width: 40px;
+    height: 30px;
+    min-height: 0;
+  }
+
+  .pp-site-header .pp-header {
+    background: #fff;
+    border-bottom: 1px solid var(--pp-border-light, #eef0f3);
+    box-shadow: 0 6px 18px -14px rgb(17 24 39 / 0.35);
+  }
+
+  /* Menu | logo | account + cart, with the logo exactly in the middle. */
+  .pp-site-header .pp-header__inner {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      "menu logo actions"
+      "search search search";
+    gap: 6px 4px;
+    padding-block: 6px 12px;
+  }
+
+  .pp-site-header .pp-header__inner > .pp-mobile-menu-btn {
+    width: 44px;
+    height: 44px;
+    margin-left: -10px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--pp-navy, #111827);
+    box-shadow: none;
+  }
+
+  .pp-site-header .pp-header__inner > .pp-mobile-menu-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.9;
+  }
+
+  /* Logo: a little larger, with the tagline spaced out underneath. */
+  .pp-site-header .pp-header .pp-logo {
+    align-items: center;
+    padding-block: 4px;
+    margin-block: 0;
+  }
+
+  .pp-site-header .pp-header .pp-logo-text,
+  .pp-site-header .pp-header .pp-logo__mark {
+    font-size: 19px !important;
+    letter-spacing: -0.025em;
+  }
+
+  .pp-site-header .pp-header .pp-logo-subtitle,
+  .pp-site-header .pp-header .pp-logo__sub {
+    margin-top: 4px;
+    font-size: 8.5px !important;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: #8b93a1;
+  }
+
+  .pp-site-header .pp-header__inner > .pp-header__actions {
+    gap: 4px;
+    margin-right: 0;
+  }
+
+  .pp-site-header .pp-mobile-search-btn {
+    display: none;
+  }
+
+  /* Account: a plain line icon, no grey box. */
+  .pp-site-header .pp-header__account.pp-action-btn--desktop {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--pp-navy, #111827);
+    box-shadow: none;
+  }
+
+  .pp-site-header .pp-header__account svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  /* Cart: the brand-orange button, with the item count in a navy badge. */
+  .pp-site-header .pp-header__actions .pp-cart-btn {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--pp-primary, #e8532a);
+    color: #fff;
+    box-shadow: 0 6px 14px -6px rgb(232 83 42 / 0.65);
+  }
+
+  .pp-site-header .pp-header__actions .pp-cart-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .pp-site-header .pp-header__actions .pp-cart-btn .pp-header-cart-text {
+    display: none;
+  }
+
+  .pp-site-header .pp-header__actions .pp-cart-btn .pp-cart-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: var(--pp-navy, #111827);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 15px;
+    text-align: center;
+  }
+
+  /* Search: a softer, slimmer bar. 16px text stops iPhones zooming in on tap. */
+  .pp-site-header .predictive-search--pp-inline .pp-search-bar {
+    height: 46px;
+    padding: 4px 4px 4px 14px;
+    gap: 8px;
+    border-color: transparent;
+    background: #f3f4f6;
+  }
+
+  .pp-site-header .predictive-search--pp-inline .pp-search-bar.is-focused {
+    background: #fff;
+    border-color: var(--pp-primary, #e8532a);
+  }
+
+  .pp-site-header .predictive-search--pp-inline .pp-search-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pp-site-header .predictive-search--pp-inline .pp-search-input {
+    font-size: 16px;
+  }
+
+  .pp-site-header .predictive-search--pp-inline .pp-search-submit {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+}
+
+@media (max-width: 374px) {
+  .pp-site-header .pp-header .pp-logo-text,
+  .pp-site-header .pp-header .pp-logo__mark {
+    font-size: 17px !important;
+  }
+
+  .pp-site-header .pp-header .pp-logo-subtitle,
+  .pp-site-header .pp-header .pp-logo__sub {
+    letter-spacing: 0.12em;
+  }
+}

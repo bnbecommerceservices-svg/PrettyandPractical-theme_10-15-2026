@@ -2328,3 +2328,13 @@
     display: none;
   }
 }
+
+/* Phones: a promo card grows to fit its label, title, text and button, so the
+   label at the top is never pushed above the card and cut off. */
+@media (max-width: 767px) {
+  .pp-homepage-storefront .pp-hero-card,
+  .pp-homepage-storefront .pp-hero-card--feature {
+    aspect-ratio: auto;
+    min-height: 240px;
+  }
+}
