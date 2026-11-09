@@ -5459,7 +5459,8 @@ product-recommendations.product-recommendations > .resource-list--grid .product-
 
   .pp-gallery-count {
     position: absolute;
-    right: 12px;
+    /* Bottom left, so it does not sit under the zoom button (bottom right). */
+    left: 12px;
     bottom: 12px;
     z-index: 3;
     display: inline-flex;
@@ -5474,8 +5475,14 @@ product-recommendations.product-recommendations > .resource-list--grid .product-
     pointer-events: none;
   }
 
-  /* Keep the page's last content clear of the fixed bar. */
+  /* Keep the page's last content clear of the fixed bar. The room is added
+     at the very bottom of the footer, not under the product details, so there
+     is no empty band before "Similar products". */
   .pp-product-page {
+    padding-bottom: 0;
+  }
+
+  body:has(.pp-product-page .pp-sticky-bar) .pp-foot {
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
   }
 }
@@ -5572,4 +5579,38 @@ product-recommendations.product-recommendations > .resource-list--grid .product-
 .pp-pdp-v2 .pp-cart-trust svg.pp-icon-simple {
   width: 22px;
   height: 22px;
+}
+
+/* Phones: a long category trail scrolls sideways inside the breadcrumb row
+   instead of pushing the page wider than the screen. The product name is
+   the page heading right below, so it is not repeated here. */
+@media (max-width: 767px) {
+  .pp-pdp-v2 .pp-breadcrumbs ol {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pp-pdp-v2 .pp-breadcrumbs ol::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pp-pdp-v2 .pp-breadcrumbs li.pp-breadcrumbs__current,
+  .pp-pdp-v2 .pp-breadcrumbs li.pp-breadcrumbs__current-sep {
+    display: none;
+  }
+
+  .pp-pdp-v2 .pp-breadcrumbs li {
+    white-space: nowrap;
+  }
+
+  /* The "Added" message slides up from below instead of in from the right,
+     so it never sits off the right edge of the screen. */
+  .pp-toast {
+    transform: translateY(calc(100% + 120px));
+  }
+
+  .pp-toast.is-visible {
+    transform: translateY(0);
+  }
 }

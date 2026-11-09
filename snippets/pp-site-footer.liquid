@@ -245,7 +245,8 @@ Renders the Pretty & Practical black multi-column footer.
         </div>
 
         <nav class="pp-foot__col" aria-label="{{ shop_heading | escape }}">
-          <h3 class="pp-foot__heading">{{ shop_heading | escape }}</h3>
+          <details class="pp-foot__acc" open>
+          <summary class="pp-foot__heading">{{ shop_heading | escape }}<svg class="pp-foot__chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary>
           <ul class="pp-foot__links">
             {% for entry in shop_entries %}
               {% assign entry_parts = entry | split: '¦' %}
@@ -253,10 +254,12 @@ Renders the Pretty & Practical black multi-column footer.
             {% endfor %}
             <li><a href="{{ routes.collections_url }}">All categories</a></li>
           </ul>
+          </details>
         </nav>
 
         <nav class="pp-foot__col" aria-label="Our policies">
-          <h3 class="pp-foot__heading">Our Policies</h3>
+          <details class="pp-foot__acc" open>
+          <summary class="pp-foot__heading">Our Policies<svg class="pp-foot__chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary>
           <ul class="pp-foot__links">
             <li><a href="{{ privacy_policy_url }}">Privacy Policy</a></li>
             <li><a href="{{ refund_policy_url }}">Return Policy</a></li>
@@ -266,10 +269,12 @@ Renders the Pretty & Practical black multi-column footer.
               <li><a href="{{ help_faq_url }}">FAQ</a></li>
             {% endif %}
           </ul>
+          </details>
         </nav>
 
         <nav class="pp-foot__col" aria-label="Help">
-          <h3 class="pp-foot__heading">Help</h3>
+          <details class="pp-foot__acc" open>
+          <summary class="pp-foot__heading">Help<svg class="pp-foot__chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary>
           <ul class="pp-foot__links">
             {% if help_about_url != blank %}
               <li><a href="{{ help_about_url }}">About Us</a></li>
@@ -281,6 +286,7 @@ Renders the Pretty & Practical black multi-column footer.
               <li><a href="{{ help_blogs_url }}">Blogs</a></li>
             {% endif %}
           </ul>
+          </details>
         </nav>
 
         {% if facebook_url != blank or instagram_url != blank or twitter_url != blank %}
@@ -340,6 +346,23 @@ Renders the Pretty & Practical black multi-column footer.
     </div>
   </footer>
 </div>
+
+<script>
+  (function () {
+    var phone = window.matchMedia('(max-width: 520px)');
+    var groups = document.querySelectorAll('.pp-foot__acc');
+    function sync() {
+      for (var i = 0; i < groups.length; i++) groups[i].open = !phone.matches;
+    }
+    for (var i = 0; i < groups.length; i++) {
+      groups[i].querySelector('summary').addEventListener('click', function (event) {
+        if (!phone.matches) event.preventDefault();
+      });
+    }
+    sync();
+    if (phone.addEventListener) phone.addEventListener('change', sync);
+  })();
+</script>
 
 {% stylesheet %}
   .pp-site-footer .pp-foot {
@@ -669,6 +692,82 @@ Renders the Pretty & Practical black multi-column footer.
   @media (max-width: 520px) {
     .pp-site-footer .pp-foot__grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Link lists: always open on larger screens; on phones each one folds into
+     a tap-to-open row so the footer is not a long list of links. */
+  .pp-site-footer .pp-foot__acc > summary {
+    display: block;
+    list-style: none;
+    cursor: default;
+  }
+
+  .pp-site-footer .pp-foot__acc > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .pp-site-footer .pp-foot__chev {
+    display: none;
+  }
+
+  @media (max-width: 520px) {
+    .pp-site-footer .pp-foot__grid {
+      row-gap: 0;
+    }
+
+    .pp-site-footer .pp-foot__brand {
+      margin-bottom: 24px;
+    }
+
+    .pp-site-footer .pp-foot__acc {
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .pp-site-footer nav.pp-foot__col:last-of-type .pp-foot__acc {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .pp-site-footer .pp-foot__acc > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 52px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .pp-site-footer .pp-foot__chev {
+      display: block;
+      width: 16px;
+      height: 16px;
+      color: rgba(255, 255, 255, 0.72);
+      transition: transform 200ms ease;
+    }
+
+    .pp-site-footer .pp-foot__acc[open] .pp-foot__chev {
+      transform: rotate(180deg);
+    }
+
+    .pp-site-footer .pp-foot__acc .pp-foot__links {
+      gap: 0;
+      padding-bottom: 12px;
+    }
+
+    .pp-site-footer .pp-foot__links a {
+      min-height: 40px;
+    }
+
+    .pp-site-footer .pp-foot__col--social {
+      margin-top: 28px;
+    }
+
+    .pp-site-footer .pp-foot__policy-links {
+      gap: 0 16px;
+    }
+
+    .pp-site-footer .pp-foot__policy-links a {
+      min-height: 36px;
     }
   }
 {% endstylesheet %}

@@ -1887,7 +1887,7 @@
 
   .pp-homepage-storefront .pp-section,
   .pp-homepage-storefront .pp-newsletter {
-    margin-top: 64px;
+    margin-top: 36px;
   }
 
   .pp-homepage-storefront .pp-values + .pp-section {
@@ -1965,7 +1965,12 @@
     height: 1px;
   }
 
-  .pp-homepage-storefront .pp-rail,
+  /* Product rows sit on the page background, so extra padding only adds
+     empty space; the section gap already separates them. */
+  .pp-homepage-storefront .pp-rail {
+    padding: 0;
+  }
+
   .pp-homepage-storefront .pp-reviews {
     padding: 40px 0;
   }
@@ -1978,6 +1983,8 @@
     padding-inline: var(--pp-wrap-pad);
     padding-bottom: 8px;
     scroll-snap-type: x mandatory;
+    /* Snap cards to the page margin, in line with the heading, not the screen edge. */
+    scroll-padding-inline: var(--pp-wrap-pad);
     scrollbar-width: none;
   }
 
