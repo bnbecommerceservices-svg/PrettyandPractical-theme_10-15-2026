@@ -31,6 +31,42 @@ google-site-verification: google6f2b512ed5b8797f.html
       <meta http-equiv="refresh" content="0;url={{ pp_policy_dest }}">
       <script>window.location.replace({{ pp_policy_dest | json }});</script>
     {%- endif -%}
+    {%- comment -%}
+      Fit the site on smaller desktop screens. The layout is sized for about a
+      1440 x 860 browser window; on desktop windows smaller than that the whole
+      page is scaled down (never below 80%), the same as zooming the browser
+      out, so the header, cart and products fit without the shopper zooming.
+      Phones and tablets (under 1025px wide) are left alone. --pp-zoom lets
+      full-screen parts (drawers, dialogs, sticky panels) still fill the window.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var current = 1;
+        function fit() {
+          var w = window.innerWidth;
+          var h = window.innerHeight;
+          var scale = 1;
+          if (w >= 1025 && h > 0) {
+            scale = Math.min(1, w / 1440, h / 860);
+            scale = Math.max(0.8, Math.round(scale * 100) / 100);
+          }
+          if (scale === current) return;
+          current = scale;
+          if (scale < 1) {
+            root.style.zoom = String(scale);
+            root.style.setProperty('--pp-zoom', String(scale));
+          } else {
+            root.style.removeProperty('zoom');
+            root.style.removeProperty('--pp-zoom');
+          }
+          try { window.dispatchEvent(new CustomEvent('pp:zoomchange', { detail: { zoom: scale } })); } catch (err) {}
+        }
+        window.ppZoom = function () { return current; };
+        fit();
+        window.addEventListener('resize', fit);
+      })();
+    </script>
     <script>
       (function () {
         function navigationType() {

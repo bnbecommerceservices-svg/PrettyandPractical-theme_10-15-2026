@@ -20,8 +20,10 @@
     var thumbHeight = Math.max(32, (view / total) * view);
     var max = total - view;
     var top = (window.scrollY / max) * (view - thumbHeight);
-    thumb.style.height = thumbHeight + 'px';
-    thumb.style.transform = 'translateY(' + top + 'px)';
+    // Window sizes are on-screen pixels; divide by the small-screen zoom to get CSS pixels.
+    var zoom = window.ppZoom ? window.ppZoom() : 1;
+    thumb.style.height = thumbHeight / zoom + 'px';
+    thumb.style.transform = 'translateY(' + top / zoom + 'px)';
   }
 
   window.addEventListener('scroll', update, { passive: true });

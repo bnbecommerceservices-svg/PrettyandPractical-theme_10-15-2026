@@ -1508,7 +1508,9 @@
       const host = categoryMega.offsetParent;
       if (!(link instanceof HTMLElement) || !(host instanceof HTMLElement)) return;
       const hostLeft = host.getBoundingClientRect().left + host.clientLeft;
-      const linkLeft = link.getBoundingClientRect().left - hostLeft;
+      const zoom = window.ppZoom ? window.ppZoom() : 1;
+      // Measured positions are on-screen pixels; under the small-screen zoom they are divided back into CSS pixels.
+      const linkLeft = (link.getBoundingClientRect().left - hostLeft) / zoom;
       const hostPadRight = parseFloat(getComputedStyle(host).paddingRight) || 0;
       const maxLeft = Math.max(0, host.clientWidth - hostPadRight - categoryMega.offsetWidth);
       const left = Math.min(Math.max(0, linkLeft - 12), maxLeft);
@@ -1610,15 +1612,16 @@
 
       function placeDropdown() {
         menu.style.left = '0px';
+        const zoom = window.ppZoom ? window.ppZoom() : 1;
         const edge = 16;
         const rect = menu.getBoundingClientRect();
         const overflowRight = rect.right - (window.innerWidth - edge);
         if (overflowRight > 0) {
-          menu.style.left = -Math.ceil(overflowRight) + 'px';
+          menu.style.left = -Math.ceil(overflowRight / zoom) + 'px';
         }
         const left = menu.getBoundingClientRect().left;
         if (left < edge) {
-          menu.style.left = Math.round(edge - group.getBoundingClientRect().left) + 'px';
+          menu.style.left = Math.round((edge - group.getBoundingClientRect().left) / zoom) + 'px';
         }
       }
 

@@ -2402,7 +2402,7 @@
 }
 
 .pp-product-page .pp-gallery {
-  --pp-gallery-max-h: min(64vh, calc(100dvh - var(--pp-header-group-height, 168px) - 88px), 720px);
+  --pp-gallery-max-h: min(calc(64vh / var(--pp-zoom, 1)), calc(100dvh / var(--pp-zoom, 1) - var(--pp-header-group-height, 168px) - 88px), 720px);
   position: relative;
   display: grid;
   grid-template-columns: 80px minmax(0, 1fr);
@@ -2638,7 +2638,7 @@
 
 .pp-lightbox {
   --pp-lightbox-header-offset: var(--pp-header-group-height, 168px);
-  --pp-lightbox-max-h: calc(100dvh - var(--pp-lightbox-header-offset) - 32px);
+  --pp-lightbox-max-h: calc(100dvh / var(--pp-zoom, 1) - var(--pp-lightbox-header-offset) - 32px);
   position: fixed;
   top: var(--pp-lightbox-header-offset);
   right: 0;
@@ -3080,7 +3080,7 @@
 
 /* ===== PDP redesign: buybox + details + accordions ===== */
 .pp-product-page .pp-gallery {
-  --pp-gallery-max-h: min(64vh, calc(100dvh - var(--pp-header-group-height, 168px) - 88px), 720px);
+  --pp-gallery-max-h: min(calc(64vh / var(--pp-zoom, 1)), calc(100dvh / var(--pp-zoom, 1) - var(--pp-header-group-height, 168px) - 88px), 720px);
   display: flex;
   flex-direction: column;
   gap: 10px;

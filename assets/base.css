@@ -8,7 +8,7 @@ body {
   display: flex;
   flex-direction: column;
   margin: 0;
-  min-height: 100svh;
+  min-height: calc(100svh / var(--pp-zoom, 1));
   font-variation-settings: 'slnt' 0;
 }
 
@@ -1569,7 +1569,7 @@ media-gallery {
     /* arbitrary offset value based on average theme spacing and header height */
     --viewport-offset: 400px;
     --constrained-min-height: 300px;
-    --constrained-height: max(var(--constrained-min-height), calc(100vh - var(--viewport-offset)));
+    --constrained-height: max(var(--constrained-min-height), calc(100vh / var(--pp-zoom, 1) - var(--viewport-offset)));
 
     margin-right: auto;
     margin-left: auto;
@@ -1635,8 +1635,8 @@ media-gallery {
 }
 
 zoom-dialog dialog {
-  width: 100vw;
-  height: 100vh;
+  width: calc(100vw / var(--pp-zoom, 1));
+  height: calc(100vh / var(--pp-zoom, 1));
   border: none;
   margin: 0;
   padding: 0;
@@ -3983,7 +3983,7 @@ text-component {
   right: 2px;
   z-index: 80;
   width: 2px;
-  height: 100vh;
+  height: calc(100vh / var(--pp-zoom, 1));
   background: #ececec;
   border-radius: 999px;
   pointer-events: none;

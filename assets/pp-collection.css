@@ -474,7 +474,7 @@ body.is-locked {
   position: sticky;
   top: var(--pp-sticky-sidebar-top);
   align-self: flex-start;
-  max-height: calc(100vh - var(--pp-sticky-sidebar-top) - 20px);
+  max-height: calc(100vh / var(--pp-zoom, 1) - var(--pp-sticky-sidebar-top) - 20px);
   overflow-y: auto;
   padding-right: 8px;
   scrollbar-width: thin;
@@ -1873,7 +1873,7 @@ body.is-locked {
   align-self: flex-start !important;
   width: 260px !important;
   min-width: 260px !important;
-  max-height: calc(100vh - var(--pp-sticky-sidebar-top) - 20px) !important;
+  max-height: calc(100vh / var(--pp-zoom, 1) - var(--pp-sticky-sidebar-top) - 20px) !important;
   overflow-y: auto !important;
   padding-right: 8px !important;
   scrollbar-width: thin;

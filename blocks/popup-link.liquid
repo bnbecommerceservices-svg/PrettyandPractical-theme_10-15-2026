@@ -86,7 +86,7 @@
 
   /* Needed to ensure the drawer is full height */
   .popup-link__content--drawer:modal {
-    max-height: 100dvh;
+    max-height: calc(100dvh / var(--pp-zoom, 1));
   }
 
   .popup-link__close {

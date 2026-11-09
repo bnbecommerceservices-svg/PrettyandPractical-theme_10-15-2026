@@ -96,7 +96,7 @@
     grid-template-rows: 100% 1fr;
     position: relative;
     overflow-y: auto;
-    max-height: 100vh;
+    max-height: calc(100vh / var(--pp-zoom, 1));
     flex-grow: 1;
 
     @media screen and (max-width: 749px) {
@@ -109,7 +109,7 @@
       min-height: 0;
       overflow-y: auto;
       height: auto; /* Prevent a bug in Safari where height:fit-content is not respected */
-      max-height: 100vh;
+      max-height: calc(100vh / var(--pp-zoom, 1));
     }
   }
 

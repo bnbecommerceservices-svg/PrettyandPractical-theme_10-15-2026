@@ -613,7 +613,7 @@
     --drawer-content-block-padding: 10px;
     --drawer-header-desktop-top: 0rem;
     --drawer-padding: calc(var(--padding-sm) + 7px);
-    --drawer-height: 100dvh;
+    --drawer-height: calc(100dvh / var(--pp-zoom, 1));
     --drawer-width: 95vw;
     --drawer-max-width: 500px;
 
@@ -658,7 +658,7 @@
     --height-small: 10rem;
     --height-medium: 11.5rem;
     --height-large: 13rem;
-    --height-full: 100vh;
+    --height-full: calc(100vh / var(--pp-zoom, 1));
 
     @media screen and (min-width: 750px) {
       --height-small: 17.5rem;

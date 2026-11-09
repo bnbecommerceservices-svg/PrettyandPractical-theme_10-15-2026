@@ -108,7 +108,7 @@
       var lastTop = window.scrollY + last.getBoundingClientRect().top;
       var maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
       var extra = Math.max(0, Math.ceil(lastTop - headerOffset() - maxScroll));
-      spacer.style.height = extra + 'px';
+      spacer.style.height = Math.ceil(extra / (window.ppZoom ? window.ppZoom() : 1)) + 'px';
     }
 
     function updateFromScroll() {

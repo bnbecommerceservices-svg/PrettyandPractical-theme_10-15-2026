@@ -55,7 +55,7 @@
 
     .full-height--desktop {
       height: 100%;
-      max-height: calc(100vh - var(--header-group-height, 0));
+      max-height: calc(100vh / var(--pp-zoom, 1) - var(--header-group-height, 0));
       min-height: fit-content;
     }
 

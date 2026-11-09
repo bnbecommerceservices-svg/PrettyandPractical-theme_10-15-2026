@@ -30,10 +30,10 @@ cart-drawer-component:has(.pp-cart-drawer__dialog[open]) .pp-cart-overlay {
   inset: 0 0 0 auto;
   width: clamp(360px, 28vw, 440px);
   max-width: clamp(360px, 28vw, 440px);
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100dvh;
-  max-height: 100dvh;
+  height: calc(100vh / var(--pp-zoom, 1));
+  height: calc(100dvh / var(--pp-zoom, 1));
+  min-height: calc(100dvh / var(--pp-zoom, 1));
+  max-height: calc(100dvh / var(--pp-zoom, 1));
   margin: 0;
   padding: 0;
   border: 0;
@@ -80,7 +80,7 @@ cart-drawer-component:has(.pp-cart-drawer__dialog[open]) .pp-cart-overlay {
   --pp-font-body: 'DM Sans', sans-serif;
   display: flex;
   min-height: 100%;
-  height: 100dvh;
+  height: calc(100dvh / var(--pp-zoom, 1));
   flex-direction: column;
   background: var(--pp-white);
   border-radius: 0;

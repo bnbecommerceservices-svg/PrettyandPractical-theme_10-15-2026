@@ -1525,7 +1525,7 @@ span.pp-nav-link {
   right: auto;
   width: max-content;
   min-width: 220px;
-  max-width: min(780px, calc(100vw - 32px));
+  max-width: min(780px, calc(100vw / var(--pp-zoom, 1) - 32px));
   z-index: var(--pp-header-layer-dropdown);
   opacity: 0;
   visibility: hidden;
@@ -1841,7 +1841,7 @@ span.pp-nav-link {
 
 .pp-drawer {
   width: min(320px, 85vw);
-  height: 100vh;
+  height: calc(100vh / var(--pp-zoom, 1));
   position: fixed;
   top: 0;
   left: 0;
@@ -2631,8 +2631,8 @@ span.pp-nav-link {
     top: 0;
     left: 0;
     width: min(320px, 85vw);
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh / var(--pp-zoom, 1));
+    height: calc(100dvh / var(--pp-zoom, 1));
     z-index: 1000;
   }
 
@@ -3297,7 +3297,7 @@ span.pp-nav-link {
   position: relative;
   z-index: 1;
   width: min(460px, 100%);
-  max-height: calc(100dvh - 24px);
+  max-height: calc(100dvh / var(--pp-zoom, 1) - 24px);
   overflow-x: hidden;
   overflow-y: auto;
   background: #fffaf6;
@@ -3558,7 +3558,7 @@ span.pp-nav-link {
   }
 
   .pp-welcome__dialog {
-    max-height: calc(100dvh - 20px);
+    max-height: calc(100dvh / var(--pp-zoom, 1) - 20px);
     border-radius: 22px;
   }
 

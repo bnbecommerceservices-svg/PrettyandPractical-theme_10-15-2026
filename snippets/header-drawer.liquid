@@ -878,7 +878,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100dvh;
+    height: calc(100dvh / var(--pp-zoom, 1));
     backdrop-filter: brightness(0.75);
     z-index: var(--layer-heightened);
     opacity: 0;
@@ -1217,7 +1217,7 @@
     position: absolute;
     width: 100%;
     top: 0;
-    height: 100dvh;
+    height: calc(100dvh / var(--pp-zoom, 1));
     left: 0;
     background-color: var(--color-background);
     z-index: var(--layer-flat);
