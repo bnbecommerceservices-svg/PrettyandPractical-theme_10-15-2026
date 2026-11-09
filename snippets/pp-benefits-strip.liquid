@@ -8,7 +8,7 @@ footer on every page. Rendered by pp-site-footer so it picks up the footer's des
     <div class="pp-benefits__grid">
       <div class="pp-benefits__item">
         <span class="pp-benefits__icon" aria-hidden="true">
-          {% render 'pp-icon-3d', icon: 'truck', uid: 'foot-truck' %}
+          {% render 'pp-icon-simple', icon: 'truck' %}
         </span>
         <div class="pp-benefits__copy">
           <h3>{{ settings.free_delivery_title | escape }}</h3>
@@ -17,7 +17,7 @@ footer on every page. Rendered by pp-site-footer so it picks up the footer's des
       </div>
       <div class="pp-benefits__item">
         <span class="pp-benefits__icon" aria-hidden="true">
-          {% render 'pp-icon-3d', icon: 'returns', uid: 'foot-returns' %}
+          {% render 'pp-icon-simple', icon: 'returns' %}
         </span>
         <div class="pp-benefits__copy">
           <h3>30 day returns</h3>
@@ -26,7 +26,7 @@ footer on every page. Rendered by pp-site-footer so it picks up the footer's des
       </div>
       <div class="pp-benefits__item">
         <span class="pp-benefits__icon" aria-hidden="true">
-          {% render 'pp-icon-3d', icon: 'secure', uid: 'foot-secure' %}
+          {% render 'pp-icon-simple', icon: 'secure' %}
         </span>
         <div class="pp-benefits__copy">
           <h3>Secure checkout</h3>
@@ -35,7 +35,7 @@ footer on every page. Rendered by pp-site-footer so it picks up the footer's des
       </div>
       <div class="pp-benefits__item">
         <span class="pp-benefits__icon" aria-hidden="true">
-          {% render 'pp-icon-3d', icon: 'support', uid: 'foot-support' %}
+          {% render 'pp-icon-simple', icon: 'support' %}
         </span>
         <div class="pp-benefits__copy">
           <h3>Friendly support</h3>
@@ -68,8 +68,8 @@ footer on every page. Rendered by pp-site-footer so it picks up the footer's des
   .pp-site-footer .pp-benefits__icon {
     flex-shrink: 0;
     display: inline-flex;
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     align-items: center;
     justify-content: center;
     margin: 0;

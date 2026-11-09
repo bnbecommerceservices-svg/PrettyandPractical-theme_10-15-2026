@@ -3785,7 +3785,15 @@ span.pp-nav-link {
   }
 }
 
-/* 3D benefit icons (snippets/pp-icon-3d.liquid), used across the site. */
+/* Line benefit icons (snippets/pp-icon-simple.liquid), used across the site:
+   delivery, returns, secure payment and support. Brand orange by default. */
+.pp-icon-simple {
+  display: block;
+  flex-shrink: 0;
+  color: var(--pp-primary, #e8532a);
+}
+
+/* 3D icons (snippets/pp-icon-3d.liquid), now only the empty cart and wishlist. */
 .pp-icon3d {
   display: block;
   flex-shrink: 0;

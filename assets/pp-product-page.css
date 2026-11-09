@@ -5556,7 +5556,7 @@ product-recommendations.product-recommendations > .resource-list--grid .product-
   }
 }
 
-/* 3D benefit icons: no circle behind them. */
+/* Line benefit icons (snippets/pp-icon-simple.liquid): no circle behind them. */
 .pp-product-page .pp-assurance__icon {
   width: 36px;
   height: 36px;
@@ -5564,12 +5564,12 @@ product-recommendations.product-recommendations > .resource-list--grid .product-
   box-shadow: none;
 }
 
-.pp-product-page .pp-assurance__icon svg.pp-icon3d {
-  width: 34px;
-  height: 34px;
+.pp-product-page .pp-assurance__icon svg.pp-icon-simple {
+  width: 30px;
+  height: 30px;
 }
 
-.pp-pdp-v2 .pp-cart-trust svg.pp-icon3d {
-  width: 26px;
-  height: 26px;
+.pp-pdp-v2 .pp-cart-trust svg.pp-icon-simple {
+  width: 22px;
+  height: 22px;
 }

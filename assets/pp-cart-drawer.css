@@ -1012,19 +1012,19 @@ body.pp-cart-drawer-open {
   }
 }
 
-/* 3D benefit icons: no tile behind them. */
+/* Line benefit icons (snippets/pp-icon-simple.liquid): no tile behind them. */
 .pp-cart-shell .pp-trust-icon {
   background: none;
 }
 
-.pp-cart-shell .pp-trust-icon svg.pp-icon3d {
-  width: 26px;
-  height: 26px;
+.pp-cart-shell .pp-trust-icon svg.pp-icon-simple {
+  width: 22px;
+  height: 22px;
 }
 
-.pp-cart-page__support-row svg.pp-icon3d {
-  width: 30px;
-  height: 30px;
+.pp-cart-page__support-row svg.pp-icon-simple {
+  width: 28px;
+  height: 28px;
 }
 
 /* Judge.me cart drawer widget ("Customers rate this store").

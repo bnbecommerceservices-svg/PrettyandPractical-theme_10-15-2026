@@ -143,19 +143,19 @@
   <div class="pp-trust" role="list" aria-label="Store benefits">
     <div class="pp-trust-item" role="listitem">
       <span class="pp-trust-icon" aria-hidden="true">
-        {% render 'pp-icon-3d', icon: 'secure', uid: cs_uid %}
+        {% render 'pp-icon-simple', icon: 'secure' %}
       </span>
       Secure checkout
     </div>
     <div class="pp-trust-item" role="listitem">
       <span class="pp-trust-icon" aria-hidden="true">
-        {% render 'pp-icon-3d', icon: 'returns', uid: cs_uid %}
+        {% render 'pp-icon-simple', icon: 'returns' %}
       </span>
       Returns policy
     </div>
     <div class="pp-trust-item" role="listitem">
       <span class="pp-trust-icon" aria-hidden="true">
-        {% render 'pp-icon-3d', icon: 'truck', uid: cs_uid %}
+        {% render 'pp-icon-simple', icon: 'truck' %}
       </span>
       Shipping calculated at checkout
     </div>
@@ -288,21 +288,21 @@
     {%- assign cs_support_uid = cs_uid | append: '-support' -%}
     <div class="pp-cart-page__support" role="list" aria-label="Store benefits">
       <div class="pp-cart-page__support-row" role="listitem">
-        {% render 'pp-icon-3d', icon: 'secure', uid: cs_support_uid %}
+        {% render 'pp-icon-simple', icon: 'secure' %}
         <div>
           <strong>Secure checkout</strong>
           <span>Your payment details are protected</span>
         </div>
       </div>
       <div class="pp-cart-page__support-row" role="listitem">
-        {% render 'pp-icon-3d', icon: 'returns', uid: cs_support_uid %}
+        {% render 'pp-icon-simple', icon: 'returns' %}
         <div>
           <strong>Easy returns</strong>
           <span>Hassle-free returns within 30 days</span>
         </div>
       </div>
       <div class="pp-cart-page__support-row" role="listitem">
-        {% render 'pp-icon-3d', icon: 'truck', uid: cs_support_uid %}
+        {% render 'pp-icon-simple', icon: 'truck' %}
         <div>
           <strong>{{ settings.free_delivery_title | escape }}</strong>
           <span>{{ settings.free_delivery_detail | escape }}</span>

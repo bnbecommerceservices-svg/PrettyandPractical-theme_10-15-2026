@@ -168,7 +168,7 @@
           {% for block in value_blocks limit: 4 %}
             <div class="pp-value" {{ block.shopify_attributes }}>
               <span class="pp-value__icon" aria-hidden="true">
-                {% render 'pp-icon-3d', icon: block.settings.icon, uid: block.id %}
+                {% render 'pp-icon-simple', icon: block.settings.icon %}
               </span>
               <div class="pp-value__text">
                 <h3>{{ block.settings.heading }}</h3>
