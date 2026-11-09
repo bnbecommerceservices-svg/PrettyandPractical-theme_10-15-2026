@@ -2,7 +2,8 @@
   Simple line benefit icon. All four are drawn on the same 24px grid with the
   same stroke and about the same visual size, so they read as one set. Coloured
   with currentColor, so the wrapper sets the colour and size.
-  Pass icon: 'truck', 'returns', 'secure' or 'support' (or 'star', shown as support).
+  Pass icon: 'truck', 'returns', 'secure' or 'support' (or 'star', shown as support),
+  or for the menu's quick links: 'account', 'wishlist', 'orders' or 'contact'.
 {%- endcomment -%}
 {%- case icon -%}
   {%- when 'truck' -%}
@@ -13,4 +14,12 @@
     <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M12 2.75 4.75 5.5v5.75c0 4.6 3 8.3 7.25 9.95 4.25-1.65 7.25-5.35 7.25-9.95V5.5z"/><path d="m8.75 12 2.25 2.25 4.25-4.5"/></svg>
   {%- when 'support', 'star' -%}
     <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M5.25 12.5v-.75a6.75 6.75 0 0 1 13.5 0v.75"/><rect x="3.25" y="12.5" width="4" height="6" rx="1.5"/><rect x="16.75" y="12.5" width="4" height="6" rx="1.5"/><path d="M18.75 18.5a2.5 2.5 0 0 1-2.5 2.5H14"/></svg>
+  {%- when 'account' -%}
+    <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><circle cx="12" cy="8.25" r="3.75"/><path d="M4.75 20.25c.9-3.6 3.75-5.5 7.25-5.5s6.35 1.9 7.25 5.5"/></svg>
+  {%- when 'wishlist' -%}
+    <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M12 20.25s-8-4.75-8-10.6A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8 3.05c0 5.85-8 10.6-8 10.6z"/></svg>
+  {%- when 'orders' -%}
+    <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M12 3.25 19.75 7.5v9L12 20.75 4.25 16.5v-9z"/><path d="M4.25 7.5 12 11.75l7.75-4.25"/><path d="M12 11.75v9"/><path d="m8.15 5.4 7.7 4.25"/></svg>
+  {%- when 'contact' -%}
+    <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M20 11.5c0 4-3.6 7.25-8 7.25-1.2 0-2.35-.24-3.38-.68L4.5 19.5l1.2-3.4A6.8 6.8 0 0 1 4 11.5c0-4 3.6-7.25 8-7.25s8 3.25 8 7.25z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" stroke-width="2.2"/></svg>
 {%- endcase -%}
