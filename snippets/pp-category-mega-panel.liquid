@@ -7,10 +7,9 @@
   Text only, no images.
   layout 'column': a column of the "all categories" view, with the category
   name, up to 8 sub-links and a "Shop all" link.
-  layout 'panel': the full-width panel a top nav link opens: the category name,
-  a short line (its collection description, or its sub-category names) and a
-  "Shop all" button, next to
-  every sub-link (and its own sub-links, the third menu level, indented under it).
+  layout 'panel': the short box a top nav link opens: every sub-link (and its
+  own sub-links, the third menu level, indented under it), then a
+  "Shop all <category>" link.
 
   @param {string} layout - 'column' or 'panel'.
   @param {string} key - Matches the nav link's data-catmega-open value.
@@ -88,27 +87,18 @@
     <a class="pp-catmega__shop-all" href="{{ url }}">Shop all {{ arrow }}</a>
   </div>
 {%- else -%}
-  {%- liquid
-    assign panel_blurb = blank
-    if panel_collection != blank and panel_collection.description != blank
-      assign panel_blurb = panel_collection.description | strip_html | truncatewords: 22
-    elsif has_children
-      assign child_titles = child_links | map: 'title' | join: ', ' | downcase
-      assign panel_blurb = 'Browse ' | append: child_titles | append: '.'
-    endif
-  -%}
-  <div class="pp-catmega__panel" data-catmega-panel="{{ key | escape }}" hidden>
-    <div class="pp-catmega__intro">
-      <p class="pp-catmega__eyebrow">Department</p>
-      <p class="pp-catmega__panel-title">{{ label | escape }}</p>
-      {%- if panel_blurb != blank -%}<p class="pp-catmega__blurb">{{ panel_blurb }}</p>{%- endif -%}
-      <a class="pp-catmega__shop-btn" href="{{ url }}">Shop all {{ label | escape }}</a>
-    </div>
+  {%- comment -%}
+    A department's own dropdown: a short box under its nav link with its
+    sub-categories (their own sub-categories indented under them) and a
+    "Shop all" link for the whole department at the end.
+  {%- endcomment -%}
+  <div class="pp-catmega__panel pp-catmega__panel--box" data-catmega-panel="{{ key | escape }}" hidden>
     {%- if panel_items != blank -%}
-      <div class="pp-catmega__panel-main">
-        <p class="pp-catmega__eyebrow">Categories</p>
-        <ul class="pp-catmega__links pp-catmega__links--grid" role="list">{{ panel_items }}</ul>
-      </div>
+      <ul class="pp-catmega__links pp-catmega__box-links" role="list">{{ panel_items }}</ul>
     {%- endif -%}
+    <a class="pp-catmega__box-all" href="{{ url }}" aria-label="Shop all {{ label | escape }}">
+      <span>Shop all</span>
+      {{ arrow }}
+    </a>
   </div>
 {%- endif -%}

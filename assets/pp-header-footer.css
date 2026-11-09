@@ -1144,12 +1144,12 @@ span.pp-nav-link {
   transition: transform 160ms ease;
 }
 
-.pp-category-nav.is-mega-open .pp-catmega-trigger__chevron {
+.pp-category-nav.is-mega-all .pp-catmega-trigger__chevron {
   transform: rotate(180deg);
 }
 
 .pp-catmega-trigger:hover,
-.pp-category-nav.is-mega-open .pp-catmega-trigger {
+.pp-category-nav.is-mega-all .pp-catmega-trigger {
   background: var(--pp-primary-dark);
 }
 
@@ -1338,94 +1338,92 @@ span.pp-nav-link {
   transform: translateX(3px);
 }
 
-/* One category: a short intro next to its sub-categories. */
-.pp-catmega__panel:not(.pp-catmega__panel--all) {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 56px;
-  padding: 32px 28px 36px;
+/* One department: a short box under its nav link, ending with "Shop all". */
+.pp-catmega--box {
+  right: auto;
+  left: var(--pp-catmega-box-left, 0px);
+  width: min(300px, 100%);
 }
 
-.pp-catmega__intro {
+.pp-catmega--box .pp-catmega__surface {
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+}
+
+.pp-catmega__panel--box {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  min-width: 0;
-  padding-right: 40px;
-  border-right: 1px solid #eef0f3;
+  max-height: min(70vh, 520px);
+  /* The list scrolls on its own, so "Shop all" always stays visible at the end. */
+  overflow: hidden;
 }
 
-.pp-catmega__panel-title {
-  margin: 0;
-  color: #0f172a;
-  font-family: var(--pp-font-heading);
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+.pp-catmega__box-links {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
 }
 
-.pp-catmega__blurb {
-  margin: 0;
-  color: #4b5563;
+.pp-catmega .pp-catmega__box-links .pp-catmega__link {
+  padding: 9px 12px;
+  border-radius: 8px;
   font-size: 14.5px;
-  line-height: 1.55;
+  transition: color 160ms ease, background-color 160ms ease;
 }
 
-.pp-catmega a.pp-catmega__shop-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  max-width: 100%;
-  min-height: 42px;
-  margin-top: 8px;
-  padding: 10px 22px;
-  border-radius: 999px;
-  background: var(--pp-primary);
-  color: #fff;
-  font-family: var(--pp-font-heading);
+.pp-catmega .pp-catmega__box-links .pp-catmega__link:hover {
+  background: #fff4ef;
+  transform: none;
+}
+
+.pp-catmega__box-links .pp-catmega__item--parent {
+  padding-bottom: 2px;
+}
+
+.pp-catmega__box-links .pp-catmega__sublinks {
+  margin: 0 0 4px 12px;
+  padding-left: 8px;
+}
+
+.pp-catmega .pp-catmega__box-links .pp-catmega__link--sub {
+  padding: 6px 12px;
   font-size: 13.5px;
+}
+
+.pp-catmega a.pp-catmega__box-all {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid #eef0f3;
+  background: #fff;
+  color: var(--pp-primary-dark);
+  font-family: var(--pp-font-heading);
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.3;
-  /* Long department names ("Home Organization & Storage") wrap inside the
-     intro column instead of running past its divider. */
-  white-space: normal;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-  text-align: center;
   text-decoration: none;
-  transition: background-color 160ms ease;
+  transition: color 160ms ease, background-color 160ms ease;
 }
 
-.pp-catmega a.pp-catmega__shop-btn:hover {
-  background: var(--pp-primary-dark);
-  color: #fff;
+.pp-catmega a.pp-catmega__box-all:hover {
+  background: #fff4ef;
+  color: #9a2e10;
 }
 
-.pp-catmega__eyebrow {
-  margin: 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e7e9ee;
-  color: #6b7280;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.pp-catmega__box-all svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  transition: transform 160ms ease;
 }
 
-.pp-catmega__intro .pp-catmega__eyebrow {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.pp-catmega__links--grid {
-  display: grid;
-  margin-top: 8px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px 40px;
-  align-items: start;
+.pp-catmega__box-all:hover svg {
+  transform: translateX(3px);
 }
 
 /* The theme's global link colour outranks single-class rules. */
@@ -1461,7 +1459,7 @@ span.pp-nav-link {
 .pp-catmega__link:focus-visible,
 .pp-catmega__col-head:focus-visible,
 .pp-catmega__shop-all:focus-visible,
-.pp-catmega__shop-btn:focus-visible {
+.pp-catmega__box-all:focus-visible {
   outline: 2px solid var(--pp-primary);
   outline-offset: 2px;
   border-radius: 6px;
@@ -1487,19 +1485,6 @@ span.pp-nav-link {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-
-  .pp-catmega__panel:not(.pp-catmega__panel--all) {
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 32px;
-  }
-
-  .pp-catmega__intro {
-    padding-right: 28px;
-  }
-
-  .pp-catmega__links--grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1476,19 +1476,49 @@
     function openCategoryMega(key) {
       if (window.innerWidth < 769 || !(categoryMega instanceof HTMLElement) || !(categoryNav instanceof HTMLElement)) return;
       window.clearTimeout(megaCloseTimer);
-      if (categoryMega.hidden) megaOpenedAt = Date.now();
+      // A hover that switches the view counts as opening it, so a click straight after keeps it open.
+      const alreadyShown = key && categoryMega.querySelector('[data-catmega-panel="' + CSS.escape(key) + '"].is-active');
+      if (categoryMega.hidden || !alreadyShown) megaOpenedAt = Date.now();
       categoryMega.hidden = false;
       categoryNav.classList.add('is-mega-open');
-      if (categoryMegaTrigger instanceof HTMLElement) {
-        categoryMegaTrigger.setAttribute('aria-expanded', 'true');
-      }
       if (key) setCategoryPanel(key);
+      // The Shop by category button only shows as open for its own all-categories view.
+      const showsAll = categoryMega.querySelector('[data-catmega-panel="all"].is-active') !== null;
+      categoryNav.classList.toggle('is-mega-all', showsAll);
+      if (categoryMegaTrigger instanceof HTMLElement) {
+        categoryMegaTrigger.setAttribute('aria-expanded', showsAll ? 'true' : 'false');
+      }
+      placeCategoryMega(key);
+    }
+
+    // "Shop by category" opens the full-width view; a department opens a short
+    // box lined up under its own link, kept inside the header's edges.
+    function placeCategoryMega(key) {
+      if (!(categoryMega instanceof HTMLElement) || !(categoryNav instanceof HTMLElement)) return;
+      const panel = key && key !== 'all'
+        ? categoryMega.querySelector('[data-catmega-panel="' + CSS.escape(key) + '"]')
+        : null;
+      const isBox = !!panel && panel.classList.contains('pp-catmega__panel--box');
+      categoryMega.classList.toggle('pp-catmega--box', isBox);
+      if (!isBox) {
+        categoryMega.style.removeProperty('--pp-catmega-box-left');
+        return;
+      }
+      const link = categoryNav.querySelector('[data-catmega-open="' + CSS.escape(key) + '"]');
+      const host = categoryMega.offsetParent;
+      if (!(link instanceof HTMLElement) || !(host instanceof HTMLElement)) return;
+      const hostLeft = host.getBoundingClientRect().left + host.clientLeft;
+      const linkLeft = link.getBoundingClientRect().left - hostLeft;
+      const hostPadRight = parseFloat(getComputedStyle(host).paddingRight) || 0;
+      const maxLeft = Math.max(0, host.clientWidth - hostPadRight - categoryMega.offsetWidth);
+      const left = Math.min(Math.max(0, linkLeft - 12), maxLeft);
+      categoryMega.style.setProperty('--pp-catmega-box-left', Math.round(left) + 'px');
     }
 
     function closeCategoryMega() {
       if (!(categoryMega instanceof HTMLElement) || !(categoryNav instanceof HTMLElement)) return;
       categoryMega.hidden = true;
-      categoryNav.classList.remove('is-mega-open');
+      categoryNav.classList.remove('is-mega-open', 'is-mega-all');
       if (categoryMegaTrigger instanceof HTMLElement) {
         categoryMegaTrigger.setAttribute('aria-expanded', 'false');
       }
@@ -1519,7 +1549,7 @@
           event.preventDefault();
           // Hovering the button opens the dropdown, so a click straight after that keeps it open.
           const justOpened = Date.now() - megaOpenedAt < 600;
-          if (categoryNav.classList.contains('is-mega-open') && !justOpened) closeCategoryMega();
+          if (categoryNav.classList.contains('is-mega-all') && !justOpened) closeCategoryMega();
           else openCategoryMega(firstCategoryKey);
         });
       }
@@ -1544,6 +1574,12 @@
         categoryRow.classList.toggle('has-more-end', maxScroll - categoryRow.scrollLeft > 4);
       };
       categoryRow.addEventListener('scroll', updateCategoryRowFade, { passive: true });
+      // An open department box follows its link when the row scrolls.
+      categoryRow.addEventListener('scroll', function () {
+        if (!(categoryMega instanceof HTMLElement) || categoryMega.hidden) return;
+        const current = categoryRow.querySelector('.is-mega-current[data-catmega-open]');
+        if (current) placeCategoryMega(current.getAttribute('data-catmega-open'));
+      }, { passive: true });
       window.addEventListener('resize', updateCategoryRowFade);
       if ('ResizeObserver' in window) new ResizeObserver(updateCategoryRowFade).observe(categoryRow);
       updateCategoryRowFade();
