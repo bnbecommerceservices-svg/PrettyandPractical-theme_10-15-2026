@@ -1218,6 +1218,25 @@
     </div>
   </section>
 
+  {%- comment -%}
+    App blocks added to this section in the theme editor (for example by an
+    app's "Install" button). Shopify adds them to this main section, so they
+    must be shown here or the app reports a problem with its block.
+  {%- endcomment -%}
+  {%- if section.blocks.size > 0 -%}
+    <div class="pp-app-blocks">
+      <div class="pp-wrap">
+        {%- for block in section.blocks -%}
+          {%- if block.type == '@app' -%}
+            <div class="pp-app-block" {{ block.shopify_attributes }}>
+              {% render block %}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+
   <div class="pp-sticky-bar" id="sticky-bar" aria-label="Quick purchase bar">
     <div class="pp-sticky-inner">
       <div class="pp-sticky-thumb" aria-hidden="true">

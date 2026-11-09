@@ -38,6 +38,21 @@
     <!-- End of Judge.me code -->
   </div>
 </section>
+{%- comment -%}
+  If Judge.me's own Review Widget app block was also added to the product
+  section, keep only that one so the reviews don't show twice, and point the
+  "#reviews" star link at it. Runs before Judge.me's scripts fill the widgets.
+{%- endcomment -%}
+<script>
+  (function () {
+    var appWidget = document.querySelector('.pp-app-blocks .jdgm-review-widget, .pp-app-blocks .jdgm-widget');
+    var own = document.getElementById('reviews');
+    if (!appWidget || !own) return;
+    own.remove();
+    var holder = appWidget.closest('.pp-app-block');
+    if (holder) holder.id = 'reviews';
+  })();
+</script>
 
 {% schema %}
 {
