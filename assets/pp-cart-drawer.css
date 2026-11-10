@@ -1052,3 +1052,171 @@ cart-drawer-component > #jdgm-cart-drawer-widget {
 #jdgm-cart-drawer-widget .jm-star-rating {
   --v2c8a9f7e: #e8532a !important;
 }
+
+/* The header's cart badge and the base close button share class names
+   with the drawer's item count and close button; keep them in the row. */
+.pp-cart-drawer__dialog .pp-cart-header .pp-cart-count {
+  position: static;
+  inset: auto;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  opacity: 1;
+  transform: none;
+}
+
+.pp-cart-shell:has(.pp-cart-empty) .pp-cart-header .pp-cart-count {
+  display: none;
+}
+
+.pp-cart-drawer__dialog .pp-cart-header .pp-cart-close {
+  position: static;
+  inset: auto;
+  transform: none;
+}
+
+/* =====================================================================
+   Phones: the product list gets most of the screen. The summary keeps
+   the total, the checkout button and two small links side by side;
+   shipping and tax rows (both "at checkout") and the benefits row are
+   dropped, and the payment logos shrink to one line.
+   ===================================================================== */
+@media (max-width: 767px) {
+  .pp-cart-drawer__dialog {
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-header {
+    min-height: 60px;
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-title {
+    font-size: 19px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-close {
+    margin-left: auto;
+  }
+
+  .pp-cart-drawer__dialog .pp-ship-strip {
+    padding-inline: 16px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0 16px;
+  }
+
+  .pp-cart-drawer__dialog .pp-line-item {
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 14px 0;
+  }
+
+  .pp-cart-drawer__dialog .pp-li-img-wrap {
+    width: 76px;
+    height: 76px;
+    padding: 6px;
+    border-radius: 12px;
+  }
+
+  .pp-cart-drawer__dialog .pp-li-title {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .pp-cart-drawer__dialog .pp-li-price {
+    font-size: 15px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-footer {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -6px 18px rgb(0 0 0 / 0.06);
+  }
+
+  .pp-cart-drawer__dialog .pp-totals {
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  /* Shipping and tax only ever say "At checkout": the note under the total covers them. */
+  .pp-cart-drawer__dialog .pp-total-row:has(.pp-value-pending),
+  .pp-cart-drawer__dialog .pp-totals-divider {
+    display: none;
+  }
+
+  /* Without a discount the subtotal equals the total, so show the total once. */
+  .pp-cart-drawer__dialog .pp-totals:not(:has(.pp-total-row--discount)) > .pp-total-row:first-child {
+    display: none;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-grand .pp-label {
+    font-size: 15px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-grand .pp-value {
+    font-size: 20px;
+  }
+
+  .pp-cart-drawer__dialog .pp-grand-note {
+    margin: 2px 0 0;
+    font-size: 12px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+  }
+
+  .pp-cart-drawer__dialog .pp-checkout {
+    grid-column: 1 / -1;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .pp-cart-drawer__dialog .pp-view-cart,
+  .pp-cart-drawer__dialog .pp-continue-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    margin: 4px 0 0;
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .pp-cart-drawer__dialog .pp-view-cart {
+    color: var(--pp-navy);
+  }
+
+  .pp-cart-drawer__dialog .pp-continue-link {
+    color: var(--pp-text-secondary);
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-trust,
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-pay-label {
+    display: none;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-pay {
+    margin-top: 6px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-pay-marks {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-pay-mark,
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-pay-mark svg,
+  .pp-cart-drawer__dialog .pp-cart-shell .pp-pay-mark .icon-svg {
+    height: 20px;
+  }
+}
