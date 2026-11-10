@@ -3,9 +3,12 @@
   same stroke and about the same visual size, so they read as one set. Coloured
   with currentColor, so the wrapper sets the colour and size.
   Pass icon: 'truck', 'returns', 'secure' or 'support' (or 'star', shown as support),
-  or for the menu's quick links: 'account', 'wishlist', 'orders' or 'contact'.
+  or for the menu's quick links: 'account', 'wishlist', 'orders' or 'contact',
+  or 'bag' for the empty cart.
 {%- endcomment -%}
 {%- case icon -%}
+  {%- when 'bag' -%}
+    <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M5.6 8.25h12.8l-.95 11.1a1.5 1.5 0 0 1-1.5 1.4H8.05a1.5 1.5 0 0 1-1.5-1.4z"/><path d="M8.75 10.5V7.25a3.25 3.25 0 0 1 6.5 0v3.25"/></svg>
   {%- when 'truck' -%}
     <svg class="pp-icon-simple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><g transform="translate(.5 0)"><path d="M4.9 17H3.75a1.25 1.25 0 0 1-1.25-1.25v-8.5A1.25 1.25 0 0 1 3.75 6h8.5a1.25 1.25 0 0 1 1.25 1.25V17"/><path d="M8.6 17h6.3"/><path d="M13.5 9.5h3.4c.45 0 .87.21 1.14.57l2.13 2.86c.2.26.33.57.33.9v1.92a1.25 1.25 0 0 1-1.25 1.25h-.65"/><circle cx="6.75" cy="17" r="1.85"/><circle cx="16.75" cy="17" r="1.85"/></g></svg>
   {%- when 'returns' -%}
