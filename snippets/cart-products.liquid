@@ -59,28 +59,6 @@
             <path d="M5 12h14M13 5l7 7-7 7"/>
           </svg>
         </a>
-        {%- liquid
-          assign empty_favs_collection = settings.empty_state_collection
-          if empty_favs_collection == blank or empty_favs_collection.products_count == 0
-            assign empty_favs_collection = collections.all
-          endif
-        -%}
-        {%- if empty_favs_collection.products_count > 0 -%}
-          <div class="pp-empty-fav-label">Or shop our favourites</div>
-          <div class="pp-empty-favs">
-            {%- for fav in empty_favs_collection.products limit: 3 -%}
-              <a href="{{ fav.url }}" class="pp-fav-card">
-                <div class="pp-fav-thumb">
-                  {%- if fav.featured_image != blank -%}
-                    {{ fav.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', sizes: '120px' }}
-                  {%- endif -%}
-                </div>
-                <div class="pp-fav-title">{{ fav.title | escape }}</div>
-                <div class="pp-fav-price">{{ fav.price | money }}</div>
-              </a>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
       </div>
     {% else %}
       <div class="pp-cart-page__empty" role="status" aria-live="polite">
