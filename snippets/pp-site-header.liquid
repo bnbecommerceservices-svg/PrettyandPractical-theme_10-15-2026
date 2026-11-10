@@ -1527,6 +1527,13 @@
         : null;
       const isBox = !!panel && panel.classList.contains('pp-catmega__panel--box');
       categoryMega.classList.toggle('pp-catmega--box', isBox);
+      // The dropdown starts right under the header's bottom line, not under the text.
+      const megaHost = categoryMega.offsetParent;
+      if (megaHost instanceof HTMLElement) {
+        const megaZoom = window.ppZoom ? window.ppZoom() : 1;
+        const megaTop = (categoryNav.getBoundingClientRect().bottom - megaHost.getBoundingClientRect().top - megaHost.clientTop) / megaZoom;
+        categoryMega.style.setProperty('--pp-catmega-top', megaTop.toFixed(2) + 'px');
+      }
       if (!isBox) {
         categoryMega.style.removeProperty('--pp-catmega-box-left');
         return;

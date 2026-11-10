@@ -1158,7 +1158,50 @@ span.pp-nav-link {
 .pp-mega-group:hover > .pp-nav-link,
 .pp-nav-link.is-mega-current {
   color: #111;
-  border-bottom-color: #111;
+}
+
+/* Category underline: a 2px orange bar halfway between the bottom of the
+   text and the bottom of the header. It grows from the centre on hover and
+   stays on the current category; hovered names turn orange. */
+.pp-category-nav .pp-nav-link {
+  position: relative;
+  border-bottom: 0 !important;
+}
+
+.pp-category-nav .pp-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc((100% - 1.2em) / 4 - 1px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--pp-primary, #e8532a);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 220ms ease;
+  pointer-events: none;
+}
+
+.pp-category-nav .pp-nav-link:hover::after,
+.pp-category-nav .pp-nav-link:focus-visible::after,
+.pp-category-nav .pp-mega-group:hover > .pp-nav-link::after,
+.pp-category-nav .pp-nav-link.is-mega-current::after,
+.pp-category-nav .pp-nav-link.is-active::after,
+.pp-category-nav .pp-nav-link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.pp-category-nav .pp-nav-link.is-active,
+.pp-category-nav .pp-nav-link[aria-current="page"] {
+  font-weight: 600;
+}
+
+.pp-category-nav .pp-nav-link:hover,
+.pp-category-nav .pp-mega-group:hover > .pp-nav-link,
+.pp-category-nav .pp-nav-link.is-mega-current,
+.pp-category-nav .pp-nav-link:focus-visible {
+  color: var(--pp-primary, #e8532a);
 }
 
 .pp-nav-link--sale {
@@ -1168,7 +1211,6 @@ span.pp-nav-link {
 
 .pp-nav-link--sale:hover {
   color: var(--pp-primary-dark);
-  border-bottom-color: var(--pp-primary-dark);
 }
 
 .pp-nav-icon,
@@ -1179,7 +1221,8 @@ span.pp-nav-link {
 
 .pp-catmega {
   position: absolute;
-  top: calc(100% - 1px);
+  /* Set by the header script to the header's bottom edge. */
+  top: var(--pp-catmega-top, calc(100% - 1px));
   left: 0;
   right: 0;
   z-index: var(--pp-header-layer-popover);
@@ -1229,11 +1272,18 @@ span.pp-nav-link {
   padding: 28px 28px 24px;
 }
 
-/* Every category on one row, so the column heads share a two-line height and their rules line up. */
+/* Each column head stays on one line. Columns take the width their head
+   needs and share what is left, so the rules under the heads line up. */
+.pp-catmega__cols {
+  grid-template-columns: repeat(var(--pp-catmega-cols, 5), auto);
+  justify-content: space-between;
+  column-gap: 18px;
+}
+
 .pp-catmega__cols .pp-catmega__col-head {
-  display: flex;
-  align-items: flex-end;
-  min-height: calc(2 * 1.3em + 12px);
+  display: block;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .pp-catmega__cols .pp-catmega__link {
@@ -1480,9 +1530,17 @@ span.pp-nav-link {
 
 }
 
-@media (max-width: 1000px) {
+/* Narrower screens: four columns over two rows, so every head still fits on one line. */
+@media (max-width: 1199px) {
   .pp-catmega__cols {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+}
+
+@media (max-width: 959px) {
+  .pp-catmega__cols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
 }

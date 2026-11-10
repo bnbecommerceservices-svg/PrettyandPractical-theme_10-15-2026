@@ -28,8 +28,11 @@
       endif
       assign entry_key = link.handle | default: link.title | handleize
       assign entry_state = ''
-      if link.active or link.child_active
-        assign entry_state = 'active'
+      # No category is current on the homepage, even if a sub-link points to "/".
+      if request.page_type != 'index'
+        if link.active or link.child_active
+          assign entry_state = 'active'
+        endif
       endif
       if entry_count > 0
         echo '§'
