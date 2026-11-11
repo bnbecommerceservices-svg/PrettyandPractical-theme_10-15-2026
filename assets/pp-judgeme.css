@@ -958,3 +958,56 @@ body .jdgm-write-review-modal .jdgm-write-review-modal__field-input:focus-visibl
 body .jdgm-write-review-modal :focus-visible {
   outline-color: #e8532a;
 }
+
+/* Review page numbers on phones: compact round buttons on one centred row. */
+@media (max-width: 767px) {
+  .jm-pagination-controls > .jm-cluster {
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  .jm-pagination-controls .jm-pagination-controls__button {
+    flex: 0 0 auto;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    line-height: 1 !important;
+  }
+
+  .jm-pagination-controls .jm-pagination-controls__button .jm-text {
+    font-size: 14px !important;
+    line-height: 1 !important;
+  }
+
+  .jm-pagination-controls .jm-pagination-controls__ellipsis {
+    flex: 0 0 auto;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 20px;
+    height: 36px;
+    padding: 0 !important;
+    line-height: 1 !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .jm-pagination-controls > .jm-cluster {
+    gap: 2px !important;
+  }
+
+  .jm-pagination-controls .jm-pagination-controls__button {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+  }
+}

@@ -1392,3 +1392,55 @@
   width: 28px;
   height: 28px;
 }
+
+/* Summary benefits: three even tiles, icon above a short label. */
+.pp-main .pp-summary__trust {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 18px;
+}
+
+.pp-main .pp-summary__trust .pp-trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 2px;
+  background: none;
+  color: var(--pp-text-secondary);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.pp-main .pp-summary__trust .pp-trust-item svg.pp-icon-simple {
+  width: 24px;
+  height: 24px;
+  color: var(--pp-primary);
+}
+
+@media (max-width: 767px) {
+  .pp-main .pp-summary__trust {
+    gap: 6px;
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+
+  .pp-main .pp-summary__trust .pp-trust-item {
+    padding: 4px 2px;
+    font-size: 10.5px;
+  }
+
+  .pp-main .pp-summary__trust .pp-trust-item svg.pp-icon-simple {
+    width: 22px;
+    height: 22px;
+  }
+}
