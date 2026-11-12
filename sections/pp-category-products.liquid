@@ -1,107 +1,70 @@
 {%- comment -%}
-  "More from {category}" row below the product reviews.
+  "More from {collection}" row below the product reviews.
 
-  On the product page it works out the parent of the product's Shopify
-  Category (e.g. Furniture > Tables > Side tables -> Tables) and loads that
-  category's products from the all-products collection using Shopify's
-  native category filter (filter.p.t.category). The Category filter must be
-  turned on in the Search & Discovery app.
-
-  When that request renders this section in the collection context, it
-  outputs only the filtered product cards.
+  Uses the most specific collection the product belongs to: of its
+  collections (skipping the catch-all "all" and "frontpage"), the one with
+  the fewest products that still has others to show. Up to 4 other products
+  from it are rendered with the page. When no collection fits, the row is
+  left out.
 {%- endcomment -%}
 
-{%- if template.name == 'collection' -%}
-  <div data-pp-cat-results>
-    {%- for cat_product in collection.products limit: 9 -%}
-      {% render 'pp-rec-card', card_product: cat_product %}
-    {%- endfor -%}
-  </div>
-{%- elsif product.category != blank -%}
+{%- liquid
+  assign more_collection = blank
+  assign more_count = 0
+  for candidate in product.collections
+    if candidate.handle == 'all' or candidate.handle == 'frontpage'
+      continue
+    endif
+    if candidate.all_products_count < 2
+      continue
+    endif
+    if more_collection == blank or candidate.all_products_count < more_count
+      assign more_collection = candidate
+      assign more_count = candidate.all_products_count
+    endif
+  endfor
+-%}
+
+{%- if more_collection != blank -%}
   {%- liquid
-    assign cat = product.category
-    assign cat_last = cat.id | split: '-' | last | prepend: '-'
-    assign parent_id = ''
-    assign parent_name = ''
-    if cat.id contains '-'
-      assign parent_id = cat.id | remove_last: cat_last
-    endif
-    for ancestor in cat.ancestors
-      if ancestor.id == parent_id
-        assign parent_name = ancestor.name
-      endif
-    endfor
-    # Top-level categories have no parent: use the product's own category.
-    if parent_id == blank or parent_name == blank
-      assign parent_id = cat.id
-      assign parent_name = cat.name
-    endif
-    assign base_url = routes.all_products_collection_url | append: '?filter.p.t.category='
+    assign rendered_count = 0
+    capture more_cards
+      for more_product in more_collection.products limit: 12
+        if more_product.id == product.id or rendered_count >= 4
+          continue
+        endif
+        render 'pp-rec-card', card_product: more_product
+        assign rendered_count = rendered_count | plus: 1
+      endfor
+    endcapture
   -%}
-  {{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
-  {{ 'pp-product-card.css' | asset_url | stylesheet_tag }}
-  <div
-    class="pp-category-products"
-    data-pp-category-products
-    data-product-id="{{ product.id }}"
-    data-url="{{ base_url }}{{ parent_id | url_encode }}&section_id=pp-category-products"
-    data-fallback-url="{{ base_url }}{{ cat.id | url_encode }}&section_id=pp-category-products"
-  >
-    <section class="pp-recommend" data-pp-cat-row hidden aria-labelledby="category-products-heading-{{ section.id }}">
-      <div class="pp-section-head">
-        <div class="pp-section-head__text">
-          <h2 id="category-products-heading-{{ section.id }}">More from {{ parent_name }}</h2>
-          <p class="pp-section-head__sub">Explore more in this range</p>
+
+  {%- if rendered_count > 0 -%}
+    {{ 'pp-judgeme.css' | asset_url | stylesheet_tag }}
+    {{ 'pp-product-card.css' | asset_url | stylesheet_tag }}
+    <div class="pp-category-products" data-pp-category-products>
+      <section class="pp-recommend" aria-labelledby="category-products-heading-{{ section.id }}">
+        <div class="pp-section-head">
+          <div class="pp-section-head__text">
+            <h2 id="category-products-heading-{{ section.id }}">More from {{ more_collection.title | escape }}</h2>
+            <p class="pp-section-head__sub">Explore more in this range</p>
+          </div>
+          <a class="pp-view-all" href="{{ more_collection.url }}">
+            View all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </a>
         </div>
-      </div>
-      <div class="pp-recommend__grid pp-cards pp-cards--grid" data-pp-cat-grid></div>
-    </section>
-  </div>
-  <script>
-    (() => {
-      const root = document.querySelector('[data-pp-category-products]');
-      if (!root) return;
-      const grid = root.querySelector('[data-pp-cat-grid]');
-      const productId = root.dataset.productId;
-
-      // Cards from the category, without the product being viewed.
-      const cardsFrom = async (url) => {
-        const response = await fetch(url);
-        if (!response.ok) return [];
-        const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
-        return Array.from(doc.querySelectorAll('[data-pp-cat-results] .pp-card')).filter(
-          (card) => card.dataset.productId !== productId
-        );
-      };
-
-      const load = async () => {
-        try {
-          let cards = await cardsFrom(root.dataset.url);
-          if (cards.length === 0 && root.dataset.fallbackUrl !== root.dataset.url) {
-            cards = await cardsFrom(root.dataset.fallbackUrl);
-          }
-          if (cards.length === 0) return;
-          cards.slice(0, 4).forEach((card) => grid.appendChild(document.adoptNode(card)));
-          root.querySelector('[data-pp-cat-row]').hidden = false;
-          if (window.PPWishlist) window.PPWishlist.bindButtons(root);
-        } catch {
-          /* leave the row hidden */
-        }
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        if (!entries[0]?.isIntersecting) return;
-        observer.disconnect();
-        load();
-      }, { rootMargin: '0px 0px 400px 0px' });
-      observer.observe(root);
-    })();
-  </script>
+        <div class="pp-recommend__grid pp-cards pp-cards--grid">
+          {{ more_cards }}
+        </div>
+      </section>
+    </div>
+  {%- endif -%}
 {%- endif -%}
 
 {% schema %}
 {
-  "name": "More from category",
+  "name": "More from collection",
   "settings": [],
   "presets": []
 }
