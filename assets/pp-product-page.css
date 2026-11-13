@@ -3656,6 +3656,23 @@
   text-align: left;
 }
 
+.pp-product-page .pp-accordion__body .pp-description-text--rich a {
+  color: var(--pp-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pp-product-page .pp-accordion__body .pp-description-text--rich :is(ul, ol) :is(ul, ol) {
+  margin: 8px 0 0;
+}
+
+/* Wide tables scroll sideways inside the description instead of widening the page. */
+.pp-product-page .pp-accordion__body .pp-description-text--rich table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .pp-product-page .pp-accordion__body .pp-desc-pack {
   margin: 0;
   padding-left: 18px;

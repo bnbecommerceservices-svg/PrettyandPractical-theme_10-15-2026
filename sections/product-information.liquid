@@ -352,173 +352,9 @@
     assign feature_count = feature_count | plus: 1
   endfor
 
-  assign desc_html = product.description | replace: '&nbsp;', ' '
-
-  # Descriptions authored with headings are rendered as written so the merchant's
-  # <h2>/<h3> structure is kept; plain-text descriptions use the parsed layout below.
-  assign desc_is_rich = false
-  assign desc_heading_tags = '<h1,<h2,<h3,<h4,<h5,<h6,<H1,<H2,<H3,<H4,<H5,<H6' | split: ','
-  for desc_heading_tag in desc_heading_tags
-    if desc_html contains desc_heading_tag
-      assign desc_is_rich = true
-      break
-    endif
-  endfor
-
-  assign desc_body_html = desc_html
-  if desc_body_html contains 'Specifications:'
-    assign desc_body_html = desc_body_html | split: 'Specifications:' | first
-  elsif desc_body_html contains 'Specifications'
-    assign desc_body_html = desc_body_html | split: 'Specifications' | first
-  endif
-  if desc_body_html contains 'Package Included'
-    assign desc_body_html = desc_body_html | split: 'Package Included' | first
-  elsif desc_body_html contains 'Package Includes'
-    assign desc_body_html = desc_body_html | split: 'Package Includes' | first
-  elsif desc_body_html contains 'Package Include'
-    assign desc_body_html = desc_body_html | split: 'Package Include' | first
-  endif
-  if desc_body_html contains 'Note:'
-    assign desc_body_html = desc_body_html | split: 'Note:' | first
-  endif
-
-  assign desc_intro_html = desc_body_html
-  assign desc_feature_html = ''
-  if desc_body_html contains 'Features:'
-    assign desc_intro_html = desc_body_html | split: 'Features:' | first
-    assign desc_feature_html = desc_body_html | split: 'Features:' | last
-  elsif desc_body_html contains 'FEATURES:'
-    assign desc_intro_html = desc_body_html | split: 'FEATURES:' | first
-    assign desc_feature_html = desc_body_html | split: 'FEATURES:' | last
-  elsif desc_body_html contains 'Feature:'
-    assign desc_intro_html = desc_body_html | split: 'Feature:' | first
-    assign desc_feature_html = desc_body_html | split: 'Feature:' | last
-  elsif desc_body_html contains 'Features'
-    assign desc_intro_html = desc_body_html | split: 'Features' | first
-    assign desc_feature_html = desc_body_html | split: 'Features' | last
-  elsif desc_body_html contains 'Feature'
-    assign desc_intro_html = desc_body_html | split: 'Feature' | first
-    assign desc_feature_html = desc_body_html | split: 'Feature' | last
-  endif
-
-  assign desc_intro = desc_intro_html | strip_html | strip
-  assign desc_detail_items = ''
-  assign desc_detail_count = 0
-  if desc_feature_html != blank
-    if desc_feature_html contains '</li>'
-      assign desc_feature_chunks = desc_feature_html | split: '</li>'
-      for desc_feature_chunk in desc_feature_chunks
-        assign desc_feature_text = desc_feature_chunk | strip_html | strip
-        assign desc_feature_check = desc_feature_text | downcase
-        if desc_feature_text.size > 8 and desc_detail_count < 12
-          unless desc_feature_check == 'feature' or desc_feature_check == 'features'
-            capture desc_detail_items
-              echo desc_detail_items
-              echo '<li>'
-              echo desc_feature_text | escape
-              echo '</li>'
-            endcapture
-            assign desc_detail_count = desc_detail_count | plus: 1
-          endunless
-        endif
-      endfor
-    endif
-    if desc_detail_count == 0 and desc_feature_html contains '</p>'
-      assign desc_feature_chunks = desc_feature_html | split: '</p>'
-      for desc_feature_chunk in desc_feature_chunks
-        assign desc_feature_text = desc_feature_chunk | strip_html | strip
-        assign desc_feature_check = desc_feature_text | downcase
-        if desc_feature_text.size > 18 and desc_detail_count < 12
-          unless desc_feature_check == 'feature' or desc_feature_check == 'features'
-            capture desc_detail_items
-              echo desc_detail_items
-              echo '<li>'
-              echo desc_feature_text | escape
-              echo '</li>'
-            endcapture
-            assign desc_detail_count = desc_detail_count | plus: 1
-          endunless
-        endif
-      endfor
-    endif
-  endif
-
-
-  assign desc_intro_markup = ''
-  assign desc_sentence_chunk = ''
-  assign desc_sentence_count = 0
-  assign desc_sentences = desc_intro | split: '. '
-  for desc_sentence in desc_sentences
-    assign desc_sentence_text = desc_sentence | strip
-    if desc_sentence_text == blank
-      continue
-    endif
-    if desc_sentence_chunk == blank
-      assign desc_sentence_chunk = desc_sentence_text
-    else
-      assign desc_sentence_chunk = desc_sentence_chunk | append: '. ' | append: desc_sentence_text
-    endif
-    assign desc_sentence_count = desc_sentence_count | plus: 1
-    if desc_sentence_count == 2 or forloop.last
-      unless desc_sentence_chunk contains '.'
-        assign desc_sentence_chunk = desc_sentence_chunk | append: '.'
-      endunless
-      capture desc_intro_markup
-        echo desc_intro_markup
-        echo '<p>'
-        echo desc_sentence_chunk | escape
-        echo '</p>'
-      endcapture
-      assign desc_sentence_chunk = ''
-      assign desc_sentence_count = 0
-    endif
-  endfor
-
-  assign package_items = ''
-  assign package_count = 0
-  assign package_block = ''
-  if product.description contains 'Package Includes'
-    assign package_block = product.description | split: 'Package Includes' | last
-  elsif product.description contains 'Package Include'
-    assign package_block = product.description | split: 'Package Include' | last
-  elsif product.description contains 'Package Included'
-    assign package_block = product.description | split: 'Package Included' | last
-  endif
-  if package_block contains 'Note:'
-    assign package_block = package_block | split: 'Note:' | first
-  endif
-  if package_block != blank
-    if package_block contains '</li>'
-      assign package_chunks = package_block | split: '</li>'
-      for package_chunk in package_chunks
-        assign package_text = package_chunk | strip_html | strip
-        if package_text.size > 2 and package_count < 8
-          capture package_items
-            echo package_items
-            echo '<li>'
-            echo package_text | escape
-            echo '</li>'
-          endcapture
-          assign package_count = package_count | plus: 1
-        endif
-      endfor
-    else
-      assign package_plain = package_block | strip_html | strip
-      assign package_lines = package_plain | newline_to_br | split: '<br />'
-      for package_line in package_lines
-        assign package_text = package_line | strip
-        if package_text.size > 2 and package_count < 8
-          capture package_items
-            echo package_items
-            echo '<li>'
-            echo package_text | escape
-            echo '</li>'
-          endcapture
-          assign package_count = package_count | plus: 1
-        endif
-      endfor
-    endif
-  endif
+  # The description is shown exactly as written in Shopify admin (or a bulk
+  # import): its paragraphs, headings, lists, bold text, links and tables.
+  assign desc_html = product.description | replace: '&nbsp;', ' ' | strip
 
   assign keyword_count = 0
   capture keyword_markup
@@ -1078,34 +914,16 @@
       {%- endcapture -%}
 
       <div class="pp-accordions">
-        {% if desc_is_rich or desc_intro_markup != blank or desc_detail_count > 0 or package_count > 0 %}
+        {% if desc_html != blank %}
         <details class="pp-accordion" open>
           <summary class="pp-accordion__summary">
             Description
             {{ pp_accordion_chevron }}
           </summary>
           <div class="pp-accordion__body">
-            {% if desc_is_rich %}
-              <div class="pp-description-text pp-description-text--rich rte">
-                {{ desc_html }}
-              </div>
-            {% elsif desc_intro_markup != blank or desc_detail_count > 0 or package_count > 0 %}
-              <div class="pp-description-text">
-                {{ desc_intro_markup }}
-                {% if desc_detail_count > 0 %}
-                  <p class="pp-desc-kicker">Features</p>
-                  <ul class="pp-desc-features">
-                    {{ desc_detail_items }}
-                  </ul>
-                {% endif %}
-                {% if package_count > 0 %}
-                  <p class="pp-desc-kicker">In the box</p>
-                  <ul class="pp-desc-pack">
-                    {{ package_items }}
-                  </ul>
-                {% endif %}
-              </div>
-            {% endif %}
+            <div class="pp-description-text pp-description-text--rich rte">
+              {{ desc_html }}
+            </div>
           </div>
         </details>
         {% endif %}
