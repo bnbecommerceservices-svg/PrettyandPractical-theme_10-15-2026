@@ -32,6 +32,18 @@
   if dropdown_menu != blank and dropdown_menu.links == blank
     assign dropdown_menu = linklists[dropdown_menu]
   endif
+  # A theme upload brings the saved menu handle from the theme files, which can
+  # differ from this store's menu (e.g. "shop-by-category-1"). When the saved
+  # menu isn't found or is empty, use the store's menu titled "Shop by category".
+  if dropdown_menu == blank or dropdown_menu.links.size == 0
+    for pp_store_menu in linklists
+      assign pp_store_menu_title = pp_store_menu.title | downcase | strip
+      if pp_store_menu_title == 'shop by category' and pp_store_menu.links.size > 0
+        assign dropdown_menu = pp_store_menu
+        break
+      endif
+    endfor
+  endif
   assign fallback_search_placeholder = search_placeholder | default: header_section.settings.search_placeholder | default: 'Search furniture, home decor, plant stands, pets & more...'
   assign fallback_category_nav_label = category_nav_label | default: header_section.settings.category_nav_label | default: 'Category navigation'
   assign fallback_announcement_label = announcement_label | default: header_section.settings.announcements_label | default: header_section.settings.announcement_label | default: 'Store announcements'
