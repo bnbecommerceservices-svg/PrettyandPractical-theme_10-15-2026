@@ -135,7 +135,7 @@
   endif
 %}
 
-{%- capture real_category_text -%}{%- render 'pp-category-entries', menu: dropdown_menu, limit: 12 -%}{%- endcapture -%}
+{%- capture real_category_text -%}{%- render 'pp-category-entries', menu: dropdown_menu, limit: 20 -%}{%- endcapture -%}
 {%- assign real_categories = real_category_text | strip | split: '§' -%}
 
 {% capture rendered_utility_links %}
@@ -258,7 +258,7 @@
       {% endunless %}
     {% endfor %}
   {% else %}
-    {% for entry in real_categories limit: 8 %}
+    {% for entry in real_categories limit: 20 %}
       {% liquid
         assign entry_parts = entry | split: '¦'
         assign entry_url = entry_parts[1]
@@ -1074,20 +1074,14 @@
   <div class="pp-category-nav" role="navigation" aria-label="{{ fallback_category_nav_label | escape }}" data-pp-category-nav>
     <div class="{{ header_container_class }} pp-category-nav-wrapper">
       <div class="pp-category-nav__inner">
+        {{ rendered_category_links }}
         {% unless pp_use_menu_mega %}
-          <button type="button" class="pp-catmega-trigger" data-catmega-trigger aria-expanded="false" aria-controls="ppCategoryMega">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <line x1="4" y1="7" x2="20" y2="7"></line>
-              <line x1="4" y1="12" x2="20" y2="12"></line>
-              <line x1="4" y1="17" x2="20" y2="17"></line>
-            </svg>
-            <span>Shop by category</span>
-            <svg class="pp-catmega-trigger__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+          {%- comment -%} Departments that don't fit in the row move into this menu (header script below). {%- endcomment -%}
+          <button type="button" class="pp-nav-link pp-nav-more" data-catmega-open="more" data-pp-nav-more aria-expanded="false" aria-controls="ppCategoryMega" hidden>
+            <span>More</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
         {% endunless %}
-        {{ rendered_category_links }}
       </div>
       {% unless pp_use_menu_mega %}
         {% render 'pp-category-mega', menu: dropdown_menu %}
@@ -1508,6 +1502,7 @@
       if (categoryNav instanceof HTMLElement) {
         categoryNav.querySelectorAll('[data-catmega-open]').forEach(function (link) {
           link.classList.toggle('is-mega-current', link.getAttribute('data-catmega-open') === key);
+          if (link.hasAttribute('aria-expanded')) link.setAttribute('aria-expanded', link.getAttribute('data-catmega-open') === key ? 'true' : 'false');
         });
       }
     }
@@ -1572,6 +1567,7 @@
       }
       categoryNav.querySelectorAll('[data-catmega-open]').forEach(function (link) {
         link.classList.remove('is-mega-current');
+        if (link.hasAttribute('aria-expanded')) link.setAttribute('aria-expanded', 'false');
       });
     }
 
@@ -1615,6 +1611,71 @@
     // Department names stay on one line; when they don't all fit, the row scrolls
     // sideways and a fade shows on whichever side has more to see.
     const categoryRow = categoryNav?.querySelector('.pp-category-nav__inner');
+
+    // On desktop every department stays in the row, spread across it. When they
+    // don't fit, the row first tightens its spacing and text, then lets long names
+    // wrap onto two lines; only if they still don't fit do the last ones move into
+    // the "More" menu at the end. The row never scrolls.
+    const navMore = categoryRow?.querySelector('[data-pp-nav-more]');
+    const navMoreList = categoryMega?.querySelector('[data-catmega-more-list]');
+    if (categoryRow instanceof HTMLElement && navMore instanceof HTMLElement && navMoreList instanceof HTMLElement) {
+      const fitCategoryRow = function () {
+        const items = Array.from(categoryRow.children).filter(function (item) {
+          return item !== navMore && item.matches('a, .pp-mega-group, .pp-nav-link');
+        });
+        items.forEach(function (item) { item.hidden = false; });
+        navMore.hidden = true;
+        navMoreList.textContent = '';
+        categoryRow.classList.remove('is-fitted', 'is-compact', 'is-wrapped');
+        categoryRow.style.removeProperty('--pp-catrow-item-max');
+        if (window.innerWidth < 769) return;
+        const overflows = function () { return categoryRow.scrollWidth > categoryRow.clientWidth + 1; };
+        if (overflows()) categoryRow.classList.add('is-compact');
+        if (overflows()) {
+          // Each name may wrap within an equal share of the row, so none needs a third line.
+          const gap = parseFloat(getComputedStyle(categoryRow).columnGap) || 0;
+          const share = Math.floor((categoryRow.clientWidth - gap * (items.length - 1)) / items.length);
+          categoryRow.style.setProperty('--pp-catrow-item-max', share + 'px');
+          categoryRow.classList.add('is-wrapped');
+        }
+        if (overflows()) {
+          navMore.hidden = false;
+          for (let i = items.length - 1; i > 0 && overflows(); i--) items[i].hidden = true;
+          items.filter(function (item) { return item.hidden; }).forEach(function (item) {
+            const link = item.matches('a') ? item : item.querySelector('a');
+            if (!(link instanceof HTMLAnchorElement)) return;
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'pp-catmega__link';
+            a.href = link.href;
+            a.textContent = link.textContent.trim();
+            li.appendChild(a);
+            navMoreList.appendChild(li);
+          });
+          if (!navMoreList.children.length) navMore.hidden = true;
+        }
+        categoryRow.classList.add('is-fitted');
+        categoryRow.scrollLeft = 0;
+      };
+      let fitFrame = 0;
+      const scheduleFit = function () {
+        window.cancelAnimationFrame(fitFrame);
+        fitFrame = window.requestAnimationFrame(fitCategoryRow);
+      };
+      fitCategoryRow();
+      window.addEventListener('resize', function () {
+        if (!categoryMega.hidden) closeCategoryMega();
+        scheduleFit();
+      });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleFit);
+      navMore.addEventListener('click', function (event) {
+        event.preventDefault();
+        const isOpen = !categoryMega.hidden && navMore.classList.contains('is-mega-current');
+        if (isOpen && Date.now() - megaOpenedAt > 600) closeCategoryMega();
+        else openCategoryMega('more');
+      });
+    }
+
     if (categoryRow instanceof HTMLElement) {
       const updateCategoryRowFade = function () {
         const maxScroll = categoryRow.scrollWidth - categoryRow.clientWidth;

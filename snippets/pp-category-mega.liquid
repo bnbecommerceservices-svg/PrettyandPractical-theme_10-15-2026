@@ -5,12 +5,12 @@
   setting. When none is set, every collection that has products is listed
   alphabetically (from the global `collections` object).
 
-  The dropdown has two views (snippets/pp-category-mega-panel.liquid):
-  - "all" (the Shop by category button): every category side by side, each
-    with its sub-categories and a "Shop all" link
-  - one short box per category (its top nav link), placed under that link:
+  Each category in the header row opens its own short box under its link
+  (snippets/pp-category-mega-panel.liquid):
     its sub-categories, with their own sub-categories nested under them, and
     "Shop all <category>" at the end
+  Categories that don't fit in the row move into a "More" box, filled by the
+  header script.
 
   @param {linklist} [menu] - Menu whose links are the categories.
 {% enddoc %}
@@ -20,29 +20,10 @@
   if menu != blank and menu.links.size > 0
     assign use_menu = true
   endif
-  assign max_categories = 12
+  assign max_categories = 20
   assign category_count = 0
 -%}
 
-{%- capture mega_columns -%}
-  {%- if use_menu -%}
-    {%- for link in menu.links -%}
-      {%- if category_count >= max_categories -%}{%- break -%}{%- endif -%}
-      {%- if link.type == 'collection_link' and link.object.all_products_count == 0 and link.links.size == 0 -%}{%- continue -%}{%- endif -%}
-      {%- assign category_count = category_count | plus: 1 -%}
-      {%- assign link_collection = blank -%}
-      {%- if link.type == 'collection_link' -%}{%- assign link_collection = link.object -%}{%- endif -%}
-      {%- render 'pp-category-mega-panel', layout: 'column', label: link.title, url: link.url, panel_collection: link_collection, child_links: link.links -%}
-    {%- endfor -%}
-  {%- else -%}
-    {%- for collection in collections -%}
-      {%- if category_count >= max_categories -%}{%- break -%}{%- endif -%}
-      {%- if collection.handle == 'frontpage' or collection.handle == 'all' or collection.all_products_count == 0 -%}{%- continue -%}{%- endif -%}
-      {%- assign category_count = category_count | plus: 1 -%}
-      {%- render 'pp-category-mega-panel', layout: 'column', label: collection.title, url: collection.url, panel_collection: collection -%}
-    {%- endfor -%}
-  {%- endif -%}
-{%- endcapture -%}
 
 {%- capture mega_panels -%}
   {%- assign panel_count = 0 -%}
@@ -68,13 +49,11 @@
 
 <div class="pp-catmega" id="ppCategoryMega" data-pp-catmega hidden>
   <div class="pp-catmega__surface">
-    {%- if category_count > 0 -%}
-      <div class="pp-catmega__panel pp-catmega__panel--all" data-catmega-panel="all" hidden>
-        <div class="pp-catmega__cols" style="--pp-catmega-cols: {{ category_count | at_most: 8 }};">
-          {{ mega_columns }}
-        </div>
-      </div>
+    {%- if panel_count > 0 -%}
       {{ mega_panels }}
+      <div class="pp-catmega__panel pp-catmega__panel--box" data-catmega-panel="more" hidden>
+        <ul class="pp-catmega__links pp-catmega__box-links" role="list" data-catmega-more-list></ul>
+      </div>
     {%- else -%}
       <p class="pp-catmega__empty">No categories to show yet.</p>
     {%- endif -%}
