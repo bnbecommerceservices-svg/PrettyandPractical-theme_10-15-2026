@@ -4,9 +4,19 @@
   assign review_blocks = section.blocks | where: 'type', 'review'
   assign insta_blocks = section.blocks | where: 'type', 'insta_tile'
 
-  assign bestsellers_collection = section.settings.bestsellers_collection
-  assign secondary_collection = section.settings.secondary_collection
-  assign featured_product = section.settings.featured_product
+  # Homepage content kept in Shopify admin (Content > Metaobjects > "Homepage content",
+  # entry handle "homepage"). Theme uploads never change it. Each field that is
+  # filled in replaces the matching theme editor setting; empty fields fall back.
+  assign hp = metaobjects.homepage_content.homepage
+  assign hp_heroes = hp.hero_cards.value
+  assign hp_bestsellers = hp.bestsellers_products.value
+  assign hp_new_arrivals = hp.new_arrivals_products.value
+
+  assign bestsellers_collection = hp.bestsellers_collection.value | default: section.settings.bestsellers_collection
+  assign secondary_collection = hp.new_arrivals_collection.value | default: section.settings.secondary_collection
+  assign featured_product = hp.featured_product.value | default: section.settings.featured_product
+  assign featured_title = hp.featured_title.value | default: section.settings.featured_title
+  assign featured_description = hp.featured_description.value | default: section.settings.featured_description
 
   assign has_judgeme_carousel = false
 
@@ -50,12 +60,18 @@
         <div class="pp-hero__feature-grid">
           {% if primary_hero != blank %}
             {% liquid
-              assign primary_url = primary_hero.settings.link
-              assign primary_key = primary_hero.settings.heading | append: ' ' | append: primary_hero.settings.badge | downcase
+              assign hp_hero = hp_heroes[0]
+              assign primary_image = hp_hero.image.value.preview_image | default: primary_hero.settings.image
+              assign primary_heading = hp_hero.heading.value | default: primary_hero.settings.heading
+              assign primary_badge = hp_hero.badge.value | default: primary_hero.settings.badge
+              assign primary_text = hp_hero.text.value | default: primary_hero.settings.text
+              assign primary_button = hp_hero.button_label.value | default: primary_hero.settings.button_label
+              assign primary_url = hp_hero.link.value | default: primary_hero.settings.link
+              assign primary_key = primary_heading | append: ' ' | append: primary_badge | downcase
               assign primary_fallback = 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80'
               assign primary_ratio = 1.5
-              if primary_hero.settings.image != blank and primary_hero.settings.image.aspect_ratio > 0
-                assign primary_ratio = primary_hero.settings.image.aspect_ratio
+              if primary_image != blank and primary_image.aspect_ratio > 0
+                assign primary_ratio = primary_image.aspect_ratio
               endif
               if primary_key contains 'furniture' or primary_key contains 'living'
                 assign primary_fallback = 'https://images.pexels.com/photos/12289396/pexels-photo-12289396.jpeg?auto=compress&cs=tinysrgb&w=1600'
@@ -73,22 +89,22 @@
               {{ primary_hero.shopify_attributes }}
             >
               <span class="pp-hero-card__media">
-                {% if primary_hero.settings.image != blank %}
-                  {{ primary_hero.settings.image | image_url: width: 1800 | image_tag: widths: '600,900,1200,1600,1800', sizes: '(min-width: 990px) 60vw, 100vw', loading: 'eager', alt: primary_hero.settings.heading | default: 'Home décor' | escape }}
+                {% if primary_image != blank %}
+                  {{ primary_image | image_url: width: 1800 | image_tag: widths: '600,900,1200,1600,1800', sizes: '(min-width: 990px) 60vw, 100vw', loading: 'eager', alt: primary_heading | default: 'Home décor' | escape }}
                 {% else %}
-                  <img src="{{ primary_fallback }}" alt="{{ primary_hero.settings.heading | default: 'Home décor' | escape }}" width="1800" height="1200" loading="eager" decoding="async">
+                  <img src="{{ primary_fallback }}" alt="{{ primary_heading | default: 'Home décor' | escape }}" width="1800" height="1200" loading="eager" decoding="async">
                 {% endif %}
               </span>
               <div class="pp-hero-content">
-                {% if primary_hero.settings.badge != blank %}
-                  <span class="pp-hero-card__pill pp-hero-card__pill--main">{{ primary_hero.settings.badge }}</span>
+                {% if primary_badge != blank %}
+                  <span class="pp-hero-card__pill pp-hero-card__pill--main">{{ primary_badge }}</span>
                 {% endif %}
-                <h2 id="hero-heading-{{ section.id }}" class="pp-hero-card__title">{{ primary_hero.settings.heading }}</h2>
-                {% if primary_hero.settings.text != blank %}
-                  <p class="pp-hero-card__sub">{{ primary_hero.settings.text }}</p>
+                <h2 id="hero-heading-{{ section.id }}" class="pp-hero-card__title">{{ primary_heading }}</h2>
+                {% if primary_text != blank %}
+                  <p class="pp-hero-card__sub">{{ primary_text }}</p>
                 {% endif %}
                 <span class="pp-hero-cta">
-                  {{ primary_hero.settings.button_label | default: 'Shop now' }}
+                  {{ primary_button | default: 'Shop now' }}
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                   </svg>
@@ -100,13 +116,19 @@
             <div class="pp-hero__side-stack">
               {% for block in hero_blocks offset: 1 limit: 2 %}
                 {% liquid
-                  assign hero_url = block.settings.link
-                  assign hero_key = block.settings.heading | append: ' ' | append: block.settings.badge | downcase
+                  assign hp_hero = hp_heroes[forloop.index]
+                  assign hero_image = hp_hero.image.value.preview_image | default: block.settings.image
+                  assign hero_heading = hp_hero.heading.value | default: block.settings.heading
+                  assign hero_badge = hp_hero.badge.value | default: block.settings.badge
+                  assign hero_text = hp_hero.text.value | default: block.settings.text
+                  assign hero_button = hp_hero.button_label.value | default: block.settings.button_label
+                  assign hero_url = hp_hero.link.value | default: block.settings.link
+                  assign hero_key = hero_heading | append: ' ' | append: hero_badge | downcase
                   assign hero_modifier = 'pp-hero-card--outdoor'
                   assign hero_fallback = 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80'
                   assign hero_ratio = 1.5
-                  if block.settings.image != blank and block.settings.image.aspect_ratio > 0
-                    assign hero_ratio = block.settings.image.aspect_ratio
+                  if hero_image != blank and hero_image.aspect_ratio > 0
+                    assign hero_ratio = hero_image.aspect_ratio
                   endif
                   if forloop.index == 2
                     assign hero_modifier = 'pp-hero-card--kitchen'
@@ -130,22 +152,22 @@
                   {{ block.shopify_attributes }}
                 >
                   <span class="pp-hero-card__media">
-                    {% if block.settings.image != blank %}
-                      {{ block.settings.image | image_url: width: 1200 | image_tag: widths: '400,600,900,1200', sizes: '(min-width: 990px) 30vw, 100vw', loading: 'eager', alt: block.settings.heading | escape }}
+                    {% if hero_image != blank %}
+                      {{ hero_image | image_url: width: 1200 | image_tag: widths: '400,600,900,1200', sizes: '(min-width: 990px) 30vw, 100vw', loading: 'eager', alt: hero_heading | escape }}
                     {% else %}
-                      <img src="{{ hero_fallback }}" alt="{{ block.settings.heading | escape }}" width="1200" height="800" loading="eager" decoding="async">
+                      <img src="{{ hero_fallback }}" alt="{{ hero_heading | escape }}" width="1200" height="800" loading="eager" decoding="async">
                     {% endif %}
                   </span>
                   <div class="pp-tile-content">
-                    {% if block.settings.badge != blank %}
-                      <span class="pp-hero-card__pill{% if forloop.index == 2 %} pp-hero-card__pill--clear{% else %} pp-hero-card__pill--flash{% endif %}">{{ block.settings.badge }}</span>
+                    {% if hero_badge != blank %}
+                      <span class="pp-hero-card__pill{% if forloop.index == 2 %} pp-hero-card__pill--clear{% else %} pp-hero-card__pill--flash{% endif %}">{{ hero_badge }}</span>
                     {% endif %}
-                    <h2 class="pp-hero-card__title">{{ block.settings.heading }}</h2>
-                    {% if block.settings.text != blank %}
-                      <p class="pp-hero-card__sub pp-tile-description">{{ block.settings.text }}</p>
+                    <h2 class="pp-hero-card__title">{{ hero_heading }}</h2>
+                    {% if hero_text != blank %}
+                      <p class="pp-hero-card__sub pp-tile-description">{{ hero_text }}</p>
                     {% endif %}
                     <span class="pp-hero-cta pp-hero-cta--ghost">
-                      {{ block.settings.button_label | default: 'Shop now' }}
+                      {{ hero_button | default: 'Shop now' }}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                       </svg>
@@ -206,7 +228,15 @@
   {%- capture bestsellers_cards -%}
     {%- assign bs_shown = 0 -%}
     {%- assign bs_ids = '|' -%}
+    {%- for product in hp_bestsellers limit: 12 -%}
+      {%- assign bs_key = '|' | append: product.id | append: '|' -%}
+      {%- if bs_ids contains bs_key -%}{%- continue -%}{%- endif -%}
+      {%- assign bs_ids = bs_ids | append: product.id | append: '|' -%}
+      {%- assign bs_shown = bs_shown | plus: 1 -%}
+      {%- render 'pp-collection-product-card', product: product -%}
+    {%- endfor -%}
     {%- for index in (1..4) -%}
+      {%- if hp_bestsellers != blank -%}{%- break -%}{%- endif -%}
       {%- liquid
         assign product = blank
         case index
@@ -360,7 +390,7 @@
 
   {% liquid
     assign has_picked_new = false
-    if section.settings.secondary_product_1 != blank or section.settings.secondary_product_2 != blank or section.settings.secondary_product_3 != blank or section.settings.secondary_product_4 != blank
+    if hp_new_arrivals != blank or section.settings.secondary_product_1 != blank or section.settings.secondary_product_2 != blank or section.settings.secondary_product_3 != blank or section.settings.secondary_product_4 != blank
       assign has_picked_new = true
     endif
     assign secondary_view_url = secondary_collection.url | default: '/collections/furniture'
@@ -381,7 +411,11 @@
           </a>
         </div>
         <div class="pp-rail__grid pp-cards">
-          {% if has_picked_new %}
+          {% if hp_new_arrivals != blank %}
+            {% for product in hp_new_arrivals limit: 12 %}
+              {% render 'pp-collection-product-card', product: product %}
+            {% endfor %}
+          {% elsif has_picked_new %}
             {% for index in (1..4) %}
               {% liquid
                 assign product = nil
@@ -453,12 +487,12 @@
           </a>
           <div class="pp-feature__info">
             <p class="pp-feature__category">{{ section.settings.featured_overline | default: feature_product.type | default: feature_product.vendor }}</p>
-            <h2 id="feature-title-{{ section.id }}" class="pp-feature__title">{{ section.settings.featured_title | default: feature_product.title }}</h2>
+            <h2 id="feature-title-{{ section.id }}" class="pp-feature__title">{{ featured_title | default: feature_product.title }}</h2>
             <div class="pp-feature__rating">
               {% render 'pp-home-rating', product: feature_product %}
             </div>
-            {% if section.settings.featured_description != blank %}
-              <p class="pp-feature__desc">{{ section.settings.featured_description }}</p>
+            {% if featured_description != blank %}
+              <p class="pp-feature__desc">{{ featured_description }}</p>
             {% elsif feature_product.description != blank %}
               <div class="pp-feature__desc">{{ feature_product.description | strip_html | truncatewords: 36 }}</div>
             {% endif %}
